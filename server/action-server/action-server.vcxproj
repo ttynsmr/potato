@@ -80,7 +80,17 @@
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>
-  <ItemDefinitionGroup />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>/usr/include/boost;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <CppLanguageStandard>c++17</CppLanguageStandard>
+      <AdditionalOptions>-fcoroutines-ts %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <SharedLibrarySearchPath>/usr/lib/;%(SharedLibrarySearchPath)</SharedLibrarySearchPath>
+      <AdditionalOptions>-lboost_system -lboost_thread -lpthread %(AdditionalOptions)</AdditionalOptions>
+    </Link>
+  </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
 </Project>
