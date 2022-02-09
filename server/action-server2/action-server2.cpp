@@ -15,7 +15,16 @@
 #include <utility>
 #include <boost/asio.hpp>
 
+#include "src/Payload.h"
+
 using boost::asio::ip::tcp;
+
+// payload format
+// +---------------+----------------+
+// |     2bytes    |     n bytes    |
+// +---------------+----------------+
+// | payload bytes | payload binary |
+// +---------------+----------------+
 
 class session
     : public std::enable_shared_from_this<session>
