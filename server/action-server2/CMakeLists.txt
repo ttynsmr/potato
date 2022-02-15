@@ -5,20 +5,16 @@ cmake_minimum_required (VERSION 3.8)
 
 project ("action-server2")
 
-file(GLOB Src_Sources RELATIVE "src" "*.cpp")
-
-# ソースをこのプロジェクトの実行可能ファイルに追加します。
-add_executable (action-server2 "action-server2.cpp" "action-server2.h" "src/Payload.h" "src/Payload.cpp")
-
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-#set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(CMAKE_THREAD_LIBS_INIT "-lpthread")
 set(CMAKE_HAVE_THREADS_LIBRARY 1)
 set(CMAKE_USE_WIN32_THREADS_INIT 0)
 set(CMAKE_USE_PTHREADS_INIT 1)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
+
 
 if(MSVC)
   # Force to always compile with W4
@@ -31,6 +27,13 @@ elseif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
   # Update if necessary
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-long-long -pedantic")
 endif()
+
+file(GLOB Src_Sources RELATIVE "src" "*.cpp")
+
+# ソースをこのプロジェクトの実行可能ファイルに追加します。
+add_executable (action-server2 "action-server2.cpp" ${Src_Sources})
+
+#target_compile_features(${TARGET_NAME} PRIVATE cxx_std_17)
 
 find_package (Threads REQUIRED)
 

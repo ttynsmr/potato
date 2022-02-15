@@ -8,7 +8,6 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#include "action-server2.h"
 #include <cstdlib>
 #include <iostream>
 #include <memory>
