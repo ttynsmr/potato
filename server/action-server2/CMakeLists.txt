@@ -68,6 +68,7 @@ endif()
 #             -I "${CMAKE_CURRENT_SOURCE_DIR}/../model/flatbuffers"
 #             "${CMAKE_CURRENT_SOURCE_DIR}/${SRC_FBS_DIR}")
 # endfunction()
+set(FLATBUFFERS_FLATC_EXECUTABLE flatc)
 function(compile_flatbuffers_schema_to_cpp SRC_FBS)
   get_filename_component(SRC_FBS_DIR ${SRC_FBS} PATH)
   string(REGEX REPLACE "\\.fbs$" "_generated.h" GEN_HEADER ${SRC_FBS})
@@ -75,6 +76,7 @@ function(compile_flatbuffers_schema_to_cpp SRC_FBS)
     OUTPUT ${GEN_HEADER}
     COMMAND "${FLATBUFFERS_FLATC_EXECUTABLE}" -c --no-includes --gen-mutable -o "${SRC_FBS_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/${SRC_FBS}"
     DEPENDS flatc)
+  message("${FLATBUFFERS_FLATC_EXECUTABLE} -c --no-includes --gen-mutable -o ${SRC_FBS_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/${SRC_FBS}")
 endfunction()
 
 compile_flatbuffers_schema_to_cpp(protocol/gc-hello.fbs)

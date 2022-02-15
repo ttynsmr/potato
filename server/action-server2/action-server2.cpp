@@ -14,8 +14,7 @@
 #include <utility>
 #include <boost/asio.hpp>
 
-//#include "flatbuffers/flatbuffers.h"
-#include "generated/gc-hello_generated.h"
+#include "protocol/gc-hello_generated.h"
 
 #include "src/Payload.h"
 
