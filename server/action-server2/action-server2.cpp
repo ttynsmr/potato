@@ -14,6 +14,9 @@
 #include <utility>
 #include <boost/asio.hpp>
 
+//#include "flatbuffers/flatbuffers.h"
+#include "generated/gc-hello_generated.h"
+
 #include "src/Payload.h"
 
 using boost::asio::ip::tcp;
@@ -36,6 +39,8 @@ public:
 
     void start()
     {
+        potato::net::protocol::Payload::getInt();
+        potato::Vec3 v3(0,0,0);
         do_read();
     }
 

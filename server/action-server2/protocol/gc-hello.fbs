@@ -1,0 +1,20 @@
+// flatc --cpp -o ./cpp ./hello.fbs
+// flatc --csharp -o ./cs ./hello.fbs
+namespace potato;
+
+enum Color:byte { Red = 0, Green, Blue = 2 }
+
+struct Vec3 {
+  x:float;
+  y:float;
+  z:float;
+}
+
+table Hello {
+  pos:Vec3;
+  name:string;
+  message:string;
+  color:Color = Blue;
+}
+
+root_type Hello;

@@ -1,4 +1,5 @@
 #pragma once
+#include <cstdint>
 
 namespace potato::net::protocol
 {
@@ -6,5 +7,7 @@ namespace potato::net::protocol
 	{
 		std::uint16_t payloadSize = 0;
 		std::uint8_t payloads[];
+
+		static int getInt();
 	};
 }
