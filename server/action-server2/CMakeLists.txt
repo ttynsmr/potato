@@ -51,7 +51,9 @@ function(compile_flatbuffers_schema_to_cpp SRC_FBS)
 endfunction()
 
 file(GLOB FBS_SOURCES RELATIVE "${CMAKE_SOURCE_DIR}" "protocol/*")
-compile_flatbuffers_schema_to_cpp(${FBS_SOURCES} GEN_HEADER)
+foreach(fbs_source IN LISTS FBS_SOURCES)
+  compile_flatbuffers_schema_to_cpp(${fbs_source} GEN_HEADER)
+endforeach()
 
 file(GLOB SUB_SOURCES RELATIVE "${CMAKE_SOURCE_DIR}" "src/*")
 # file(GLOB GEN_SOURCES RELATIVE "${CMAKE_SOURCE_DIR}" "generated/*")
@@ -61,6 +63,7 @@ include_directories("${CMAKE_CURRENT_BINARY_DIR}/")
 list(APPEND ALL_SOURCES ${SUB_SOURCES} ${GEN_SOURCES} ${GEN_HEADER})
 list(APPEND ALL_SOURCES "action-server2.cpp")
 
+message("FBS_SOURCES: ${FBS_SOURCES}")
 message("GEN_HEADER: ${GEN_HEADER}")
 message("ALL_SOURCES: ${ALL_SOURCES}")
 
