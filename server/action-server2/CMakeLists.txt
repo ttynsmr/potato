@@ -37,37 +37,6 @@ endif()
 # flatc --cpp -o ./cpp ./hello.fbs
 # flatc --csharp -o ./cs ./hello.fbs
 
-# function(add_fbs_header name)
-#   add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/generated/${name}.h
-#     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/protocol/${name}.fbs
-#     COMMAND flatc --cpp -o ${CMAKE_CURRENT_BINARY_DIR}/generated/${name}.h ${CMAKE_CURRENT_SOURCE_DIR}/protocol/${name}.fbs
-#     )
-# endfunction(add_fbs_header name)
-
-# add_fbs_header("gc-hello")
-
-# file(GLOB FBS_SOURCES RELATIVE "${CMAKE_SOURCE_DIR}" "protocol/*")
-
-# add_custom_command(
-#   PRE_BUILD
-#   OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/generated/*
-#   COMMAND flatc --cpp -o ${CMAKE_CURRENT_LIST_DIR}/generated ${CMAKE_CURRENT_SOURCE_DIR}/protocol/gc-hello.fbs
-#   DEPENDS ${FBS_SOURCES}
-#   COMMENT "generate me"
-# )
-
-# function(compile_flatbuffers_schema_to_cpp SRC_FBS_DIR)
-#     get_filename_component(SRC_FBS ${SRC_FBS_DIR} NAME)
-#     string(REGEX REPLACE "\\.fbs$" "_generated.h" GEN_HEADER ${SRC_FBS})
-#     add_custom_command(
-#             OUTPUT ${GEN_HEADER}
-#             COMMAND flatc -c --gen-mutable
-#             -o "${CMAKE_CURRENT_SOURCE_DIR}"
-#             --reflect-names
-#             -I "${CMAKE_CURRENT_SOURCE_DIR}/../../.."
-#             -I "${CMAKE_CURRENT_SOURCE_DIR}/../model/flatbuffers"
-#             "${CMAKE_CURRENT_SOURCE_DIR}/${SRC_FBS_DIR}")
-# endfunction()
 set(FLATBUFFERS_FLATC_EXECUTABLE flatc)
 function(compile_flatbuffers_schema_to_cpp SRC_FBS)
   get_filename_component(SRC_FBS_DIR ${SRC_FBS} PATH)
@@ -75,17 +44,25 @@ function(compile_flatbuffers_schema_to_cpp SRC_FBS)
   add_custom_command(
     OUTPUT ${GEN_HEADER}
     COMMAND "${FLATBUFFERS_FLATC_EXECUTABLE}" -c --no-includes --gen-mutable -o "${SRC_FBS_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/${SRC_FBS}"
-    DEPENDS flatc)
-  message("${FLATBUFFERS_FLATC_EXECUTABLE} -c --no-includes --gen-mutable -o ${SRC_FBS_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/${SRC_FBS}")
+    )
+  # message("${FLATBUFFERS_FLATC_EXECUTABLE} -c --no-includes --gen-mutable -o ${SRC_FBS_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/${SRC_FBS}")
+  # message("compile_flatbuffers_schema_to_cpp -- ${GEN_HEADER}")
+  set(GEN_HEADER ${GEN_HEADER} PARENT_SCOPE)
 endfunction()
 
-compile_flatbuffers_schema_to_cpp(protocol/gc-hello.fbs)
+file(GLOB FBS_SOURCES RELATIVE "${CMAKE_SOURCE_DIR}" "protocol/*")
+compile_flatbuffers_schema_to_cpp(${FBS_SOURCES} GEN_HEADER)
 
 file(GLOB SUB_SOURCES RELATIVE "${CMAKE_SOURCE_DIR}" "src/*")
-file(GLOB GEN_SOURCES RELATIVE "${CMAKE_SOURCE_DIR}" "generated/*")
+# file(GLOB GEN_SOURCES RELATIVE "${CMAKE_SOURCE_DIR}" "generated/*")
 
-list(APPEND ALL_SOURCES ${SUB_SOURCES} ${GEN_SOURCES})
+include_directories("${CMAKE_CURRENT_BINARY_DIR}/")
+
+list(APPEND ALL_SOURCES ${SUB_SOURCES} ${GEN_SOURCES} ${GEN_HEADER})
 list(APPEND ALL_SOURCES "action-server2.cpp")
+
+message("GEN_HEADER: ${GEN_HEADER}")
+message("ALL_SOURCES: ${ALL_SOURCES}")
 
 # ソースをこのプロジェクトの実行可能ファイルに追加します。
 add_executable (action-server2  ${ALL_SOURCES})
