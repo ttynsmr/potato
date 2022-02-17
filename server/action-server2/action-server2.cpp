@@ -39,7 +39,12 @@ public:
     void start()
     {
         potato::net::protocol::Payload::getInt();
+        flatbuffers::FlatBufferBuilder builder(1024);
         potato::Vec3 v3(0,0,0);
+        potato::HelloBuilder(builder).add_name(builder.CreateString("hoge"));
+        potato::HelloBuilder(builder).add_message(builder.CreateString("message"));
+        auto a = potato::HelloBuilder(builder).Finish();
+        builder.Finish(a);
         do_read();
     }
 
