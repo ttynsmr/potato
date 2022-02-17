@@ -30,14 +30,26 @@ endif()
 # # torikime
 # # ./torikime/torikime.py -o ./proto -i ./rpc/rpc.yaml
 
-add_custom_target(rpc)
+# add_custom_target(
+#   rpc
+#   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/rpc/rpc.yaml
+#   )
 
-add_custom_command(
-  TARGET rpc
+# add_custom_command(
+#   TARGET rpc
+#   COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/torikime/torikime.py -o ${CMAKE_CURRENT_SOURCE_DIR}/proto -i ${CMAKE_CURRENT_SOURCE_DIR}/rpc/rpc.yaml
+#   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/torikime
+#   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/rpc/rpc.yaml
+#   COMMENT "Preprocessing rpcs"
+#   )
+
+add_custom_target(
+  rpc
   COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/torikime/torikime.py -o ${CMAKE_CURRENT_SOURCE_DIR}/proto -i ${CMAKE_CURRENT_SOURCE_DIR}/rpc/rpc.yaml
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/torikime
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/rpc/rpc.yaml
   COMMENT "Preprocessing rpcs"
+  BYPRODUCTS ${CMAKE_CURRENT_SOURCE_DIR}/proto/*
   )
 
 # add protocol buffer settings
