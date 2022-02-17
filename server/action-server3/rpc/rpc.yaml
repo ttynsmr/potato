@@ -18,3 +18,11 @@ chat: # contract
     notification:
       from: string
       stamp_id: int32
+auth:
+  login:
+    request:
+      user_id: string
+      password: string
+    response:
+      ok: bool
+      token: string

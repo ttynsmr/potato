@@ -27,8 +27,18 @@ elseif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-long-long -pedantic")
 endif()
 
-# torikime
-# ./torikime/torikime.py -o ./proto ./rpc/rpc.yaml
+# # torikime
+# # ./torikime/torikime.py -o ./proto -i ./rpc/rpc.yaml
+
+add_custom_target(rpc)
+
+add_custom_command(
+  TARGET rpc
+  COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/torikime/torikime.py -o ${CMAKE_CURRENT_SOURCE_DIR}/proto -i ${CMAKE_CURRENT_SOURCE_DIR}/rpc/rpc.yaml
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/torikime
+  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/rpc/rpc.yaml
+  COMMENT "Preprocessing rpcs"
+  )
 
 # add protocol buffer settings
 INCLUDE(FindProtobuf)
@@ -50,7 +60,7 @@ add_executable (action-server3  ${ALL_SOURCES})
 
 find_package (Threads REQUIRED)
 
-target_link_libraries(action-server3 pthread proto ${PROTOBUF_LIBRARY}) 
+target_link_libraries(action-server3 pthread proto ${PROTOBUF_LIBRARY})
 
 set( BOOST_ROOT "/usr/lib/x86_64-linux-gnu/")
 
@@ -67,9 +77,9 @@ else()
     message( FATAL_ERROR "Required Boost packages not found. Perhaps add -DBOOST_ROOT?" )
 endif()
 
-message(STATUS "*** dump start cmake variables ***")
-get_cmake_property(_variableNames VARIABLES)
-foreach(_variableName ${_variableNames})
-        message(STATUS "${_variableName}=${${_variableName}}")
-endforeach()
-message(STATUS "*** dump end ***")
+# message(STATUS "*** dump start cmake variables ***")
+# get_cmake_property(_variableNames VARIABLES)
+# foreach(_variableName ${_variableNames})
+#         message(STATUS "${_variableName}=${${_variableName}}")
+# endforeach()
+# message(STATUS "*** dump end ***")

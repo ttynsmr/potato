@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package torikime.auth.login;
+
+message Request {
+  string user_id = 1;
+  string password = 2;
+}
+
+message Response {
+  bool ok = 1;
+  string token = 2;
+}
