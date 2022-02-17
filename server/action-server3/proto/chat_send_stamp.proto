@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package torikime.chat.send_stamp;
+
+
+message Notification {
+  string from = 1;
+  int32 stamp_id = 2;
+}

@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package {{ namespace }}.{{ contract }}.{{ name }};
+
+{% if "request" in rpc -%}
+message Request {
+{%- for param in rpc.request.items() %}
+  {{ param[1] }} {{ param[0] }} = {{ loop.index }};
+{%- endfor %}
+}
+
+message Response {
+{%- if "response" in rpc %}
+{%- for param in rpc.response.items() %}
+  {{ param[1] }} {{ param[0] }} = {{ loop.index }};
+{%- endfor %}
+{%- else %}
+  // No response parameters
+{%- endif %}
+}
+{% endif %}
+
+{%- if "notification" in rpc %}
+message Notification {
+{%- for param in rpc.notification.items() %}
+  {{ param[1] }} {{ param[0] }} = {{ loop.index }};
+{%- endfor %}
+}
+{%- endif %}
