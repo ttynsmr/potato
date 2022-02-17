@@ -43,14 +43,15 @@ endif()
 #   COMMENT "Preprocessing rpcs"
 #   )
 
-add_custom_target(
-  rpc
-  COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/torikime/torikime.py -o ${CMAKE_CURRENT_SOURCE_DIR}/proto -i ${CMAKE_CURRENT_SOURCE_DIR}/rpc/rpc.yaml
-  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/torikime
-  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/rpc/rpc.yaml
-  COMMENT "Preprocessing rpcs"
-  BYPRODUCTS ${CMAKE_CURRENT_SOURCE_DIR}/proto/*
-  )
+# add_custom_target(
+#   rpc
+#   COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/torikime/torikime.py -o ${CMAKE_CURRENT_SOURCE_DIR}/proto -i ${CMAKE_CURRENT_SOURCE_DIR}/rpc/rpc.yaml
+#   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/torikime
+#   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/rpc/rpc.yaml
+#   COMMENT "Preprocessing rpcs"
+#   BYPRODUCTS ${CMAKE_CURRENT_SOURCE_DIR}/proto/*
+#   )
+ADD_SUBDIRECTORY(rpc)
 
 # add protocol buffer settings
 INCLUDE(FindProtobuf)
