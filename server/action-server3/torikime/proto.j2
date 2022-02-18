@@ -2,6 +2,9 @@ syntax = "proto3";
 
 package {{ namespace }}.{{ contract }}.{{ name }};
 
+{% if "description" in rpc -%}
+// {{ rpc.description }}
+{% endif %}
 {% if "request" in rpc -%}
 message Request {
 {%- for param in rpc.request.items() %}
@@ -18,7 +21,7 @@ message Response {
   // No response parameters
 {%- endif %}
 }
-{% endif %}
+{% endif -%}
 
 {%- if "notification" in rpc %}
 message Notification {

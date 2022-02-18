@@ -1,6 +1,8 @@
 syntax = "proto3";
 
-package torikime.chat.send_stamp;
+package torikime.channel.created;
+
+// 通知
 
 
 message Notification {

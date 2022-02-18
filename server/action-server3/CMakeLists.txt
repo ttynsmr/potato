@@ -67,7 +67,7 @@ list(APPEND ALL_SOURCES "action-server3.cpp")
 message("ALL_SOURCES: ${ALL_SOURCES}")
 
 # ソースをこのプロジェクトの実行可能ファイルに追加します。
-add_executable (action-server3  ${ALL_SOURCES})
+add_executable (action-server3  ${ALL_SOURCES} "src/rpc.cpp")
 
 #target_compile_features(${TARGET_NAME} PRIVATE cxx_std_17)
 

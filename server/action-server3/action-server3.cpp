@@ -40,7 +40,7 @@ public:
     void start()
     {
         potato::net::protocol::Payload::getInt();
-        torik::message::Message m;
+        torikime::chat::send_message::Request r;
 
         do_read();
     }

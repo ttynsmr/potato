@@ -1,0 +1,21 @@
+# yaml -> torikime -> generate .proto & rpc code.
+contracts:
+  chat:
+    send_message: # rpc
+      description: チャットメッセージ
+      request:
+        # request_id: int32 # auto generate
+        message: string
+      response:
+        # request_id: int32 # auto generate
+        message_id: int64
+      notification:
+        # notification_id: int32 # auto generate
+        message_id: int64
+        from: string
+        message: string
+    send_stamp:
+      description: 通知
+      notification:
+        from: string
+        stamp_id: int32

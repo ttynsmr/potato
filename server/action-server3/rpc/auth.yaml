@@ -1,0 +1,10 @@
+# yaml -> torikime -> generate .proto & rpc code.
+contracts:
+  auth:
+    login:
+      request:
+        user_id: string
+        password: string
+      response:
+        ok: bool
+        token: string

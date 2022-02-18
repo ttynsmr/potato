@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
  
 import argparse
+import os
 from jinja2 import Template, Environment, FileSystemLoader
 import yaml
 
@@ -20,9 +21,12 @@ def main():
     tmpl = env.get_template('proto.j2')
 
     with open(args.input_rpc) as file:
-        contracts = yaml.safe_load(file)
-
+        file = yaml.safe_load(file)
+        
+        contracts = file['contracts']
         # print(contracts)
+        if(not isinstance(contracts, dict)):
+            return
 
         for contract in contracts:
             # print(contract)
@@ -43,10 +47,11 @@ def main():
                     print(rendered_s)
 
                 if(not args.dryrun and args.out_dir):
-                    with open(f'{args.out_dir}/{contract}_{rpc}.proto', mode='w') as f:
+                    os.makedirs(f'{args.out_dir}/{contract}/', exist_ok=True)
+                    with open(f'{args.out_dir}/{contract}/{contract}_{rpc}.proto', mode='w') as f:
                         f.write(rendered_s)
                 else:
-                    print(f'{args.out_dir}/{contract}_{rpc}.proto')
+                    print(f'{args.out_dir}/{contract}/{contract}_{rpc}.proto')
 
 if __name__ == "__main__":
     main()

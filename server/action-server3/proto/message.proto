@@ -1,9 +1,9 @@
 syntax = "proto3";
 
-package torik.message;
+// package torik.message;
 
-message Message {
-  int32 id = 1;
-  string name = 2;
-  string text = 3;
-}
+// message Message {
+//   int32 id = 1;
+//   string name = 2;
+//   string text = 3;
+// }

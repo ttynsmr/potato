@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package torikime.auth.login;
 
+
 message Request {
   string user_id = 1;
   string password = 2;
