@@ -6,5 +6,6 @@ contracts:
         user_id: string
         password: string
       response:
+        success: bool
         ok: bool
         token: string

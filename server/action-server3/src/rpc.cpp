@@ -26,8 +26,13 @@ void RpcContracrChat::subscribeRequest(RpcContracrChat::RequestDelegate callback
 	_requestDelegate = callback;
 }
 
-void RpcContracrChat::sendNotification()
+void RpcContracrChat::sendNotification(const torikime::chat::send_message::Notification& notification)
 {
+	potato::net::protocol::Payload payload;
+	payload.payloadSize = notification.ByteSize();
+	payload.buffer.resize(payload.payloadSize);
+	notification.SerializeToArray(&payload.buffer[0], payload.buffer.size());
+	//_session->sendPayload(payload);
 }
 
 void RpcContracrChat::deserialize(const potato::net::protocol::Payload& payload, torikime::chat::send_message::Request& outRequest)

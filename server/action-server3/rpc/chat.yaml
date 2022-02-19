@@ -8,6 +8,7 @@ contracts:
         message: string
       response:
         # request_id: int32 # auto generate
+        success: bool
         message_id: int64
       notification:
         # notification_id: int32 # auto generate

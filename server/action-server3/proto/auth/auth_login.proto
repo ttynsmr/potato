@@ -9,6 +9,7 @@ message Request {
 }
 
 message Response {
-  bool ok = 1;
-  string token = 2;
+  bool success = 1;
+  bool ok = 2;
+  string token = 3;
 }

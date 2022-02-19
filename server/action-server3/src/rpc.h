@@ -25,15 +25,15 @@ public:
 	using ResponseCallback = std::function<void(const torikime::chat::send_message::Response&)>;
 	using RequestDelegate = std::function<void(const torikime::chat::send_message::Request& request, const std::shared_ptr<ResponseCallback>& callback)>;
 
-	void onSendMessageRequest(const potato::net::protocol::Payload& payload, const ResponseCallback& callback);
 	void subscribeRequest(RequestDelegate callback);
 
 	using Notification = std::function<void(const torikime::chat::send_message::Notification&)>;
 
-	void sendNotification();
+	void sendNotification(const torikime::chat::send_message::Notification&);
 
 private:
 	static void deserialize(const potato::net::protocol::Payload& payload, torikime::chat::send_message::Request& outRequest);
+	void onSendMessageRequest(const potato::net::protocol::Payload& payload, const ResponseCallback& callback);
 
 	RequestDelegate _requestDelegate = [](const torikime::chat::send_message::Request& request, const std::shared_ptr<ResponseCallback>& callback) {};
 	std::shared_ptr<potato::net::session>& _session;

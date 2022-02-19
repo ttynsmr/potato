@@ -13,9 +13,10 @@ namespace potato::net
     {
     }
 
-    void session::start()
+    std::shared_ptr<session> session::start()
     {
         do_read();
+        return shared_from_this();
     }
 
     void session::do_read()

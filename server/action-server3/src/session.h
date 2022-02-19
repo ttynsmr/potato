@@ -8,7 +8,7 @@ namespace potato::net
     public:
         session(boost::asio::ip::tcp::socket socket);
 
-        void start();
+        std::shared_ptr<session> start();
 
     private:
         void do_read();

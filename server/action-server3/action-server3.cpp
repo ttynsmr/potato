@@ -20,6 +20,8 @@
 #include "proto/message.pb.h"
 #include "proto/chat_send_message.pb.h"
 
+#include "src/rpc.h"
+
 using boost::asio::ip::tcp;
 
 // payload format
@@ -46,13 +48,19 @@ private:
             {
                 if (!ec)
                 {
-                    std::make_shared<potato::net::session>(std::move(socket))->start();
+                    auto session = std::make_shared<potato::net::session>(std::move(socket))->start();
+                    _chat = std::make_shared<RpcContracrChat>(session);
+                    _chat->subscribeRequest([](const torikime::chat::send_message::Request& request, const std::shared_ptr<RpcContracrChat::ResponseCallback>& callback) {
+                        torikime::chat::send_message::Response r;
+                        (*callback.get())(r);
+                    });
                 }
 
                 do_accept();
             });
     }
 
+    std::shared_ptr<RpcContracrChat> _chat;
     tcp::acceptor acceptor_;
 };
 
