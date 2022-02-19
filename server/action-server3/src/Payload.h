@@ -1,5 +1,6 @@
 #pragma once
 #include <cstdint>
+#include <vector>
 
 namespace potato::net::protocol
 {
@@ -8,6 +9,7 @@ namespace potato::net::protocol
 		std::uint16_t payloadSize = 0;
 		std::uint8_t version = 0;
 		std::uint8_t meta = 0;
+		std::vector<std::uint8_t> buffer;
 
 		static int getInt();
 	};
