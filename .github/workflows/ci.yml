@@ -1,0 +1,47 @@
+name: build and run test build
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: seanmiddleditch/gha-setup-ninja@master
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.10.2'
+          architecture: 'x64'
+      # prepare
+      - name: test torikime
+        run: |
+          cd server/action-server3/torikime
+          python -m pip install --upgrade pip
+          pip install pipenv --upgrade-strategy=only-if-needed
+          pipenv install
+          # python torikime.py --help
+      # install dependencies
+      - name: boost
+        run: sudo apt-get update && sudo apt-get install -yq libboost-all-dev
+      - name: protocol buffers
+        run: sudo apt-get update && sudo apt-get install -yq protobuf-compiler libprotobuf-dev
+      # build project
+      - name: cmake
+        run: |
+          pushd server/action-server3/torikime
+          python -m pip install --upgrade pip
+          pip install pipenv --upgrade-strategy=only-if-needed
+          pipenv install
+          pipenv install pyyaml jinja2
+          # python torikime.py --help
+          popd
+          cd server/action-server3
+          mkdir build
+          cmake -H. -Bbuild -GNinja
+          cmake --build build/ --target all
+      # after build
+      - name: list output
+        run: ls -alR
