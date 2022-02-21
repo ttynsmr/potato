@@ -34,10 +34,39 @@ using boost::asio::ip::tcp;
 class server
 {
 public:
+    using SessionId = std::int32_t;
+
     server(boost::asio::io_context& io_context, unsigned short port)
         : acceptor_(io_context, tcp::endpoint(tcp::v4(), port))
     {
         do_accept();
+    }
+
+    void sendTo(SessionId sessionId, const potato::net::protocol::Payload& payload)
+    {
+        auto session = _sessions.find(sessionId);
+        if (session == _sessions.end())
+        {
+            return;
+        }
+
+        session->second->sendPayload(payload);
+    }
+
+    void sendMulticast(const std::vector<SessionId>& sessionIds, const potato::net::protocol::Payload& payload)
+    {
+        for (auto sessionId : sessionIds)
+        {
+            sendTo(sessionId, payload);
+        }
+    }
+
+    void sendBroadcast(const potato::net::protocol::Payload& payload)
+    {
+        for (auto& sessionPair : _sessions)
+        {
+            sessionPair.second->sendPayload(payload);
+        }
     }
 
 private:
@@ -49,18 +78,39 @@ private:
                 if (!ec)
                 {
                     auto session = std::make_shared<potato::net::session>(std::move(socket))->start();
-                    _chat = std::make_shared<RpcContracrChat>(session);
-                    _chat->subscribeRequest([](const torikime::chat::send_message::Request& request, const std::shared_ptr<RpcContracrChat::ResponseCallback>& callback) {
-                        torikime::chat::send_message::Response r;
-                        (*callback.get())(r);
+                    auto chat = std::make_shared<torikime::RpcContracrChat>(session);
+                    _chat = chat;
+                    _rpcs.emplace_back(chat);
+                    _chat.lock()->subscribeRequest([](const torikime::chat::send_message::RequestParcel& request, std::shared_ptr<torikime::RpcContracrChat::Responser>& responser) {
+                        auto message = request.request().message();
+                        torikime::chat::send_message::Response response;
+                        response.set_message_id(0);
+                        responser->send(true, response);
                     });
+
+                    session->subscribeReceivePayload([this](const potato::net::protocol::Payload& payload) {
+                        for (auto& rpc : _rpcs)
+                        {
+                            if (rpc->getContractId() != payload.getHeader().contract_id)
+                            {
+                                continue;
+                            }
+
+                            rpc->receievePayload(payload);
+                        }
+                    });
+
+                    _sessions.emplace(++sessionId, session);
                 }
 
                 do_accept();
             });
     }
 
-    std::shared_ptr<RpcContracrChat> _chat;
+    std::atomic_int sessionId = 0;
+    std::unordered_map<SessionId, std::shared_ptr<potato::net::session>> _sessions;
+    std::vector<std::shared_ptr<torikime::RpcContracrChat>> _rpcs;
+    std::weak_ptr<torikime::RpcContracrChat> _chat;
     tcp::acceptor acceptor_;
 };
 

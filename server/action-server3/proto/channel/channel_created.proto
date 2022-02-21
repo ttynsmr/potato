@@ -1,5 +1,8 @@
 syntax = "proto3";
 
+// contract_id = 2
+// rpc_id = 2
+
 package torikime.channel.created;
 
 // 通知
@@ -8,4 +11,10 @@ package torikime.channel.created;
 message Notification {
   string from = 1;
   int32 stamp_id = 2;
+}
+
+message NotificationParcel
+{
+    Notification notification  = 1;
+    uint32 notification_id = 2;
 }

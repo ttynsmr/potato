@@ -41,7 +41,7 @@ add_custom_target(rpc
 
 add_custom_command(
   TARGET rpc
-  COMMAND ls "${CMAKE_CURRENT_SOURCE_DIR}/*.yaml" | xargs -t -I {} ${CMAKE_CURRENT_SOURCE_DIR}/../torikime/torikime.py -o ${CMAKE_CURRENT_SOURCE_DIR}/../proto -i \"{}\"
+  COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../torikime/torikime.py -o ${CMAKE_CURRENT_SOURCE_DIR}/../proto -i ${CMAKE_CURRENT_SOURCE_DIR}
   COMMAND touch ${CMAKE_CURRENT_SOURCE_DIR}/rpc.timestamp
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../torikime
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${RPC_SOURCES} ../torikime/proto.j2 ../torikime/rpc-cpp.j2

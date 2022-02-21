@@ -1,5 +1,8 @@
 syntax = "proto3";
 
+// contract_id = {{ contract_id }}
+// rpc_id = {{ rpc_id }}
+
 package {{ namespace }}.{{ contract }}.{{ name }};
 
 {% if "description" in rpc -%}
@@ -21,6 +24,19 @@ message Response {
   // No response parameters
 {%- endif %}
 }
+
+message RequestParcel
+{
+    Request request = 1;
+    uint32 request_id = 2;
+}
+
+message ResponseParcel
+{
+    Response response = 1;
+    uint32 request_id = 2;
+    bool success = 3;
+}
 {% endif -%}
 
 {%- if "notification" in rpc %}
@@ -28,5 +44,11 @@ message Notification {
 {%- for param in rpc.notification.items() %}
   {{ param[1] }} {{ param[0] }} = {{ loop.index }};
 {%- endfor %}
+}
+
+message NotificationParcel
+{
+    Notification notification  = 1;
+    uint32 notification_id = 2;
 }
 {%- endif %}

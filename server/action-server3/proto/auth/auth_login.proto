@@ -1,5 +1,8 @@
 syntax = "proto3";
 
+// contract_id = 0
+// rpc_id = 0
+
 package torikime.auth.login;
 
 
@@ -9,7 +12,19 @@ message Request {
 }
 
 message Response {
-  bool success = 1;
-  bool ok = 2;
-  string token = 3;
+  bool ok = 1;
+  string token = 2;
+}
+
+message RequestParcel
+{
+    Request request = 1;
+    uint32 request_id = 2;
+}
+
+message ResponseParcel
+{
+    Response response = 1;
+    uint32 request_id = 2;
+    bool success = 3;
 }

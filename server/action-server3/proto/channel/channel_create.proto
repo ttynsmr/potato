@@ -1,5 +1,8 @@
 syntax = "proto3";
 
+// contract_id = 2
+// rpc_id = 1
+
 package torikime.channel.create;
 
 
@@ -8,6 +11,18 @@ message Request {
 }
 
 message Response {
-  bool success = 1;
-  int64 message_id = 2;
+  int64 message_id = 1;
+}
+
+message RequestParcel
+{
+    Request request = 1;
+    uint32 request_id = 2;
+}
+
+message ResponseParcel
+{
+    Response response = 1;
+    uint32 request_id = 2;
+    bool success = 3;
 }
