@@ -59,7 +59,8 @@ FIND_PACKAGE(Protobuf REQUIRED)
 ADD_SUBDIRECTORY(proto)
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
 
-# file(GLOB SUB_SOURCES RELATIVE "${CMAKE_SOURCE_DIR}" CONFIGURE_DEPENDS "src/*")
+ADD_SUBDIRECTORY(generated/rpc/cpp)
+# file(GLOB SUB_SOURCES RELATIVE "${CMAKE_SOURCE_DIR}" CONFIGURE_DEPENDS "generated/rpc/cpp/*")
 
 list(APPEND ALL_SOURCES ${SUB_SOURCES} ${GEN_SOURCES})
 list(APPEND ALL_SOURCES "action-server3.cpp")
@@ -73,7 +74,7 @@ add_executable (action-server3  ${ALL_SOURCES} "src/Payload.h" "src/Payload.cpp"
 
 find_package (Threads REQUIRED)
 
-target_link_libraries(action-server3 pthread proto ${PROTOBUF_LIBRARY})
+target_link_libraries(action-server3 pthread proto ${PROTOBUF_LIBRARY} rpc_contracts)
 
 set( BOOST_ROOT "/usr/lib/x86_64-linux-gnu/")
 

@@ -1,0 +1,8 @@
+file(GLOB SUB_SOURCES RELATIVE "${CMAKE_SOURCE_DIR}/generated/rpc/cpp" CONFIGURE_DEPENDS "*.cpp")
+MESSAGE("SUB_SOURCES: ${SUB_SOURCES}")
+
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
+
+ADD_LIBRARY(rpc_contracts ${SUB_SOURCES})
+
+add_dependencies(rpc_contracts proto)

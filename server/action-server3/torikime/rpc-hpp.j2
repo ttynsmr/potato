@@ -1,0 +1,66 @@
+namespace {{ namespace }}::{{ contract }}::{{ name }}
+{
+	class Notification;
+	class RequestParcel;
+	class Response;
+	class ResponseParcel;
+}
+namespace potato::net::protocol
+{
+	struct Payload;
+}
+namespace potato::net
+{
+	class session;
+}
+
+namespace {{ namespace }}::{{ contract }}::{{ name }}
+{
+	class RpcContract final : public RpcInterface
+	{
+	public:
+		std::uint32_t getContractId() const override { return {{ contract_id }}; };
+		std::uint32_t getRpcId() const override { return {{ rpc_id }}; };
+
+		RpcContract(std::shared_ptr<potato::net::session>& session);
+
+{%- if "request" in rpc %}
+		class Responser final
+		{
+		public:
+			Responser(std::shared_ptr<potato::net::session>& session, std::uint32_t requestId) : _session(session), _requestId(requestId) {}
+			~Responser();
+
+			void send(bool success, {{ namespace }}::{{ contract }}::{{ name }}::Response& response);
+
+		private:
+			std::shared_ptr<potato::net::session> _session;
+			std::uint32_t _requestId = 0;
+			bool respond = false;
+		};
+
+		using RequestDelegate = std::function<void(const {{ namespace }}::{{ contract }}::{{ name }}::RequestParcel& request, std::shared_ptr<Responser>& responser)>;
+		void subscribeRequest(RequestDelegate callback);
+{% endif %}
+
+{% if "notification" in rpc %}
+		potato::net::protocol::Payload serializeNotification({{ namespace }}::{{ contract }}::{{ name }}::Notification&);
+{% endif -%}
+
+{# {% if "request" in rpc %} #}
+		bool receievePayload(const potato::net::protocol::Payload& payload) override;
+{# {% endif %} #}
+
+	private:
+{% if "request" in rpc %}
+		static void deserialize(const potato::net::protocol::Payload& payload, {{ namespace }}::{{ contract }}::{{ name }}::RequestParcel& outRequest);
+		void on{{ name | camelize }}Request(const potato::net::protocol::Payload& payload);
+
+		RequestDelegate _requestDelegate = [](const {{ namespace }}::{{ contract }}::{{ name }}::RequestParcel&, std::shared_ptr<Responser>&) {};
+{% endif %}
+		std::shared_ptr<potato::net::session> _session;
+{% if "notification" in rpc %}
+		std::atomic<std::uint32_t> _notificationId = 0;
+{% endif %}
+	};
+}

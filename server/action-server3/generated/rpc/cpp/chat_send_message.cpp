@@ -2,12 +2,11 @@
 
 #include "../../../src/session.h"
 #include "../../../src/Payload.h"
-#include "proto/{{ contract }}_{{ name }}.pb.h"
-#include "{{ contract }}_{{ name }}.h"
+#include "proto/chat_send_message.pb.h"
+#include "chat_send_message.h"
 
-namespace {{ namespace }}::{{ contract }}::{{ name }}
+namespace torikime::chat::send_message
 {
-{%- if "request" in rpc %}
 	RpcContract::Responser::~Responser()
 	{
 		if (respond)
@@ -15,13 +14,13 @@ namespace {{ namespace }}::{{ contract }}::{{ name }}
 			return;
 		}
 
-		{{ namespace }}::{{ contract }}::{{ name }}::Response r;
+		torikime::chat::send_message::Response r;
 		send(false, r);
 	}
 
-	void RpcContract::Responser::send(bool success, {{ namespace }}::{{ contract }}::{{ name }}::Response& response)
+	void RpcContract::Responser::send(bool success, torikime::chat::send_message::Response& response)
 	{
-		{{ namespace }}::{{ contract }}::{{ name }}::ResponseParcel responseParcel;
+		torikime::chat::send_message::ResponseParcel responseParcel;
 		responseParcel.set_request_id(_requestId);
 		responseParcel.set_allocated_response(&response);
 		responseParcel.set_success(success);
@@ -34,17 +33,15 @@ namespace {{ namespace }}::{{ contract }}::{{ name }}
 
 		respond = true;
 	}
-{% endif %}
+
 
 
 	RpcContract::RpcContract(std::shared_ptr<potato::net::session>& session) : _session(session)
 	{
 	}
-
-{%- if "request" in rpc %}
-	void RpcContract::on{{ name | camelize }}Request(const potato::net::protocol::Payload& payload)
+	void RpcContract::onSendMessageRequest(const potato::net::protocol::Payload& payload)
 	{
-		{{ namespace }}::{{ contract }}::{{ name }}::RequestParcel requestParcel;
+		torikime::chat::send_message::RequestParcel requestParcel;
 		deserialize(payload, requestParcel);
 
 		auto responser = std::make_shared<Responser>(_session, requestParcel.request_id());
@@ -55,12 +52,12 @@ namespace {{ namespace }}::{{ contract }}::{{ name }}
 	{
 		_requestDelegate = callback;
 	}
-{% endif %}
 
-{% if "notification" in rpc %}
-	potato::net::protocol::Payload RpcContract::serializeNotification({{ namespace }}::{{ contract }}::{{ name }}::Notification& notification)
+
+
+	potato::net::protocol::Payload RpcContract::serializeNotification(torikime::chat::send_message::Notification& notification)
 	{
-		{{ namespace }}::{{ contract }}::{{ name }}::NotificationParcel notificationParcel;
+		torikime::chat::send_message::NotificationParcel notificationParcel;
 		notificationParcel.set_allocated_notification(&notification);
 		notificationParcel.set_notification_id(++_notificationId);
 
@@ -69,29 +66,26 @@ namespace {{ namespace }}::{{ contract }}::{{ name }}
 		notificationParcel.SerializeToArray(payload.getPayloadData(), payload.getHeader().payloadSize);
         return payload;
 	}
-{% endif %}
 
-{%- if "request" in rpc %}
-	void RpcContract::deserialize(const potato::net::protocol::Payload& payload, {{ namespace }}::{{ contract }}::{{ name }}::RequestParcel& outRequest)
+	void RpcContract::deserialize(const potato::net::protocol::Payload& payload, torikime::chat::send_message::RequestParcel& outRequest)
 	{
 		outRequest.Clear();
 		outRequest.ParseFromArray(payload.getPayloadData(), payload.getHeader().payloadSize);
 	}
-{% endif %}
 
-{# {%- if "request" in rpc %} #}
+
+
 	bool RpcContract::receievePayload(const potato::net::protocol::Payload& payload)
 	{
 		switch (payload.getHeader().rpc_id)
 		{
-{%- if "request" in rpc %}
-		case {{ rpc_id }}:
-			on{{ name | camelize }}Request(payload);
+		case 0:
+			onSendMessageRequest(payload);
 			return true;
-{% endif %}
+
         default:
             return false;
 		}
 	}
-{# {% endif %} #}
+
 }

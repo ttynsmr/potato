@@ -2,22 +2,17 @@
 contracts:
   channel:
     search: # rpc
-      description: チャットメッセージ
+      description: ルーム検索
       request:
-        message: string
+        by_name: string
       response:
-        message_id: int64
-      notification:
-        message_id: int64
-        from: string
-        message: string
+        room_id: int64
     create:
       request:
         message: string
       response:
-        message_id: int64
-    created:
-      description: 通知
+        room_id: int64
       notification:
+        room_id: int64
         from: string
-        stamp_id: int32
+        message: string

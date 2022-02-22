@@ -41,10 +41,10 @@ add_custom_target(rpc
 
 add_custom_command(
   TARGET rpc
-  COMMAND pipenv run ${CMAKE_CURRENT_SOURCE_DIR}/../torikime/torikime.py -o ${CMAKE_CURRENT_SOURCE_DIR}/../proto -i ${CMAKE_CURRENT_SOURCE_DIR}
+  COMMAND pipenv run ${CMAKE_CURRENT_SOURCE_DIR}/../torikime/torikime.py -o ${CMAKE_CURRENT_SOURCE_DIR}/../proto -c "${CMAKE_CURRENT_SOURCE_DIR}/../generated/rpc" -s "${CMAKE_SOURCE_DIR}/../../client/csharp" -i ${CMAKE_CURRENT_SOURCE_DIR}
   COMMAND touch ${CMAKE_CURRENT_SOURCE_DIR}/rpc.timestamp
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../torikime
-  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${RPC_SOURCES} ../torikime/proto.j2 ../torikime/rpc-cpp.j2
+  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${RPC_SOURCES} ../torikime/proto.j2 ../torikime/rpc-cpp.j2 ../torikime/rpc-hpp.j2
   COMMENT "Preprocessing rpcs"
-  BYPRODUCTS ${CMAKE_CURRENT_SOURCE_DIR}/../proto/*/*.proto COMMAND touch ${CMAKE_CURRENT_SOURCE_DIR}/rpc.timestamp
+  BYPRODUCTS ${CMAKE_CURRENT_SOURCE_DIR}/../proto/*/*.proto ${CMAKE_CURRENT_SOURCE_DIR}/rpc.timestamp
   )
