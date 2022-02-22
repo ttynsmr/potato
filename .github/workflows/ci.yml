@@ -18,6 +18,8 @@ jobs:
       # install dependencies
       - name: apt update
         run: sudo apt-get update
+      - name: Various installations
+        run: sudo apt-get install -yq tree
       - name: boost
         run: sudo apt-get install -yq libboost-all-dev
       - name: protocol buffers
@@ -39,8 +41,8 @@ jobs:
       # after build
       - name: list output
         run: |
-          ls -alR server
-          ls -alR client/potato/Assets/Scripts
+          tree server
+          tree client/potato/Assets/Scripts
   torikime-test:
     runs-on: ubuntu-latest
     steps:
