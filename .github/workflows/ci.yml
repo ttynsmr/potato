@@ -6,22 +6,6 @@ on:
     branches: [main]
 
 jobs:
-  torikime-test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
-        with:
-          python-version: '3.10.2'
-          architecture: 'x64'
-      # prepare
-      - name: test torikime
-        run: |
-          cd server/action-server3/torikime
-          python -m pip install --upgrade pip
-          pip install pipenv --upgrade-strategy=only-if-needed
-          pipenv install
-          # python torikime.py --help
   build-action-server:
     runs-on: ubuntu-latest
     steps:
@@ -29,8 +13,8 @@ jobs:
       - uses: seanmiddleditch/gha-setup-ninja@master
       - uses: actions/setup-python@v2
         with:
-          python-version: '3.10.2'
-          architecture: 'x64'
+          python-version: "3.10.2"
+          architecture: "x64"
       # install dependencies
       - name: apt update
         run: sudo apt-get update
@@ -54,4 +38,22 @@ jobs:
           cmake --build build/ --target all
       # after build
       - name: list output
-        run: ls -alR
+        run: |
+          ls -alR server
+          ls -alR client/potato/Assets/Scripts
+  torikime-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.10.2"
+          architecture: "x64"
+      # prepare
+      - name: test torikime
+        run: |
+          cd server/action-server3/torikime
+          python -m pip install --upgrade pip
+          pip install pipenv --upgrade-strategy=only-if-needed
+          pipenv install
+          # python torikime.py --help
