@@ -8,9 +8,7 @@ namespace Torikime
 	{
 		namespace Search
 		{
-			public class Request {}
-			public class Response {}
-			public class Notification {}
+			
 
 			public class Rpc : Torikime.IRpc
 			{
@@ -32,7 +30,8 @@ namespace Torikime
                     return new Response();
                 }
 
-				public event Action<Notification> OnNotification;
+
+
 			}
 		}
 	}

@@ -8,12 +8,13 @@ namespace {{ namespace | camelize }}
 	{
 		namespace {{ name | camelize }}
 		{
-			public class Request {}
+			{# public class Request {}
 			public class Response {}
-			public class Notification {}
+			public class Notification {} #}
 
 			public class Rpc : {{ namespace | camelize }}.IRpc
 			{
+{%- if "request" in rpc %}
 				public delegate void ResponseCallback(Response response);
 				public void Request(Request request, ResponseCallback callback)
 				{
@@ -31,8 +32,11 @@ namespace {{ namespace | camelize }}
                     await Task.Delay(1000);
                     return new Response();
                 }
+{% endif %}
 
+{% if "notification" in rpc %}
 				public event Action<Notification> OnNotification;
+{% endif %}
 			}
 		}
 	}
