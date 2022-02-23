@@ -5,7 +5,7 @@ public class Example : MonoBehaviour
     void Start()
     {
         var s = FindObjectOfType<Potato.Network.NetworkService>();
-        s.Connect("127.0.0.1", 8888);
+        s.Connect("127.0.0.1", 28888);
 
         var rpc = s.Session.GetRpc<Torikime.Chat.SendMessage.Rpc>();
         rpc.OnNotification += (notification) =>
@@ -13,7 +13,10 @@ public class Example : MonoBehaviour
             Debug.Log("Notification received");
         };
 
-        rpc.Request(new Torikime.Chat.SendMessage.Request(), (response) =>
+        Debug.Log("Request sent");
+        var request = new Torikime.Chat.SendMessage.Request();
+        request.Message = "Hello world";
+        rpc.Request(request, (response) =>
             {
                 Debug.Log("Response");
             });
@@ -23,6 +26,8 @@ public class Example : MonoBehaviour
     {
         var s = FindObjectOfType<Potato.Network.NetworkService>();
         var rpc = s.Session.GetRpc<Torikime.Chat.SendMessage.Rpc>();
+
+        Debug.Log("Request sent");
         StartCoroutine(rpc.RequestCoroutine(new Torikime.Chat.SendMessage.Request(), (response) =>
         {
             Debug.Log(response);

@@ -18,6 +18,7 @@ namespace Potato
 
             public void SendPayload(Payload payload)
             {
+                Debug.Log("sent: " + payload.GetBuffer().Length + " bytes");
                 client.GetStream().Write(payload.GetBuffer(), 0, payload.GetBuffer().Length);
             }
 

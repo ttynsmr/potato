@@ -46,7 +46,7 @@ namespace Potato
 
                 public void SetBufferSize(int size)
                 {
-                    Array.Resize(ref buffer, size);
+                    Array.Resize(ref buffer, PayloadHeader.Size + size);
                 }
 
                 public PayloadHeader GetHeader()

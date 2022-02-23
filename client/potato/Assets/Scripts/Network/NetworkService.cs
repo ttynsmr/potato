@@ -11,7 +11,8 @@ namespace Potato
         {
             public Session Connect(string ip, int port)
             {
-                return new Session(new TcpClient(ip, port));
+                session = new Session(new TcpClient(ip, port));
+                return session;
             }
 
             public Session Session => session;

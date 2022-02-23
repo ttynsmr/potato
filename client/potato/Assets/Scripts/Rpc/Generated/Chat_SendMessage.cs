@@ -53,6 +53,17 @@ namespace Torikime
 					parcel.Request = request;
 
                     responseCallbacks.Add(parcel.RequestId, (response) => { callback(response); });
+
+                    Potato.Network.Protocol.Payload payload = new Potato.Network.Protocol.Payload();
+                    using (System.IO.MemoryStream ms = new System.IO.MemoryStream())
+                    using (Google.Protobuf.CodedOutputStream output = new Google.Protobuf.CodedOutputStream(ms))
+                    {
+                        parcel.WriteTo(output);
+                        output.Flush();
+                        payload.SetBufferSize((int)ms.Length);
+                        ms.Read(payload.GetBuffer(), Potato.Network.Protocol.PayloadHeader.Size, (int)ms.Length);
+                        session.SendPayload(payload);
+                    }
 				}
 
                 public IEnumerator RequestCoroutine(Request request, ResponseCallback callback)
@@ -63,6 +74,18 @@ namespace Torikime
 
 					bool wait = true;
                     responseCallbacks.Add(parcel.RequestId, (response) => { wait = false; callback(response); });
+
+                    Potato.Network.Protocol.Payload payload = new Potato.Network.Protocol.Payload();
+                    using (System.IO.MemoryStream ms = new System.IO.MemoryStream())
+                    using (Google.Protobuf.CodedOutputStream output = new Google.Protobuf.CodedOutputStream(ms))
+                    {
+                        parcel.WriteTo(output);
+                        output.Flush();
+                        payload.SetBufferSize((int)ms.Length);
+                        ms.Read(payload.GetBuffer(), Potato.Network.Protocol.PayloadHeader.Size, (int)ms.Length);
+                        session.SendPayload(payload);
+                    }
+
 					while (wait)
 					{
 						yield return null;
