@@ -11,7 +11,14 @@ namespace Torikime
     {
         public static List<IRpc> Build()
         {
-            return new List<IRpc>();
+            rpcs.Add(new Auth.Login.Rpc());
+            rpcs.Add(new Channel.Create.Rpc());
+            rpcs.Add(new Channel.Search.Rpc());
+            rpcs.Add(new Chat.SendMessage.Rpc());
+            rpcs.Add(new Chat.SendStamp.Rpc());
+            return rpcs;
         }
+
+        static List<IRpc> rpcs = new List<IRpc>();
     }
 }

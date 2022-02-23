@@ -16,7 +16,7 @@ namespace Potato
 
             public T GetRpc<T>() where T : Torikime.IRpc
             {
-                return default(T);
+                return (T)rpcs.Find(x => x is T);
             }
 
             private List<Torikime.IRpc> rpcs = Torikime.RpcBuilder.Build();
