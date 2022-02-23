@@ -7,7 +7,7 @@
 
 namespace torikime::auth::login
 {
-	RpcContract::Responser::~Responser()
+	Rpc::Responser::~Responser()
 	{
 		if (respond)
 		{
@@ -18,7 +18,7 @@ namespace torikime::auth::login
 		send(false, r);
 	}
 
-	void RpcContract::Responser::send(bool success, torikime::auth::login::Response& response)
+	void Rpc::Responser::send(bool success, torikime::auth::login::Response& response)
 	{
 		torikime::auth::login::ResponseParcel responseParcel;
 		responseParcel.set_request_id(_requestId);
@@ -36,10 +36,10 @@ namespace torikime::auth::login
 
 
 
-	RpcContract::RpcContract(std::shared_ptr<potato::net::session>& session) : _session(session)
+	Rpc::Rpc(std::shared_ptr<potato::net::session>& session) : _session(session)
 	{
 	}
-	void RpcContract::onLoginRequest(const potato::net::protocol::Payload& payload)
+	void Rpc::onLoginRequest(const potato::net::protocol::Payload& payload)
 	{
 		torikime::auth::login::RequestParcel requestParcel;
 		deserialize(payload, requestParcel);
@@ -48,14 +48,14 @@ namespace torikime::auth::login
 		_requestDelegate(requestParcel, responser);
 	}
 
-	void RpcContract::subscribeRequest(RpcContract::RequestDelegate callback)
+	void Rpc::subscribeRequest(Rpc::RequestDelegate callback)
 	{
 		_requestDelegate = callback;
 	}
 
 
 
-	void RpcContract::deserialize(const potato::net::protocol::Payload& payload, torikime::auth::login::RequestParcel& outRequest)
+	void Rpc::deserialize(const potato::net::protocol::Payload& payload, torikime::auth::login::RequestParcel& outRequest)
 	{
 		outRequest.Clear();
 		outRequest.ParseFromArray(payload.getPayloadData(), payload.getHeader().payloadSize);
@@ -63,7 +63,7 @@ namespace torikime::auth::login
 
 
 
-	bool RpcContract::receievePayload(const potato::net::protocol::Payload& payload)
+	bool Rpc::receievePayload(const potato::net::protocol::Payload& payload)
 	{
 		switch (payload.getHeader().rpc_id)
 		{

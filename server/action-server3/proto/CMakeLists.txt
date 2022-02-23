@@ -48,6 +48,7 @@ function(HR_PROTOBUF_GENERATE_CSHARP SRCS)
 
     add_custom_command(
       OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${FIL_WE}.pb.cc"
+             "${CMAKE_CURRENT_BINARY_DIR}/${FIL_WE}.pb.h"
 	     COMMAND  ${PROTOBUF_PROTOC_EXECUTABLE_CS}
       ARGS --csharp_out ${CMAKE_CURRENT_BINARY_DIR} ${_protobuf_include_path} ${ABS_FIL}
       DEPENDS ${ABS_FIL}

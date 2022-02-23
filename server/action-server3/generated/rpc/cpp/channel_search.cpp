@@ -7,7 +7,7 @@
 
 namespace torikime::channel::search
 {
-	RpcContract::Responser::~Responser()
+	Rpc::Responser::~Responser()
 	{
 		if (respond)
 		{
@@ -18,7 +18,7 @@ namespace torikime::channel::search
 		send(false, r);
 	}
 
-	void RpcContract::Responser::send(bool success, torikime::channel::search::Response& response)
+	void Rpc::Responser::send(bool success, torikime::channel::search::Response& response)
 	{
 		torikime::channel::search::ResponseParcel responseParcel;
 		responseParcel.set_request_id(_requestId);
@@ -36,10 +36,10 @@ namespace torikime::channel::search
 
 
 
-	RpcContract::RpcContract(std::shared_ptr<potato::net::session>& session) : _session(session)
+	Rpc::Rpc(std::shared_ptr<potato::net::session>& session) : _session(session)
 	{
 	}
-	void RpcContract::onSearchRequest(const potato::net::protocol::Payload& payload)
+	void Rpc::onSearchRequest(const potato::net::protocol::Payload& payload)
 	{
 		torikime::channel::search::RequestParcel requestParcel;
 		deserialize(payload, requestParcel);
@@ -48,14 +48,14 @@ namespace torikime::channel::search
 		_requestDelegate(requestParcel, responser);
 	}
 
-	void RpcContract::subscribeRequest(RpcContract::RequestDelegate callback)
+	void Rpc::subscribeRequest(Rpc::RequestDelegate callback)
 	{
 		_requestDelegate = callback;
 	}
 
 
 
-	void RpcContract::deserialize(const potato::net::protocol::Payload& payload, torikime::channel::search::RequestParcel& outRequest)
+	void Rpc::deserialize(const potato::net::protocol::Payload& payload, torikime::channel::search::RequestParcel& outRequest)
 	{
 		outRequest.Clear();
 		outRequest.ParseFromArray(payload.getPayloadData(), payload.getHeader().payloadSize);
@@ -63,7 +63,7 @@ namespace torikime::channel::search
 
 
 
-	bool RpcContract::receievePayload(const potato::net::protocol::Payload& payload)
+	bool Rpc::receievePayload(const potato::net::protocol::Payload& payload)
 	{
 		switch (payload.getHeader().rpc_id)
 		{

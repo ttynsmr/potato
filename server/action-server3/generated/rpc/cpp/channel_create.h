@@ -16,13 +16,13 @@ namespace potato::net
 
 namespace torikime::channel::create
 {
-	class RpcContract final : public RpcInterface
+	class Rpc final : public RpcInterface
 	{
 	public:
 		std::uint32_t getContractId() const override { return 2; };
 		std::uint32_t getRpcId() const override { return 1; };
 
-		RpcContract(std::shared_ptr<potato::net::session>& session);
+		Rpc(std::shared_ptr<potato::net::session>& session);
 		class Responser final
 		{
 		public:

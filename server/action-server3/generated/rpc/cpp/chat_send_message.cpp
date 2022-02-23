@@ -7,7 +7,7 @@
 
 namespace torikime::chat::send_message
 {
-	RpcContract::Responser::~Responser()
+	Rpc::Responser::~Responser()
 	{
 		if (respond)
 		{
@@ -18,7 +18,7 @@ namespace torikime::chat::send_message
 		send(false, r);
 	}
 
-	void RpcContract::Responser::send(bool success, torikime::chat::send_message::Response& response)
+	void Rpc::Responser::send(bool success, torikime::chat::send_message::Response& response)
 	{
 		torikime::chat::send_message::ResponseParcel responseParcel;
 		responseParcel.set_request_id(_requestId);
@@ -36,10 +36,10 @@ namespace torikime::chat::send_message
 
 
 
-	RpcContract::RpcContract(std::shared_ptr<potato::net::session>& session) : _session(session)
+	Rpc::Rpc(std::shared_ptr<potato::net::session>& session) : _session(session)
 	{
 	}
-	void RpcContract::onSendMessageRequest(const potato::net::protocol::Payload& payload)
+	void Rpc::onSendMessageRequest(const potato::net::protocol::Payload& payload)
 	{
 		torikime::chat::send_message::RequestParcel requestParcel;
 		deserialize(payload, requestParcel);
@@ -48,14 +48,14 @@ namespace torikime::chat::send_message
 		_requestDelegate(requestParcel, responser);
 	}
 
-	void RpcContract::subscribeRequest(RpcContract::RequestDelegate callback)
+	void Rpc::subscribeRequest(Rpc::RequestDelegate callback)
 	{
 		_requestDelegate = callback;
 	}
 
 
 
-	potato::net::protocol::Payload RpcContract::serializeNotification(torikime::chat::send_message::Notification& notification)
+	potato::net::protocol::Payload Rpc::serializeNotification(torikime::chat::send_message::Notification& notification)
 	{
 		torikime::chat::send_message::NotificationParcel notificationParcel;
 		notificationParcel.set_allocated_notification(&notification);
@@ -67,7 +67,7 @@ namespace torikime::chat::send_message
         return payload;
 	}
 
-	void RpcContract::deserialize(const potato::net::protocol::Payload& payload, torikime::chat::send_message::RequestParcel& outRequest)
+	void Rpc::deserialize(const potato::net::protocol::Payload& payload, torikime::chat::send_message::RequestParcel& outRequest)
 	{
 		outRequest.Clear();
 		outRequest.ParseFromArray(payload.getPayloadData(), payload.getHeader().payloadSize);
@@ -75,7 +75,7 @@ namespace torikime::chat::send_message
 
 
 
-	bool RpcContract::receievePayload(const potato::net::protocol::Payload& payload)
+	bool Rpc::receievePayload(const potato::net::protocol::Payload& payload)
 	{
 		switch (payload.getHeader().rpc_id)
 		{

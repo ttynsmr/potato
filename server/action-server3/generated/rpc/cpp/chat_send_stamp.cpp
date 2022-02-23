@@ -9,12 +9,12 @@ namespace torikime::chat::send_stamp
 {
 
 
-	RpcContract::RpcContract(std::shared_ptr<potato::net::session>& session) : _session(session)
+	Rpc::Rpc(std::shared_ptr<potato::net::session>& session) : _session(session)
 	{
 	}
 
 
-	potato::net::protocol::Payload RpcContract::serializeNotification(torikime::chat::send_stamp::Notification& notification)
+	potato::net::protocol::Payload Rpc::serializeNotification(torikime::chat::send_stamp::Notification& notification)
 	{
 		torikime::chat::send_stamp::NotificationParcel notificationParcel;
 		notificationParcel.set_allocated_notification(&notification);
@@ -28,7 +28,7 @@ namespace torikime::chat::send_stamp
 
 
 
-	bool RpcContract::receievePayload(const potato::net::protocol::Payload& payload)
+	bool Rpc::receievePayload(const potato::net::protocol::Payload& payload)
 	{
 		switch (payload.getHeader().rpc_id)
 		{

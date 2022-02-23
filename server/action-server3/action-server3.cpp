@@ -79,10 +79,10 @@ private:
                 if (!ec)
                 {
                     auto session = std::make_shared<potato::net::session>(std::move(socket))->start();
-                    auto chat = std::make_shared<torikime::chat::send_message::RpcContract>(session);
+                    auto chat = std::make_shared<torikime::chat::send_message::Rpc>(session);
                     _chat = chat;
                     _rpcs.emplace_back(chat);
-                    _chat.lock()->subscribeRequest([this](const torikime::chat::send_message::RequestParcel& request, std::shared_ptr<torikime::chat::send_message::RpcContract::Responser>& responser) {
+                    _chat.lock()->subscribeRequest([this](const torikime::chat::send_message::RequestParcel& request, std::shared_ptr<torikime::chat::send_message::Rpc::Responser>& responser) {
                         auto message = request.request().message();
                         torikime::chat::send_message::Response response;
                         response.set_message_id(0);
@@ -117,7 +117,7 @@ private:
     std::atomic_int sessionId = 0;
     std::unordered_map<SessionId, std::shared_ptr<potato::net::session>> _sessions;
     std::vector<std::shared_ptr<torikime::RpcInterface>> _rpcs;
-    std::weak_ptr<torikime::chat::send_message::RpcContract> _chat;
+    std::weak_ptr<torikime::chat::send_message::Rpc> _chat;
     tcp::acceptor acceptor_;
 };
 

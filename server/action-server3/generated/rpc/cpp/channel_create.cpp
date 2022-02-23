@@ -7,7 +7,7 @@
 
 namespace torikime::channel::create
 {
-	RpcContract::Responser::~Responser()
+	Rpc::Responser::~Responser()
 	{
 		if (respond)
 		{
@@ -18,7 +18,7 @@ namespace torikime::channel::create
 		send(false, r);
 	}
 
-	void RpcContract::Responser::send(bool success, torikime::channel::create::Response& response)
+	void Rpc::Responser::send(bool success, torikime::channel::create::Response& response)
 	{
 		torikime::channel::create::ResponseParcel responseParcel;
 		responseParcel.set_request_id(_requestId);
@@ -36,10 +36,10 @@ namespace torikime::channel::create
 
 
 
-	RpcContract::RpcContract(std::shared_ptr<potato::net::session>& session) : _session(session)
+	Rpc::Rpc(std::shared_ptr<potato::net::session>& session) : _session(session)
 	{
 	}
-	void RpcContract::onCreateRequest(const potato::net::protocol::Payload& payload)
+	void Rpc::onCreateRequest(const potato::net::protocol::Payload& payload)
 	{
 		torikime::channel::create::RequestParcel requestParcel;
 		deserialize(payload, requestParcel);
@@ -48,14 +48,14 @@ namespace torikime::channel::create
 		_requestDelegate(requestParcel, responser);
 	}
 
-	void RpcContract::subscribeRequest(RpcContract::RequestDelegate callback)
+	void Rpc::subscribeRequest(Rpc::RequestDelegate callback)
 	{
 		_requestDelegate = callback;
 	}
 
 
 
-	potato::net::protocol::Payload RpcContract::serializeNotification(torikime::channel::create::Notification& notification)
+	potato::net::protocol::Payload Rpc::serializeNotification(torikime::channel::create::Notification& notification)
 	{
 		torikime::channel::create::NotificationParcel notificationParcel;
 		notificationParcel.set_allocated_notification(&notification);
@@ -67,7 +67,7 @@ namespace torikime::channel::create
         return payload;
 	}
 
-	void RpcContract::deserialize(const potato::net::protocol::Payload& payload, torikime::channel::create::RequestParcel& outRequest)
+	void Rpc::deserialize(const potato::net::protocol::Payload& payload, torikime::channel::create::RequestParcel& outRequest)
 	{
 		outRequest.Clear();
 		outRequest.ParseFromArray(payload.getPayloadData(), payload.getHeader().payloadSize);
@@ -75,7 +75,7 @@ namespace torikime::channel::create
 
 
 
-	bool RpcContract::receievePayload(const potato::net::protocol::Payload& payload)
+	bool Rpc::receievePayload(const potato::net::protocol::Payload& payload)
 	{
 		switch (payload.getHeader().rpc_id)
 		{
