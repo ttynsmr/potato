@@ -9,5 +9,9 @@ RUN apt-get update && apt-get install -yq \
     libboost-all-dev \
     protobuf-compiler \
     libprotobuf-dev \
+    python3-pip \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
+RUN python -m pip install --upgrade pip \
+    pip install pipenv --upgrade-strategy=only-if-needed
