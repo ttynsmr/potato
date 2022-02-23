@@ -13,6 +13,8 @@ namespace Potato
                 return new Session();
             }
 
+            public Session Session => session;
+
             private void Start()
             {
 

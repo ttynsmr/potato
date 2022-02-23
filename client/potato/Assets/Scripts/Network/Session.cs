@@ -14,7 +14,12 @@ namespace Potato
 
             }
 
-            private List<Rpc> rpcs = RpcBuilder.Build();
+            public T GetRpc<T>() where T : Torikime.IRpc
+            {
+                return default(T);
+            }
+
+            private List<Torikime.IRpc> rpcs = Torikime.RpcBuilder.Build();
         }
     }
 }

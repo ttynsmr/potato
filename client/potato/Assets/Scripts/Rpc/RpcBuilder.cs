@@ -2,12 +2,16 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Rpc { }
-
-public static class RpcBuilder
+namespace Torikime
 {
-    public static List<Rpc> Build()
+
+    public interface IRpc { }
+
+    public static class RpcBuilder
     {
-        return new List<Rpc>();
+        public static List<IRpc> Build()
+        {
+            return new List<IRpc>();
+        }
     }
 }
