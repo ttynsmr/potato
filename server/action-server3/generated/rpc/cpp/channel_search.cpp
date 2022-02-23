@@ -26,6 +26,7 @@ namespace torikime::channel::search
 		responseParcel.set_success(success);
 
 		potato::net::protocol::Payload payload;
+		payload.getHeader().meta = static_cast<uint8_t>(potato::net::protocol::Meta::Response);
 		payload.setBufferSize(responseParcel.ByteSize());
 		responseParcel.SerializeToArray(payload.getPayloadData(), payload.getHeader().payloadSize);
 

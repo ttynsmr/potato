@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace {{ namespace | camelize }}
@@ -8,34 +9,101 @@ namespace {{ namespace | camelize }}
 	{
 		namespace {{ name | camelize }}
 		{
-			{# public class Request {}
-			public class Response {}
-			public class Notification {} #}
-
 			public class Rpc : {{ namespace | camelize }}.IRpc
 			{
+                public uint ContractId => {{ contract_id }};
+                public uint RpcId => {{ rpc_id }};
+
+                private Potato.Network.Session session;
+                public Rpc(Potato.Network.Session session)
+                {
+                    this.session = session;
+                }
+
+				public bool ReceievePayload(Potato.Network.Protocol.Payload payload)
+				{
+					switch (payload.GetHeader().rpc_id)
+					{
+						case {{ rpc_id }}:
+							switch ((Potato.Network.Protocol.Meta) payload.GetHeader().meta)
+							{
+{%- if "request" in rpc %}
+								case Potato.Network.Protocol.Meta.Response:
+									on{{ name | camelize }}Response(payload);
+									return true;
+{% endif %}
+{% if "notification" in rpc %}
+								case Potato.Network.Protocol.Meta.Notification:
+									on{{ name | camelize }}Notification(payload);
+									return true;
+{% endif %}
+								default:
+									return false;
+							}
+						default:
+							return false;
+					}
+				}
+
 {%- if "request" in rpc %}
 				public delegate void ResponseCallback(Response response);
+                private Dictionary<uint, Action<Response>> responseCallbacks = new Dictionary<uint, Action<Response>>();
+				private uint requestId = 0;
 				public void Request(Request request, ResponseCallback callback)
 				{
-					callback(new Response());
+					RequestParcel parcel = new RequestParcel();
+					parcel.RequestId = ++requestId;
+					parcel.Request = request;
+
+                    responseCallbacks.Add(parcel.RequestId, (response) => { callback(response); });
 				}
 
                 public IEnumerator RequestCoroutine(Request request, ResponseCallback callback)
                 {
-                    yield return null;
-                    callback(new Response());
+					RequestParcel parcel = new RequestParcel();
+					parcel.RequestId = ++requestId;
+					parcel.Request = request;
+
+					bool wait = true;
+                    responseCallbacks.Add(parcel.RequestId, (response) => { wait = false; callback(response); });
+					while (wait)
+					{
+						yield return null;
+					}
                 }
 
-                public async Task<Response> RequestAsync(Request request)
+                {# public async Task<Response> RequestAsync(Request request)
                 {
+					RequestParcel parcel = new RequestParcel();
+					parcel.RequestId = ++requestId;
+					parcel.Request = request;
+
+                    responseCallbacks.Add(parcel.RequestId, callback);
                     await Task.Delay(1000);
                     return new Response();
-                }
+                } #}
+
+				void on{{ name | camelize }}Response(Potato.Network.Protocol.Payload payload)
+				{
+                    ResponseParcel responseParcel = new ResponseParcel();
+                    responseParcel.MergeFrom(new Google.Protobuf.CodedInputStream(payload.GetBuffer(), Potato.Network.Protocol.PayloadHeader.Size, payload.GetBuffer().Length - Potato.Network.Protocol.PayloadHeader.Size));
+
+					if (responseCallbacks.TryGetValue(responseParcel.RequestId, out var callback))
+					{
+						callback(responseParcel.Response);
+						responseCallbacks.Remove(responseParcel.RequestId);
+					}
+				}
 {% endif %}
 
 {% if "notification" in rpc %}
 				public event Action<Notification> OnNotification;
+				void on{{ name | camelize }}Notification(Potato.Network.Protocol.Payload payload)
+				{
+                    NotificationParcel notificationParcel = new NotificationParcel();
+                    notificationParcel.MergeFrom(new Google.Protobuf.CodedInputStream(payload.GetBuffer(), Potato.Network.Protocol.PayloadHeader.Size, payload.GetBuffer().Length - Potato.Network.Protocol.PayloadHeader.Size));
+                    OnNotification?.Invoke(notificationParcel.Notification);
+				}
 {% endif %}
 			}
 		}

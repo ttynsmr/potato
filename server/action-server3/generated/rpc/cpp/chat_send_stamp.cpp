@@ -21,6 +21,7 @@ namespace torikime::chat::send_stamp
 		notificationParcel.set_notification_id(++_notificationId);
 
 		potato::net::protocol::Payload payload;
+		payload.getHeader().meta = static_cast<uint8_t>(potato::net::protocol::Meta::Notification);
 		payload.setBufferSize(notificationParcel.ByteSize());
 		notificationParcel.SerializeToArray(payload.getPayloadData(), payload.getHeader().payloadSize);
         return payload;

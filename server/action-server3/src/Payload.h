@@ -4,6 +4,13 @@
 
 namespace potato::net::protocol
 {
+	enum class Meta : uint8_t
+	{
+		Request = 0,
+		Response = 1,
+		Notification = 2
+	};
+
 	struct __attribute__((__packed__)) PayloadHeader final
 	{
 		std::uint16_t payloadSize = 0;
@@ -15,22 +22,24 @@ namespace potato::net::protocol
 
 	struct Payload final
 	{
-		Payload() {
+		Payload()
+		{
 			buffer.resize(sizeof(PayloadHeader));
 		}
-		//PayloadHeader header;
+		// PayloadHeader header;
 
-		void setBufferSize(std::size_t size) {
+		void setBufferSize(std::size_t size)
+		{
 			buffer.resize(sizeof(PayloadHeader) + size);
 			getHeader().payloadSize = size;
 		};
 
-		PayloadHeader& getHeader() { return *reinterpret_cast<PayloadHeader*>(&buffer[0]); }
-		const PayloadHeader& getHeader() const { return *reinterpret_cast<const PayloadHeader*>(&buffer[0]); }
-		std::byte* getPayloadData() { return &buffer[sizeof(PayloadHeader)]; };
-		const std::byte* getPayloadData() const { return &buffer[sizeof(PayloadHeader)]; };
+		PayloadHeader &getHeader() { return *reinterpret_cast<PayloadHeader *>(&buffer[0]); }
+		const PayloadHeader &getHeader() const { return *reinterpret_cast<const PayloadHeader *>(&buffer[0]); }
+		std::byte *getPayloadData() { return &buffer[sizeof(PayloadHeader)]; };
+		const std::byte *getPayloadData() const { return &buffer[sizeof(PayloadHeader)]; };
 
-		std::vector<std::byte>& getBuffer() { return buffer; }
+		std::vector<std::byte> &getBuffer() { return buffer; }
 
 	private:
 		std::vector<std::byte> buffer;

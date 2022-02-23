@@ -9,13 +9,13 @@ namespace Torikime
 
     public static class RpcBuilder
     {
-        public static List<IRpc> Build()
+        public static List<IRpc> Build(Potato.Network.Session session)
         {
-            rpcs.Add(new Auth.Login.Rpc());
-            rpcs.Add(new Channel.Create.Rpc());
-            rpcs.Add(new Channel.Search.Rpc());
-            rpcs.Add(new Chat.SendMessage.Rpc());
-            rpcs.Add(new Chat.SendStamp.Rpc());
+            rpcs.Add(new Auth.Login.Rpc(session));
+            rpcs.Add(new Channel.Create.Rpc(session));
+            rpcs.Add(new Channel.Search.Rpc(session));
+            rpcs.Add(new Chat.SendMessage.Rpc(session));
+            rpcs.Add(new Chat.SendStamp.Rpc(session));
             return rpcs;
         }
 

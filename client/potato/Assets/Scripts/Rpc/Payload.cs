@@ -9,6 +9,13 @@ namespace Potato
     {
         namespace Protocol
         {
+            public enum Meta : byte
+            {
+                Request = 0,
+                Response = 1,
+                Notification = 2
+            };
+
             public class PayloadHeader
             {
                 public ushort payloadSize = 0;

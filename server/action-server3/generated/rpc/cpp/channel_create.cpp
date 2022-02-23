@@ -26,6 +26,7 @@ namespace torikime::channel::create
 		responseParcel.set_success(success);
 
 		potato::net::protocol::Payload payload;
+		payload.getHeader().meta = static_cast<uint8_t>(potato::net::protocol::Meta::Response);
 		payload.setBufferSize(responseParcel.ByteSize());
 		responseParcel.SerializeToArray(payload.getPayloadData(), payload.getHeader().payloadSize);
 
@@ -62,6 +63,7 @@ namespace torikime::channel::create
 		notificationParcel.set_notification_id(++_notificationId);
 
 		potato::net::protocol::Payload payload;
+		payload.getHeader().meta = static_cast<uint8_t>(potato::net::protocol::Meta::Notification);
 		payload.setBufferSize(notificationParcel.ByteSize());
 		notificationParcel.SerializeToArray(payload.getPayloadData(), payload.getHeader().payloadSize);
         return payload;

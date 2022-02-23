@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Net.Sockets;
 
 namespace Potato
 {
@@ -10,7 +11,7 @@ namespace Potato
         {
             public Session Connect(string ip, int port)
             {
-                return new Session();
+                return new Session(new TcpClient(ip, port));
             }
 
             public Session Session => session;
