@@ -76,6 +76,7 @@ private:
         acceptor_.async_accept(
             [this](boost::system::error_code ec, tcp::socket socket)
             {
+                std::cout << "async_accept\n";
                 if (!ec)
                 {
                     auto session = std::make_shared<potato::net::session>(std::move(socket))->start();
@@ -83,6 +84,7 @@ private:
                     _chat = chat;
                     _rpcs.emplace_back(chat);
                     _chat.lock()->subscribeRequest([this](const torikime::chat::send_message::RequestParcel& request, std::shared_ptr<torikime::chat::send_message::Rpc::Responser>& responser) {
+                        std::cout << "receive RequestParcel\n";
                         auto message = request.request().message();
                         torikime::chat::send_message::Response response;
                         response.set_message_id(0);

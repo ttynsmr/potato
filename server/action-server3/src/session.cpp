@@ -44,6 +44,7 @@ namespace potato::net
                 if (!ec)
                 {
                     std::cout << length << "bytes received.\n";
+                    std::cout << receive_buffer_.size() << "received buffer size.\n";
 
                     if (receive_buffer_.size() > sizeof(protocol::PayloadHeader))
                     {
