@@ -212,11 +212,16 @@ public:
     bool isRunning() override { return true; }
     void start() override {
         _thread = std::thread([this]() {
+            std::cout << "start game service loop\n";
+            auto prev = std::chrono::high_resolution_clock::now();
             while (_running)
             {
-                //std::cout << "game service loop\n";
-                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                auto now = std::chrono::high_resolution_clock::now();
+                auto spareTime = std::chrono::high_resolution_clock::now() - prev;
+                prev = now;
+                std::this_thread::sleep_for(std::chrono::milliseconds(std::max(0L, 100 - std::chrono::duration_cast<std::chrono::microseconds>(spareTime).count())));
             }
+            std::cout << "end game service loop\n";
             });
     }
 
