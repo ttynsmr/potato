@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
- 
+
 import argparse
 import glob
 import os
@@ -75,7 +75,7 @@ def main():
 
         with open(rpc_file) as file:
             file = yaml.safe_load(file)
-            
+
             contracts = file['contracts']
             # print(contracts)
             if(not isinstance(contracts, dict)):
@@ -99,7 +99,7 @@ def main():
                     }
                     if('imports' in contracts[contract][rpc]):
                         params['imports'] = contracts[contract][rpc]['imports']
-    
+
                     # print(params)
 
                     if(not args.dryrun):

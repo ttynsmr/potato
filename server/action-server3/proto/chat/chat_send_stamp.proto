@@ -18,6 +18,6 @@ message Notification {
 
 message NotificationParcel
 {
-    Notification notification  = 1;
-    uint32 notification_id = 2;
+  Notification notification  = 1;
+  uint32 notification_id = 2;
 }

@@ -34,15 +34,15 @@ message Response {
 
 message RequestParcel
 {
-    Request request = 1;
-    uint32 request_id = 2;
+  Request request = 1;
+  uint32 request_id = 2;
 }
 
 message ResponseParcel
 {
-    Response response = 1;
-    uint32 request_id = 2;
-    bool success = 3;
+  Response response = 1;
+  uint32 request_id = 2;
+  bool success = 3;
 }
 {% endif -%}
 
@@ -55,7 +55,7 @@ message Notification {
 
 message NotificationParcel
 {
-    Notification notification  = 1;
-    uint32 notification_id = 2;
+  Notification notification  = 1;
+  uint32 notification_id = 2;
 }
 {%- endif %}
