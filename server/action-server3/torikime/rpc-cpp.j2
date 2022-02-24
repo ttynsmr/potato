@@ -15,11 +15,10 @@ namespace {{ namespace }}::{{ contract }}::{{ name }}
 			return;
 		}
 
-		{{ namespace }}::{{ contract }}::{{ name }}::Response r;
-		send(false, r);
+		send(false, {});
 	}
 
-	void Rpc::Responser::send(bool success, {{ namespace }}::{{ contract }}::{{ name }}::Response& response)
+	void Rpc::Responser::send(bool success, {{ namespace }}::{{ contract }}::{{ name }}::Response&& response)
 	{
 		{{ namespace }}::{{ contract }}::{{ name }}::ResponseParcel responseParcel;
 		responseParcel.set_request_id(_requestId);
@@ -27,9 +26,12 @@ namespace {{ namespace }}::{{ contract }}::{{ name }}
 		responseParcel.set_success(success);
 
 		potato::net::protocol::Payload payload;
+		payload.getHeader().contract_id = {{ contract_id }};
+		payload.getHeader().rpc_id = {{ rpc_id }};
 		payload.getHeader().meta = static_cast<uint8_t>(potato::net::protocol::Meta::Response);
 		payload.setBufferSize(responseParcel.ByteSize());
 		responseParcel.SerializeToArray(payload.getPayloadData(), payload.getHeader().payloadSize);
+		responseParcel.release_response();
 
 		_session->sendPayload(payload);
 
@@ -66,9 +68,12 @@ namespace {{ namespace }}::{{ contract }}::{{ name }}
 		notificationParcel.set_notification_id(++_notificationId);
 
 		potato::net::protocol::Payload payload;
+		payload.getHeader().contract_id = {{ contract_id }};
+		payload.getHeader().rpc_id = {{ rpc_id }};
 		payload.getHeader().meta = static_cast<uint8_t>(potato::net::protocol::Meta::Notification);
 		payload.setBufferSize(notificationParcel.ByteSize());
 		notificationParcel.SerializeToArray(payload.getPayloadData(), payload.getHeader().payloadSize);
+		notificationParcel.release_notification();
         return payload;
 	}
 {% endif %}

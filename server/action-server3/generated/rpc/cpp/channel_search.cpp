@@ -14,11 +14,10 @@ namespace torikime::channel::search
 			return;
 		}
 
-		torikime::channel::search::Response r;
-		send(false, r);
+		send(false, {});
 	}
 
-	void Rpc::Responser::send(bool success, torikime::channel::search::Response& response)
+	void Rpc::Responser::send(bool success, torikime::channel::search::Response&& response)
 	{
 		torikime::channel::search::ResponseParcel responseParcel;
 		responseParcel.set_request_id(_requestId);
@@ -26,9 +25,12 @@ namespace torikime::channel::search
 		responseParcel.set_success(success);
 
 		potato::net::protocol::Payload payload;
+		payload.getHeader().contract_id = 4;
+		payload.getHeader().rpc_id = 0;
 		payload.getHeader().meta = static_cast<uint8_t>(potato::net::protocol::Meta::Response);
 		payload.setBufferSize(responseParcel.ByteSize());
 		responseParcel.SerializeToArray(payload.getPayloadData(), payload.getHeader().payloadSize);
+		responseParcel.release_response();
 
 		_session->sendPayload(payload);
 

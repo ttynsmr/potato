@@ -87,7 +87,9 @@ def main():
                 for rpc_idx, rpc in enumerate(contracts[contract]):
                     # print(rpc)
                     # print(contracts[contract][rpc])
+
                     params = {
+                        # "imports": contracts[contract][rpc]['imports'],
                         "namespace": args.namespace,
                         "contract_id": contract_idx,
                         "rpc_id": rpc_idx,
@@ -95,6 +97,9 @@ def main():
                         "name": rpc,
                         "rpc": contracts[contract][rpc],
                     }
+                    if('imports' in contracts[contract][rpc]):
+                        params['imports'] = contracts[contract][rpc]['imports']
+    
                     # print(params)
 
                     if(not args.dryrun):

@@ -9,8 +9,8 @@
 
 namespace potato::net
 {
-    session::session(boost::asio::ip::tcp::socket socket)
-        : socket_(std::move(socket))
+    session::session(boost::asio::ip::tcp::socket socket, SessionId sessionId)
+        : _socket(std::move(socket)), _sessionId(sessionId)
     {
     }
 
@@ -20,42 +20,41 @@ namespace potato::net
         return shared_from_this();
     }
 
-    void session::sendPayload(const protocol::Payload& payload)
+    void session::sendPayload(protocol::Payload& payload)
     {
+        //std::cout << "session::sendPayload.\n";
         auto self(shared_from_this());
 
-        boost::asio::async_write(socket_, boost::asio::buffer(&payload.getHeader(), sizeof(potato::net::protocol::PayloadHeader)),
-            [this, self](boost::system::error_code ec, std::size_t length)
-            {
-                if (!ec)
-                {
-                    std::cout << length << "bytes sent.\n";
-                }
-            });
+        _socket.async_write_some(boost::asio::buffer(payload.getBuffer()),
+            [this, self](boost::system::error_code /*ec*/, std::size_t /*length*/) {});
     }
 
     void session::do_read()
     {
+        //std::cout << "session::do_read.\n";
         auto self(shared_from_this());
-        boost::asio::streambuf::mutable_buffers_type mutableBuffer = receive_buffer_.prepare(max_length);
-        socket_.async_read_some(boost::asio::buffer(mutableBuffer),
+        //boost::asio::streambuf::mutable_buffers_type mutableBuffer = receive_buffer_.prepare(max_length);
+        _socket.async_read_some(boost::asio::buffer(data_),
             [this, self](boost::system::error_code ec, std::size_t length)
             {
                 if (!ec)
                 {
-                    std::cout << length << "bytes received.\n";
-                    std::cout << receive_buffer_.size() << "received buffer size.\n";
+                    //std::cout << length << "bytes received.\n";
+                    //std::cout << receive_buffer_.size() << "received buffer size.\n";
 
-                    if (receive_buffer_.size() > sizeof(protocol::PayloadHeader))
+                    if (length > sizeof(protocol::PayloadHeader))
                     {
-                        const protocol::PayloadHeader* header = static_cast<const protocol::PayloadHeader*>(receive_buffer_.data().data());
+                        const protocol::PayloadHeader* header = reinterpret_cast<const protocol::PayloadHeader*>(&data_[0]);
                         const auto percelSize = sizeof(protocol::PayloadHeader) + header->payloadSize;
-                        if (receive_buffer_.size() >= percelSize)
+                        //std::cout << percelSize << "bytes percelSize needed.\n";
+                        if (length >= percelSize)
                         {
+                            //std::cout << percelSize << "percelSize received.\n";
+
                             protocol::Payload payload;
                             payload.setBufferSize(header->payloadSize);
-                            boost::asio::buffer_copy(boost::asio::buffer(payload.getBuffer()), receive_buffer_.data());
-                            receive_buffer_.consume(percelSize);
+                            boost::asio::buffer_copy(boost::asio::buffer(payload.getBuffer()), boost::asio::buffer(data_));
+                            _receive_buffer.consume(percelSize);
 
                             _receivePayloadDelegate(payload);
                         }
@@ -63,24 +62,11 @@ namespace potato::net
 
                     do_read();
                 }
+                else
+                {
+                    // disconnect
+                    _disconnectDelegate(_sessionId);
+                }
             });
     }
-
-    //void session::do_write(std::size_t length)
-    //{
-    //    auto self(shared_from_this());
-
-    //    std::string sendbuf = std::string(data_, length);
-
-    //    sendbuf = std::string("Response ----> ") + sendbuf;
-
-    //    boost::asio::async_write(socket_, boost::asio::buffer(sendbuf.c_str(), sendbuf.length()),
-    //        [this, self](boost::system::error_code ec, std::size_t /*length*/)
-    //        {
-    //            if (!ec)
-    //            {
-    //                do_read();
-    //            }
-    //        });
-    //}
 }

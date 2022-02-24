@@ -5,7 +5,12 @@ using UnityEngine;
 namespace Torikime
 {
 
-    public interface IRpc { }
+    public interface IRpc
+    {
+        ushort ContractId { get; }
+        ushort RpcId { get; }
+        bool ReceievePayload(Potato.Network.Protocol.Payload payload);
+    }
 
     public static class RpcBuilder
     {
@@ -16,6 +21,8 @@ namespace Torikime
             rpcs.Add(new Channel.Search.Rpc(session));
             rpcs.Add(new Chat.SendMessage.Rpc(session));
             rpcs.Add(new Chat.SendStamp.Rpc(session));
+            rpcs.Add(new Diagnosis.SeverSessions.Rpc(session));
+            rpcs.Add(new Example.UpdateMousePosition.Rpc(session));
             return rpcs;
         }
 

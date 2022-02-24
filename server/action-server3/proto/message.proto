@@ -1,9 +1,15 @@
 syntax = "proto3";
 
-// package torik.message;
+package potato;
 
 // message Message {
 //   int32 id = 1;
 //   string name = 2;
 //   string text = 3;
 // }
+
+message Vector3 {
+  float x = 1;
+  float y = 2;
+  float z = 3;
+}

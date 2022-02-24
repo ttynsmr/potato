@@ -3,16 +3,16 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace {{ namespace | camelize }}
+namespace Torikime
 {
-	namespace {{ contract | camelize }}
+	namespace Example
 	{
-		namespace {{ name | camelize }}
+		namespace UpdateMousePosition
 		{
-			public class Rpc : {{ namespace | camelize }}.IRpc
+			public class Rpc : Torikime.IRpc
 			{
-                public ushort ContractId => {{ contract_id }};
-                public ushort RpcId => {{ rpc_id }};
+                public ushort ContractId => 3;
+                public ushort RpcId => 0;
 
                 private Potato.Network.Session session;
                 public Rpc(Potato.Network.Session session)
@@ -24,19 +24,18 @@ namespace {{ namespace | camelize }}
 				{
 					switch (payload.Header.rpc_id)
 					{
-						case {{ rpc_id }}:
+						case 0:
 							switch ((Potato.Network.Protocol.Meta) payload.Header.meta)
 							{
-{%- if "request" in rpc %}
 								case Potato.Network.Protocol.Meta.Response:
-									on{{ name | camelize }}Response(payload);
+									onUpdateMousePositionResponse(payload);
 									return true;
-{% endif %}
-{% if "notification" in rpc %}
+
+
 								case Potato.Network.Protocol.Meta.Notification:
-									on{{ name | camelize }}Notification(payload);
+									onUpdateMousePositionNotification(payload);
 									return true;
-{% endif %}
+
 								default:
 									return false;
 							}
@@ -44,8 +43,6 @@ namespace {{ namespace | camelize }}
 							return false;
 					}
 				}
-
-{%- if "request" in rpc %}
 				public delegate void ResponseCallback(Response response);
                 private Dictionary<uint, Action<Response>> responseCallbacks = new Dictionary<uint, Action<Response>>();
 				private uint requestId = 0;
@@ -103,18 +100,9 @@ namespace {{ namespace | camelize }}
 					}
                 }
 
-                {# public async Task<Response> RequestAsync(Request request)
-                {
-					RequestParcel parcel = new RequestParcel();
-					parcel.RequestId = ++requestId;
-					parcel.Request = request;
+                
 
-                    responseCallbacks.Add(parcel.RequestId, callback);
-                    await Task.Delay(1000);
-                    return new Response();
-                } #}
-
-				void on{{ name | camelize }}Response(Potato.Network.Protocol.Payload payload)
+				void onUpdateMousePositionResponse(Potato.Network.Protocol.Payload payload)
 				{
                     ResponseParcel responseParcel = new ResponseParcel();
                     responseParcel.MergeFrom(new Google.Protobuf.CodedInputStream(payload.GetBuffer(), Potato.Network.Protocol.PayloadHeader.Size, payload.GetBuffer().Length - Potato.Network.Protocol.PayloadHeader.Size));
@@ -125,17 +113,17 @@ namespace {{ namespace | camelize }}
 						responseCallbacks.Remove(responseParcel.RequestId);
 					}
 				}
-{% endif %}
 
-{% if "notification" in rpc %}
+
+
 				public event Action<Notification> OnNotification;
-				void on{{ name | camelize }}Notification(Potato.Network.Protocol.Payload payload)
+				void onUpdateMousePositionNotification(Potato.Network.Protocol.Payload payload)
 				{
                     NotificationParcel notificationParcel = new NotificationParcel();
                     notificationParcel.MergeFrom(new Google.Protobuf.CodedInputStream(payload.GetBuffer(), Potato.Network.Protocol.PayloadHeader.Size, payload.GetBuffer().Length - Potato.Network.Protocol.PayloadHeader.Size));
                     OnNotification?.Invoke(notificationParcel.Notification);
 				}
-{% endif %}
+
 			}
 		}
 	}

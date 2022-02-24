@@ -5,6 +5,9 @@ syntax = "proto3";
 
 package torikime.chat.send_message;
 
+
+
+
 // チャットメッセージ
 
 message Request {

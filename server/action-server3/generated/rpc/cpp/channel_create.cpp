@@ -14,11 +14,10 @@ namespace torikime::channel::create
 			return;
 		}
 
-		torikime::channel::create::Response r;
-		send(false, r);
+		send(false, {});
 	}
 
-	void Rpc::Responser::send(bool success, torikime::channel::create::Response& response)
+	void Rpc::Responser::send(bool success, torikime::channel::create::Response&& response)
 	{
 		torikime::channel::create::ResponseParcel responseParcel;
 		responseParcel.set_request_id(_requestId);
@@ -26,9 +25,12 @@ namespace torikime::channel::create
 		responseParcel.set_success(success);
 
 		potato::net::protocol::Payload payload;
+		payload.getHeader().contract_id = 4;
+		payload.getHeader().rpc_id = 1;
 		payload.getHeader().meta = static_cast<uint8_t>(potato::net::protocol::Meta::Response);
 		payload.setBufferSize(responseParcel.ByteSize());
 		responseParcel.SerializeToArray(payload.getPayloadData(), payload.getHeader().payloadSize);
+		responseParcel.release_response();
 
 		_session->sendPayload(payload);
 
@@ -63,9 +65,12 @@ namespace torikime::channel::create
 		notificationParcel.set_notification_id(++_notificationId);
 
 		potato::net::protocol::Payload payload;
+		payload.getHeader().contract_id = 4;
+		payload.getHeader().rpc_id = 1;
 		payload.getHeader().meta = static_cast<uint8_t>(potato::net::protocol::Meta::Notification);
 		payload.setBufferSize(notificationParcel.ByteSize());
 		notificationParcel.SerializeToArray(payload.getPayloadData(), payload.getHeader().payloadSize);
+		notificationParcel.release_notification();
         return payload;
 	}
 

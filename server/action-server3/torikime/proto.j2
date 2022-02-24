@@ -5,6 +5,13 @@ syntax = "proto3";
 
 package {{ namespace }}.{{ contract }}.{{ name }};
 
+{% if "imports" in rpc -%}
+{%- for import in imports %}
+import "{{ import }}";
+{%- endfor %}
+{% endif %}
+
+
 {% if "description" in rpc -%}
 // {{ rpc.description }}
 {% endif %}

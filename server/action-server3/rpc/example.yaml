@@ -1,0 +1,12 @@
+# yaml -> torikime -> generate .proto & rpc code.
+contracts:
+  example:
+    update_mouse_position:
+      imports:
+        - "message.proto"
+      request:
+        position: potato.Vector3
+      response:
+        ok: bool
+      notification:
+        position: potato.Vector3

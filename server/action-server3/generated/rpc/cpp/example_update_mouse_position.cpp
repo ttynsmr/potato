@@ -2,10 +2,10 @@
 
 #include "../../../src/session.h"
 #include "../../../src/Payload.h"
-#include "proto/chat_send_message.pb.h"
-#include "chat_send_message.h"
+#include "proto/example_update_mouse_position.pb.h"
+#include "example_update_mouse_position.h"
 
-namespace torikime::chat::send_message
+namespace torikime::example::update_mouse_position
 {
 	Rpc::Responser::~Responser()
 	{
@@ -17,15 +17,15 @@ namespace torikime::chat::send_message
 		send(false, {});
 	}
 
-	void Rpc::Responser::send(bool success, torikime::chat::send_message::Response&& response)
+	void Rpc::Responser::send(bool success, torikime::example::update_mouse_position::Response&& response)
 	{
-		torikime::chat::send_message::ResponseParcel responseParcel;
+		torikime::example::update_mouse_position::ResponseParcel responseParcel;
 		responseParcel.set_request_id(_requestId);
 		responseParcel.set_allocated_response(&response);
 		responseParcel.set_success(success);
 
 		potato::net::protocol::Payload payload;
-		payload.getHeader().contract_id = 1;
+		payload.getHeader().contract_id = 3;
 		payload.getHeader().rpc_id = 0;
 		payload.getHeader().meta = static_cast<uint8_t>(potato::net::protocol::Meta::Response);
 		payload.setBufferSize(responseParcel.ByteSize());
@@ -42,9 +42,9 @@ namespace torikime::chat::send_message
 	Rpc::Rpc(std::shared_ptr<potato::net::session>& session) : _session(session)
 	{
 	}
-	void Rpc::onSendMessageRequest(const potato::net::protocol::Payload& payload)
+	void Rpc::onUpdateMousePositionRequest(const potato::net::protocol::Payload& payload)
 	{
-		torikime::chat::send_message::RequestParcel requestParcel;
+		torikime::example::update_mouse_position::RequestParcel requestParcel;
 		deserialize(payload, requestParcel);
 
 		auto responser = std::make_shared<Responser>(_session, requestParcel.request_id());
@@ -58,14 +58,14 @@ namespace torikime::chat::send_message
 
 
 
-	potato::net::protocol::Payload Rpc::serializeNotification(torikime::chat::send_message::Notification& notification)
+	potato::net::protocol::Payload Rpc::serializeNotification(torikime::example::update_mouse_position::Notification& notification)
 	{
-		torikime::chat::send_message::NotificationParcel notificationParcel;
+		torikime::example::update_mouse_position::NotificationParcel notificationParcel;
 		notificationParcel.set_allocated_notification(&notification);
 		notificationParcel.set_notification_id(++_notificationId);
 
 		potato::net::protocol::Payload payload;
-		payload.getHeader().contract_id = 1;
+		payload.getHeader().contract_id = 3;
 		payload.getHeader().rpc_id = 0;
 		payload.getHeader().meta = static_cast<uint8_t>(potato::net::protocol::Meta::Notification);
 		payload.setBufferSize(notificationParcel.ByteSize());
@@ -74,7 +74,7 @@ namespace torikime::chat::send_message
         return payload;
 	}
 
-	void Rpc::deserialize(const potato::net::protocol::Payload& payload, torikime::chat::send_message::RequestParcel& outRequest)
+	void Rpc::deserialize(const potato::net::protocol::Payload& payload, torikime::example::update_mouse_position::RequestParcel& outRequest)
 	{
 		outRequest.Clear();
 		outRequest.ParseFromArray(payload.getPayloadData(), payload.getHeader().payloadSize);
@@ -87,7 +87,7 @@ namespace torikime::chat::send_message
 		switch (payload.getHeader().rpc_id)
 		{
 		case 0:
-			onSendMessageRequest(payload);
+			onUpdateMousePositionRequest(payload);
 			return true;
 
         default:

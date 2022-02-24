@@ -11,8 +11,8 @@ namespace Torikime
 		{
 			public class Rpc : Torikime.IRpc
 			{
-                public uint ContractId => 1;
-                public uint RpcId => 1;
+                public ushort ContractId => 1;
+                public ushort RpcId => 1;
 
                 private Potato.Network.Session session;
                 public Rpc(Potato.Network.Session session)
@@ -22,10 +22,10 @@ namespace Torikime
 
 				public bool ReceievePayload(Potato.Network.Protocol.Payload payload)
 				{
-					switch (payload.GetHeader().rpc_id)
+					switch (payload.Header.rpc_id)
 					{
 						case 1:
-							switch ((Potato.Network.Protocol.Meta) payload.GetHeader().meta)
+							switch ((Potato.Network.Protocol.Meta) payload.Header.meta)
 							{
 
 								case Potato.Network.Protocol.Meta.Notification:

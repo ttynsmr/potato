@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 namespace Potato
@@ -26,14 +27,30 @@ namespace Potato
 
                 public static int Size => sizeof(ushort) + sizeof(byte) + sizeof(byte) + sizeof(ushort) + sizeof(ushort);
 
-                public PayloadHeader Deserialize(byte[] data)
+                public static PayloadHeader Deserialize(byte[] data)
                 {
-                    payloadSize = BitConverter.ToUInt16(data, 0);
-                    version = data[2];
-                    meta = data[3];
-                    contract_id = BitConverter.ToUInt16(data, 4);
-                    rpc_id = BitConverter.ToUInt16(data, 6);
-                    return this;
+                    PayloadHeader header = new PayloadHeader();
+                    header.payloadSize = BitConverter.ToUInt16(data, 0);
+                    header.version = data[2];
+                    header.meta = data[3];
+                    header.contract_id = BitConverter.ToUInt16(data, 4);
+                    header.rpc_id = BitConverter.ToUInt16(data, 6);
+                    return header;
+                }
+
+                public void SerializeTo(byte[] buffer)
+                {
+                    byte[] payloadSizeBuffer = BitConverter.GetBytes(payloadSize);
+                    buffer[0] = payloadSizeBuffer[0];
+                    buffer[1] = payloadSizeBuffer[1];
+                    buffer[2] = version;
+                    buffer[3] = meta;
+                    byte[] contractIdBuffer = BitConverter.GetBytes(contract_id);
+                    buffer[4] = contractIdBuffer[0];
+                    buffer[5] = contractIdBuffer[1];
+                    byte[] rpcIdBuffer = BitConverter.GetBytes(rpc_id);
+                    buffer[6] = rpcIdBuffer[0];
+                    buffer[7] = rpcIdBuffer[1];
                 }
             };
 
@@ -47,12 +64,10 @@ namespace Potato
                 public void SetBufferSize(int size)
                 {
                     Array.Resize(ref buffer, PayloadHeader.Size + size);
+                    Header.payloadSize = (ushort)size;
                 }
 
-                public PayloadHeader GetHeader()
-                {
-                    return new PayloadHeader().Deserialize(buffer);
-                }
+                public PayloadHeader Header { get; set; } = new PayloadHeader();
 
                 // std::byte* getPayloadData() { return &buffer[sizeof(PayloadHeader)]; };
                 // const std::byte* getPayloadData() const { return &buffer[sizeof(PayloadHeader)]; };

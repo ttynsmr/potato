@@ -1,0 +1,8 @@
+# yaml -> torikime -> generate .proto & rpc code.
+contracts:
+  diagnosis:
+    sever_sessions:
+      request:
+        x: int32
+      response:
+        session_count: int32

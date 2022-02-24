@@ -1,20 +1,22 @@
 syntax = "proto3";
 
-// contract_id = 4
-// rpc_id = 1
+// contract_id = 3
+// rpc_id = 0
 
-package torikime.channel.create;
+package torikime.example.update_mouse_position;
 
+
+import "message.proto";
 
 
 
 
 message Request {
-  string message = 1;
+  potato.Vector3 position = 1;
 }
 
 message Response {
-  int64 room_id = 1;
+  bool ok = 1;
 }
 
 message RequestParcel
@@ -31,9 +33,7 @@ message ResponseParcel
 }
 
 message Notification {
-  int64 room_id = 1;
-  string from = 2;
-  string message = 3;
+  potato.Vector3 position = 1;
 }
 
 message NotificationParcel

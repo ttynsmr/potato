@@ -12,6 +12,7 @@ namespace Potato
             public Session Connect(string ip, int port)
             {
                 session = new Session(new TcpClient(ip, port));
+                StartCoroutine(session.ReceivePayload());
                 return session;
             }
 
@@ -24,7 +25,7 @@ namespace Potato
 
             private void Update()
             {
-
+                session.Update();
             }
 
             private Session session;

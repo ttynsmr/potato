@@ -1,21 +1,20 @@
 syntax = "proto3";
 
-// contract_id = 4
+// contract_id = 2
 // rpc_id = 0
 
-package torikime.channel.search;
+package torikime.diagnosis.sever_sessions;
 
 
 
 
-// ルーム検索
 
 message Request {
-  string by_name = 1;
+  int32 x = 1;
 }
 
 message Response {
-  int64 room_id = 1;
+  int32 session_count = 1;
 }
 
 message RequestParcel
