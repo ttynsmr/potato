@@ -3,6 +3,6 @@ contracts:
   diagnosis:
     sever_sessions:
       request:
-        x: int32
+        _do_not_use_: bool
       response:
         session_count: int32

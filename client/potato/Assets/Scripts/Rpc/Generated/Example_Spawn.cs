@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 namespace Torikime
 {
-	namespace Chat
+	namespace Example
 	{
-		namespace SendStamp
+		namespace Spawn
 		{
 			public class Rpc : Torikime.IRpc
 			{
-                public ushort ContractId => 1;
+                public ushort ContractId => 3;
                 public ushort RpcId => 1;
 
                 private Potato.Network.Session session;
@@ -30,7 +30,7 @@ namespace Torikime
 							{
 
 								case Potato.Network.Protocol.Meta.Notification:
-									onSendStampNotification(payload);
+									onSpawnNotification(payload);
 									return true;
 
 								default:
@@ -43,7 +43,7 @@ namespace Torikime
 
 
 				public event Action<Notification> OnNotification;
-				void onSendStampNotification(Potato.Network.Protocol.Payload payload)
+				void onSpawnNotification(Potato.Network.Protocol.Payload payload)
 				{
                     NotificationParcel notificationParcel = new NotificationParcel();
                     notificationParcel.MergeFrom(new Google.Protobuf.CodedInputStream(payload.GetBuffer(), Potato.Network.Protocol.PayloadHeader.Size, payload.GetBuffer().Length - Potato.Network.Protocol.PayloadHeader.Size));

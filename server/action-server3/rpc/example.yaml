@@ -9,4 +9,14 @@ contracts:
       response:
         ok: bool
       notification:
+        session_id: int32
         position: potato.Vector3
+    spawn:
+      imports:
+        - "message.proto"
+      notification:
+        session_id: int32
+        position: potato.Vector3
+    despawn:
+      notification:
+        session_id: int32
