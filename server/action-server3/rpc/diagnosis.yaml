@@ -6,3 +6,9 @@ contracts:
         _do_not_use_: bool
       response:
         session_count: int32
+    ping_pong:
+      request:
+        send_time: int64
+      response:
+        send_time: int64
+        receive_time: int64

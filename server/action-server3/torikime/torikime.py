@@ -75,7 +75,7 @@ def convert_rpc_to_cpp(env, out_dir, params, args):
     rendered_s = tmpl.render(params)
 
     filename = f'cpp/{params["contract"]}_{params["name"]}.cpp'
-    out_filename = f'{filename}/{filename}'
+    out_filename = f'{out_dir}/{filename}'
     cache_filename = f'{args.cache_dir}/{filename}.hash'
     if is_cached(cache_filename, rendered_s, args):
         return
@@ -95,7 +95,7 @@ def convert_rpc_to_csharp(env, out_dir, params, args):
     rendered_s = tmpl.render(params)
 
     filename = f'{inflection.camelize(params["contract"])}_{inflection.camelize(params["name"])}.cs'
-    out_filename = f'{filename}/{filename}'
+    out_filename = f'{out_dir}/{filename}'
     cache_filename = f'{args.cache_dir}/{filename}.hash'
     if is_cached(cache_filename, rendered_s, args):
         return

@@ -23,6 +23,7 @@
 #include "proto/message.pb.h"
 #include "proto/chat_send_message.pb.h"
 #include "proto/diagnosis_sever_sessions.pb.h"
+#include "proto/diagnosis_ping_pong.pb.h"
 #include "proto/example_update_mouse_position.pb.h"
 #include "proto/example_spawn.pb.h"
 #include "proto/example_despawn.pb.h"
@@ -30,6 +31,7 @@
 #include "src/rpc.h"
 #include "rpc/generated/cpp/chat_send_message.h"
 #include "rpc/generated/cpp/diagnosis_sever_sessions.h"
+#include "rpc/generated/cpp/diagnosis_ping_pong.h"
 #include "rpc/generated/cpp/example_update_mouse_position.h"
 #include "rpc/generated/cpp/example_spawn.h"
 #include "rpc/generated/cpp/example_despawn.h"
@@ -129,6 +131,16 @@ private:
 							responser->send(true, std::move(response)); });
 					_rpcs.emplace_back(diagnosis);
 
+					auto pingPong = std::make_shared<torikime::diagnosis::ping_pong::Rpc>(session);
+					pingPong->subscribeRequest([](const torikime::diagnosis::ping_pong::RequestParcel&, std::shared_ptr<torikime::diagnosis::ping_pong::Rpc::Responser>& responser)
+						{
+							torikime::diagnosis::ping_pong::Response response;
+							response.set_receive_time(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
+							response.set_send_time(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
+							responser->send(true, std::move(response));
+						});
+					_rpcs.emplace_back(pingPong);
+
 					auto example = std::make_shared<torikime::example::update_mouse_position::Rpc>(session);
 					std::weak_ptr<torikime::example::update_mouse_position::Rpc> weak_example = example;
 					example->subscribeRequest([this, weak_example, session](const torikime::example::update_mouse_position::RequestParcel& request, std::shared_ptr<torikime::example::update_mouse_position::Rpc::Responser>& responser)
@@ -147,7 +159,9 @@ private:
 					session->subscribeReceivePayload([this, session](const potato::net::protocol::Payload &payload)
 													 {
                         auto rpc = std::find_if(_rpcs.begin(), _rpcs.end(), [session, &payload](auto& rpc) {
-                            return rpc->getSession()->getSessionId() == session->getSessionId() && rpc->getContractId() == payload.getHeader().contract_id;
+                            return rpc->getSession()->getSessionId() == session->getSessionId()
+								&& rpc->getContractId() == payload.getHeader().contract_id
+								&& rpc->getRpcId() == payload.getHeader().rpc_id;
                             });
                         if (rpc != _rpcs.end())
                         {
