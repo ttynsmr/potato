@@ -51,7 +51,6 @@ endif()
 #   COMMENT "Preprocessing rpcs"
 #   BYPRODUCTS ${CMAKE_CURRENT_SOURCE_DIR}/proto/*
 #   )
-ADD_SUBDIRECTORY(rpc)
 
 # add protocol buffer settings
 INCLUDE(FindProtobuf)
@@ -59,7 +58,10 @@ FIND_PACKAGE(Protobuf REQUIRED)
 ADD_SUBDIRECTORY(proto)
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
 
+ADD_SUBDIRECTORY(rpc)
 ADD_SUBDIRECTORY(rpc/generated)
+add_dependencies(proto rpc)
+add_dependencies(rpc_contracts proto)
 
 # ADD_SUBDIRECTORY(${CMAKE_CURRENT_SOURCE_DIR}/rpc/generated/cpp)
 # file(GLOB SUB_SOURCES RELATIVE "${CMAKE_SOURCE_DIR}" CONFIGURE_DEPENDS "generated/rpc/cpp/*")
