@@ -17,6 +17,8 @@ namespace Potato
         public Text sessionCountText;
         public Text pingText;
 
+        public Camera mainCamera;
+
         private Dictionary<int, GameObject> trails = new Dictionary<int, GameObject>();
 
         private void Start()
@@ -100,7 +102,7 @@ namespace Potato
                         $"server received: {response.ReceiveTime}\n" +
                         $"server send: {response.SendTime}\n" +
                         $"client received: {now}\n" +
-                        $"latency: {now - response.SendTime}";
+                        $"latency: {now - request.SendTime}";
                     pingText.text = str;
                 });
 
@@ -112,7 +114,7 @@ namespace Potato
         {
             var screenPosision = Input.mousePosition;
             screenPosision.z = 1;
-            myTrail.transform.position = Camera.current.ScreenToWorldPoint(screenPosision);
+            myTrail.transform.position = mainCamera.ScreenToWorldPoint(screenPosision);
 
             // {
             //     var rpc = networkService.Session.GetRpc<Torikime.Chat.SendMessage.Rpc>();

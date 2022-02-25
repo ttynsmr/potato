@@ -155,6 +155,7 @@ MonoBehaviour:
   trailPrefab: {fileID: 201095069726118567, guid: 89abb9610bccf6d47a4cceccc741f94e, type: 3}
   sessionCountText: {fileID: 334743969}
   pingText: {fileID: 491505485}
+  mainCamera: {fileID: 519420031}
 --- !u!4 &40509196
 Transform:
   m_ObjectHideFlags: 0
