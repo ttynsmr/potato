@@ -1,4 +1,4 @@
-﻿//
+//
 // async_tcp_echo_server.cpp
 // ~~~~~~~~~~~~~~~~~~~~~~~~~
 //
@@ -86,6 +86,8 @@ private:
 			[this](boost::system::error_code ec, tcp::socket socket)
 			{
 				std::cout << "async_accept\n";
+				boost::asio::ip::tcp::no_delay option(true);
+				socket.set_option(option);
 				if (!ec)
 				{
 					auto session = std::make_shared<potato::net::session>(std::move(socket), ++_sessionId);
@@ -132,12 +134,14 @@ private:
 					_rpcs.emplace_back(diagnosis);
 
 					auto pingPong = std::make_shared<torikime::diagnosis::ping_pong::Rpc>(session);
-					pingPong->subscribeRequest([](const torikime::diagnosis::ping_pong::RequestParcel&, std::shared_ptr<torikime::diagnosis::ping_pong::Rpc::Responser>& responser)
+					pingPong->subscribeRequest([session](const torikime::diagnosis::ping_pong::RequestParcel& request, std::shared_ptr<torikime::diagnosis::ping_pong::Rpc::Responser>& responser)
 						{
+							std::cout << "receieve: ping" << session->getSessionId() << " request id: " << request.request_id() << "\n";
 							torikime::diagnosis::ping_pong::Response response;
-							response.set_receive_time(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
-							response.set_send_time(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
+							response.set_receive_time(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count() + 1000);
+							response.set_send_time(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count() + 1000);
 							responser->send(true, std::move(response));
+							std::cout << "send: pong" << session->getSessionId() << "\n";
 						});
 					_rpcs.emplace_back(pingPong);
 

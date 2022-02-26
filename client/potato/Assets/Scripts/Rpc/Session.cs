@@ -12,6 +12,7 @@ namespace Potato
         {
             public Session(TcpClient client)
             {
+                client.NoDelay = true;
                 this.client = client;
                 rpcs = Torikime.RpcBuilder.Build(this);
             }

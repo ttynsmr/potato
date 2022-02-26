@@ -12,8 +12,12 @@ namespace Potato
             public Session Connect(string ip, int port)
             {
                 session = new Session(new TcpClient(ip, port));
-                StartCoroutine(session.ReceivePayload());
                 return session;
+            }
+
+            public void StartReceive()
+            {
+                StartCoroutine(session.ReceivePayload());
             }
 
             public Session Session => session;
