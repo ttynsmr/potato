@@ -3,6 +3,7 @@
 
 namespace potato::net::protocol
 {
+	struct PayloadHeader;
 	struct Payload;
 }
 
@@ -35,18 +36,14 @@ namespace potato::net
 		SessionId getSessionId() const { return _sessionId; }
 
 	private:
+		void readHeader();
+		void readPercel(const protocol::PayloadHeader& header);
 		void do_read();
 
 		void do_write(std::size_t length);
 
 		boost::asio::ip::tcp::socket _socket;
 		SessionId _sessionId;
-
-		enum
-		{
-			max_length = 1024
-		};
-		char data_[max_length];
 
 		boost::asio::streambuf _receive_buffer;
 
