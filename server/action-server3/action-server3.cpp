@@ -160,17 +160,17 @@ private:
 							notification.release_position(); });
 					_rpcs.emplace_back(example);
 
-					session->subscribeReceivePayload([this, session](const potato::net::protocol::Payload &payload)
-													 {
-                        auto rpc = std::find_if(_rpcs.begin(), _rpcs.end(), [session, &payload](auto& rpc) {
-                            return rpc->getSession()->getSessionId() == session->getSessionId()
+					session->subscribeReceivePayload([this, session](const potato::net::protocol::Payload& payload) {
+						auto rpc = std::find_if(_rpcs.begin(), _rpcs.end(), [session, &payload](auto& rpc) {
+							return rpc->getSession()->getSessionId() == session->getSessionId()
 								&& rpc->getContractId() == payload.getHeader().contract_id
 								&& rpc->getRpcId() == payload.getHeader().rpc_id;
-                            });
-                        if (rpc != _rpcs.end())
-                        {
-                            (*rpc)->receievePayload(payload);
-                        } });
+						});
+						if (rpc != _rpcs.end())
+						{
+							(*rpc)->receievePayload(payload);
+						}
+						});
 
 					_sessions.emplace(session->getSessionId(), session);
 					session->start();
