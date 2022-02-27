@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 
 namespace Torikime
 {
-	namespace Unit
-	{
-		namespace Spawn
-		{
-			public class Rpc : Torikime.IRpc
-			{
+    namespace Unit
+    {
+        namespace Spawn
+        {
+            public class Rpc : Torikime.IRpc
+            {
                 public ushort ContractId => 5;
                 public ushort RpcId => 2;
 
@@ -21,36 +21,36 @@ namespace Torikime
                     this.session = session;
                 }
 
-				public bool ReceievePayload(Potato.Network.Protocol.Payload payload)
-				{
-					switch (payload.Header.rpc_id)
-					{
-						case 2:
-							switch ((Potato.Network.Protocol.Meta) payload.Header.meta)
-							{
+                public bool ReceievePayload(Potato.Network.Protocol.Payload payload)
+                {
+                    switch (payload.Header.rpc_id)
+                    {
+                        case 2:
+                            switch ((Potato.Network.Protocol.Meta) payload.Header.meta)
+                            {
 
-								case Potato.Network.Protocol.Meta.Notification:
-									onSpawnNotification(payload);
-									return true;
+                                case Potato.Network.Protocol.Meta.Notification:
+                                    onSpawnNotification(payload);
+                                    return true;
 
-								default:
-									return false;
-							}
-						default:
-							return false;
-					}
-				}
+                                default:
+                                    return false;
+                            }
+                        default:
+                            return false;
+                    }
+                }
 
 
-				public event Action<Notification> OnNotification;
-				void onSpawnNotification(Potato.Network.Protocol.Payload payload)
-				{
+                public event Action<Notification> OnNotification;
+                void onSpawnNotification(Potato.Network.Protocol.Payload payload)
+                {
                     NotificationParcel notificationParcel = new NotificationParcel();
                     notificationParcel.MergeFrom(new Google.Protobuf.CodedInputStream(payload.GetBuffer(), Potato.Network.Protocol.PayloadHeader.Size, payload.GetBuffer().Length - Potato.Network.Protocol.PayloadHeader.Size));
                     OnNotification?.Invoke(notificationParcel.Notification);
-				}
+                }
 
-			}
-		}
-	}
+            }
+        }
+    }
 }

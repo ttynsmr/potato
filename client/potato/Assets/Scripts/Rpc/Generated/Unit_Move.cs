@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 
 namespace Torikime
 {
-	namespace Unit
-	{
-		namespace Move
-		{
-			public class Rpc : Torikime.IRpc
-			{
+    namespace Unit
+    {
+        namespace Move
+        {
+            public class Rpc : Torikime.IRpc
+            {
                 public ushort ContractId => 5;
                 public ushort RpcId => 0;
 
@@ -21,37 +21,37 @@ namespace Torikime
                     this.session = session;
                 }
 
-				public bool ReceievePayload(Potato.Network.Protocol.Payload payload)
-				{
-					switch (payload.Header.rpc_id)
-					{
-						case 0:
-							switch ((Potato.Network.Protocol.Meta) payload.Header.meta)
-							{
-								case Potato.Network.Protocol.Meta.Response:
-									onMoveResponse(payload);
-									return true;
+                public bool ReceievePayload(Potato.Network.Protocol.Payload payload)
+                {
+                    switch (payload.Header.rpc_id)
+                    {
+                        case 0:
+                            switch ((Potato.Network.Protocol.Meta) payload.Header.meta)
+                            {
+                                case Potato.Network.Protocol.Meta.Response:
+                                    onMoveResponse(payload);
+                                    return true;
 
 
-								case Potato.Network.Protocol.Meta.Notification:
-									onMoveNotification(payload);
-									return true;
+                                case Potato.Network.Protocol.Meta.Notification:
+                                    onMoveNotification(payload);
+                                    return true;
 
-								default:
-									return false;
-							}
-						default:
-							return false;
-					}
-				}
-				public delegate void ResponseCallback(Response response);
+                                default:
+                                    return false;
+                            }
+                        default:
+                            return false;
+                    }
+                }
+                public delegate void ResponseCallback(Response response);
                 private Dictionary<uint, Action<Response>> responseCallbacks = new Dictionary<uint, Action<Response>>();
-				private uint requestId = 0;
-				public void Request(Request request, ResponseCallback callback)
-				{
-					RequestParcel parcel = new RequestParcel();
-					parcel.RequestId = ++requestId;
-					parcel.Request = request;
+                private uint requestId = 0;
+                public void Request(Request request, ResponseCallback callback)
+                {
+                    RequestParcel parcel = new RequestParcel();
+                    parcel.RequestId = ++requestId;
+                    parcel.Request = request;
 
                     responseCallbacks.Add(parcel.RequestId, (response) => { callback(response); });
 
@@ -62,22 +62,22 @@ namespace Torikime
                         parcel.WriteTo(output);
                         output.Flush();
                         payload.SetBufferSize((int)ms.Length);
-						payload.Header.contract_id = ContractId;
-						payload.Header.rpc_id = RpcId;
-						payload.Header.SerializeTo(payload.GetBuffer());
-						ms.Position = 0;
+                        payload.Header.contract_id = ContractId;
+                        payload.Header.rpc_id = RpcId;
+                        payload.Header.SerializeTo(payload.GetBuffer());
+                        ms.Position = 0;
                         ms.Read(payload.GetBuffer(), Potato.Network.Protocol.PayloadHeader.Size, (int)ms.Length);
                         session.SendPayload(payload);
                     }
-				}
+                }
 
                 public IEnumerator RequestCoroutine(Request request, ResponseCallback callback)
                 {
-					RequestParcel parcel = new RequestParcel();
-					parcel.RequestId = ++requestId;
-					parcel.Request = request;
+                    RequestParcel parcel = new RequestParcel();
+                    parcel.RequestId = ++requestId;
+                    parcel.Request = request;
 
-					bool wait = true;
+                    bool wait = true;
                     responseCallbacks.Add(parcel.RequestId, (response) => { wait = false; callback(response); });
 
                     Potato.Network.Protocol.Payload payload = new Potato.Network.Protocol.Payload();
@@ -87,45 +87,45 @@ namespace Torikime
                         parcel.WriteTo(output);
                         output.Flush();
                         payload.SetBufferSize((int)ms.Length);
-						payload.Header.contract_id = ContractId;
-						payload.Header.rpc_id = RpcId;
-						payload.Header.SerializeTo(payload.GetBuffer());
-						ms.Position = 0;
+                        payload.Header.contract_id = ContractId;
+                        payload.Header.rpc_id = RpcId;
+                        payload.Header.SerializeTo(payload.GetBuffer());
+                        ms.Position = 0;
                         ms.Read(payload.GetBuffer(), Potato.Network.Protocol.PayloadHeader.Size, (int)ms.Length);
                         session.SendPayload(payload);
                     }
 
-					while (wait)
-					{
-						yield return null;
-					}
+                    while (wait)
+                    {
+                        yield return null;
+                    }
                 }
 
                 
 
-				void onMoveResponse(Potato.Network.Protocol.Payload payload)
-				{
+                void onMoveResponse(Potato.Network.Protocol.Payload payload)
+                {
                     ResponseParcel responseParcel = new ResponseParcel();
                     responseParcel.MergeFrom(new Google.Protobuf.CodedInputStream(payload.GetBuffer(), Potato.Network.Protocol.PayloadHeader.Size, payload.GetBuffer().Length - Potato.Network.Protocol.PayloadHeader.Size));
 
-					if (responseCallbacks.TryGetValue(responseParcel.RequestId, out var callback))
-					{
-						callback(responseParcel.Response);
-						responseCallbacks.Remove(responseParcel.RequestId);
-					}
-				}
+                    if (responseCallbacks.TryGetValue(responseParcel.RequestId, out var callback))
+                    {
+                        callback(responseParcel.Response);
+                        responseCallbacks.Remove(responseParcel.RequestId);
+                    }
+                }
 
 
 
-				public event Action<Notification> OnNotification;
-				void onMoveNotification(Potato.Network.Protocol.Payload payload)
-				{
+                public event Action<Notification> OnNotification;
+                void onMoveNotification(Potato.Network.Protocol.Payload payload)
+                {
                     NotificationParcel notificationParcel = new NotificationParcel();
                     notificationParcel.MergeFrom(new Google.Protobuf.CodedInputStream(payload.GetBuffer(), Potato.Network.Protocol.PayloadHeader.Size, payload.GetBuffer().Length - Potato.Network.Protocol.PayloadHeader.Size));
                     OnNotification?.Invoke(notificationParcel.Notification);
-				}
+                }
 
-			}
-		}
-	}
+            }
+        }
+    }
 }
