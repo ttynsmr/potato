@@ -25,7 +25,7 @@ namespace potato::net
 		auto self(shared_from_this());
 
 		_socket.async_write_some(boost::asio::buffer(payload->getBuffer()),
-			[this, self](boost::system::error_code /*ec*/, std::size_t /*length*/) {});
+			[this, self, payload](boost::system::error_code /*ec*/, std::size_t /*length*/) {});
 	}
 
 	void session::readHeader()
