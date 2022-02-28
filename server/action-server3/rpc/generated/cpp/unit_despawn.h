@@ -27,7 +27,7 @@ namespace torikime::unit::despawn
 		Rpc(std::shared_ptr<potato::net::session>& session);
 
 
-		potato::net::protocol::Payload serializeNotification(torikime::unit::despawn::Notification&);
+		static std::shared_ptr<potato::net::protocol::Payload> serializeNotification(torikime::unit::despawn::Notification&);
 
 		bool receievePayload(const potato::net::protocol::Payload& payload) override;
 
@@ -36,7 +36,7 @@ namespace torikime::unit::despawn
 
 		std::shared_ptr<potato::net::session> _session;
 
-		std::atomic<std::uint32_t> _notificationId = 0;
+		static std::atomic<std::uint32_t> _notificationId;
 
 	};
 }

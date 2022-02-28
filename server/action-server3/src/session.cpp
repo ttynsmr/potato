@@ -20,11 +20,11 @@ namespace potato::net
 		return shared_from_this();
 	}
 
-	void session::sendPayload(protocol::Payload &payload)
+	void session::sendPayload(std::shared_ptr<potato::net::protocol::Payload> payload)
 	{
 		auto self(shared_from_this());
 
-		_socket.async_write_some(boost::asio::buffer(payload.getBuffer()),
+		_socket.async_write_some(boost::asio::buffer(payload->getBuffer()),
 			[this, self](boost::system::error_code /*ec*/, std::size_t /*length*/) {});
 	}
 
@@ -92,6 +92,7 @@ namespace potato::net
 				{
 					if (!ec)
 					{
+						_lastReceivedTick = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 						readHeader();
 					}
 					else

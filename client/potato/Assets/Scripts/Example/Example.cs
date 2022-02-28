@@ -28,21 +28,21 @@ namespace Potato
             networkService = FindObjectOfType<Potato.Network.NetworkService>();
             var session = networkService.Connect("127.0.0.1", 28888);
 
-            // {
-            //     var sendMessage = networkService.Session.GetRpc<Torikime.Chat.SendMessage.Rpc>();
-            //     sendMessage.OnNotification += (notification) =>
-            //     {
-            //         Debug.Log("Notification received: " + notification.From + "[" + notification.Message + "]");
-            //     };
+            {
+                var sendMessage = networkService.Session.GetRpc<Torikime.Chat.SendMessage.Rpc>();
+                sendMessage.OnNotification += (notification) =>
+                {
+                    Debug.Log("Notification received: " + notification.From + "[" + notification.Message + "]");
+                };
 
-            //     Debug.Log("Request sent");
-            //     var request = new Torikime.Chat.SendMessage.Request();
-            //     request.Message = "Hello world";
-            //     sendMessage.Request(request, (response) =>
-            //         {
-            //             Debug.Log("Response");
-            //         });
-            // }
+                Debug.Log("Request sent");
+                var request = new Torikime.Chat.SendMessage.Request();
+                request.Message = "Hello world";
+                sendMessage.Request(request, (response) =>
+                    {
+                        Debug.Log("Response");
+                    });
+            }
 
             {
                 var updateMousePosition = networkService.Session.GetRpc<Torikime.Example.UpdateMousePosition.Rpc>();

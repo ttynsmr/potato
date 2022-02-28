@@ -26,12 +26,12 @@ namespace {{ namespace }}::{{ contract }}::{{ name }}
 		responseParcel.set_allocated_response(&response);
 		responseParcel.set_success(success);
 
-		potato::net::protocol::Payload payload;
-		payload.getHeader().contract_id = {{ contract_id }};
-		payload.getHeader().rpc_id = {{ rpc_id }};
-		payload.getHeader().meta = static_cast<uint8_t>(potato::net::protocol::Meta::Response);
-		payload.setBufferSize(responseParcel.ByteSize());
-		responseParcel.SerializeToArray(payload.getPayloadData(), payload.getHeader().payloadSize);
+		std::shared_ptr<potato::net::protocol::Payload> payload = std::make_shared<potato::net::protocol::Payload>();
+		payload->getHeader().contract_id = {{ contract_id }};
+		payload->getHeader().rpc_id = {{ rpc_id }};
+		payload->getHeader().meta = static_cast<uint8_t>(potato::net::protocol::Meta::Response);
+		payload->setBufferSize(responseParcel.ByteSize());
+		responseParcel.SerializeToArray(payload->getPayloadData(), payload->getHeader().payloadSize);
 		responseParcel.release_response();
 
 		_session->sendPayload(payload);
@@ -40,6 +40,9 @@ namespace {{ namespace }}::{{ contract }}::{{ name }}
 	}
 {% endif %}
 
+{% if "notification" in rpc %}
+	std::atomic<std::uint32_t> Rpc::_notificationId = 0;
+{% endif %}
 
 	Rpc::Rpc(std::shared_ptr<potato::net::session>& session) : _session(session)
 	{
@@ -62,18 +65,18 @@ namespace {{ namespace }}::{{ contract }}::{{ name }}
 {% endif %}
 
 {% if "notification" in rpc %}
-	potato::net::protocol::Payload Rpc::serializeNotification({{ namespace }}::{{ contract }}::{{ name }}::Notification& notification)
+	std::shared_ptr<potato::net::protocol::Payload> Rpc::serializeNotification({{ namespace }}::{{ contract }}::{{ name }}::Notification& notification)
 	{
 		{{ namespace }}::{{ contract }}::{{ name }}::NotificationParcel notificationParcel;
 		notificationParcel.set_allocated_notification(&notification);
 		notificationParcel.set_notification_id(++_notificationId);
 
-		potato::net::protocol::Payload payload;
-		payload.getHeader().contract_id = {{ contract_id }};
-		payload.getHeader().rpc_id = {{ rpc_id }};
-		payload.getHeader().meta = static_cast<uint8_t>(potato::net::protocol::Meta::Notification);
-		payload.setBufferSize(notificationParcel.ByteSize());
-		notificationParcel.SerializeToArray(payload.getPayloadData(), payload.getHeader().payloadSize);
+		std::shared_ptr<potato::net::protocol::Payload> payload = std::make_shared<potato::net::protocol::Payload>();
+		payload->getHeader().contract_id = {{ contract_id }};
+		payload->getHeader().rpc_id = {{ rpc_id }};
+		payload->getHeader().meta = static_cast<uint8_t>(potato::net::protocol::Meta::Notification);
+		payload->setBufferSize(notificationParcel.ByteSize());
+		notificationParcel.SerializeToArray(payload->getPayloadData(), payload->getHeader().payloadSize);
 		notificationParcel.release_notification();
         return payload;
 	}

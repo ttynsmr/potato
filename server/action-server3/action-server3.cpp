@@ -17,6 +17,8 @@
 #include <algorithm>
 #include <boost/asio.hpp>
 
+#include "eventpp/eventqueue.h"
+
 #include "src/session.h"
 #include "src/Payload.h"
 
@@ -38,53 +40,145 @@
 
 using boost::asio::ip::tcp;
 
-class server
+enum class ServiceProviderType
+{
+	Network,
+	Game,
+};
+
+class IServiceProvider
 {
 public:
-	server(boost::asio::io_context &io_context, unsigned short port)
-		: _acceptor(io_context, tcp::endpoint(tcp::v4(), port))
+	IServiceProvider() {}
+	virtual ~IServiceProvider() {}
+
+	virtual bool isRunning() = 0;
+	virtual void start() = 0;
+	virtual void stop() = 0;
+};
+
+class Service
+{
+public:
+	template <typename T>
+	std::shared_ptr<T> registerServiceProvider(std::shared_ptr<T> serviceProvider)
 	{
-		do_accept();
+		std::scoped_lock(_serviceProvidersLock);
+		_serviceProviders.push_back(serviceProvider);
+		return serviceProvider;
 	}
 
-	void sendTo(potato::net::SessionId _sessionId, potato::net::protocol::Payload &payload)
+	template <typename T>
+	std::shared_ptr<T> findServiceProvider()
 	{
-		auto session = _sessions.find(_sessionId);
-		if (session == _sessions.end())
-		{
-			return;
-		}
-
-		session->second->sendPayload(payload);
-	}
-
-	void sendMulticast(const std::vector<potato::net::SessionId> &sessionIds, potato::net::protocol::Payload &&payload)
-	{
-		for (auto _sessionId : sessionIds)
-		{
-			sendTo(_sessionId, payload);
-		}
-	}
-
-	void sendBroadcast(potato::net::SessionId fromSessionId, potato::net::protocol::Payload &&payload)
-	{
-		for (auto &sessionPair : _sessions)
-		{
-			if (fromSessionId == sessionPair.first)
+		auto serviceProvider = [this] {
+			std::scoped_lock(_serviceProvidersLock);
+			for (auto& s : _serviceProviders)
 			{
-				continue;
+				std::cout << typeid(s).name() << "\n";
 			}
 
-			sessionPair.second->sendPayload(payload);
+			return std::find_if(_serviceProviders.begin(), _serviceProviders.end(), [](std::shared_ptr<IServiceProvider>& s) {
+				std::cout << typeid(s).name() << "\n";
+				return std::dynamic_pointer_cast<T>(s); });
+		}();
+
+		if (serviceProvider == _serviceProviders.end())
+		{
+			return nullptr;
 		}
+
+		return std::dynamic_pointer_cast<T>(*serviceProvider);
+	}
+
+	void run()
+	{
+		while (running)
+		{
+			std::this_thread::sleep_for(std::chrono::seconds(1));
+		}
+	}
+
+	using Queue = eventpp::EventQueue<ServiceProviderType, void(const std::string&, const bool)>;
+	Queue& getQueue()
+	{
+		return queue;
+	}
+
+private:
+	std::mutex _serviceProvidersLock;
+	bool running = true;
+	std::list<std::shared_ptr<IServiceProvider>> _serviceProviders;
+	Queue queue;
+};
+
+class NetworkServiceProvider : public IServiceProvider, public std::enable_shared_from_this<NetworkServiceProvider>
+{
+public:
+	NetworkServiceProvider(uint16_t port, std::shared_ptr<Service> service) : _service(service), _acceptor(_io_context, tcp::endpoint(tcp::v4(), port)) {}
+
+	bool isRunning() override { return true; }
+	void start() override
+	{
+		_thread = std::thread([this]() {
+			std::cout << "action server bootup\n";
+			do_accept();
+			_io_context.run();
+			});
+	}
+	void stop() override
+	{
+		_io_context.stop();
+	}
+
+	enum class Send
+	{
+		Singlecast,
+		Multicast,
+		Broadcast
+	};
+
+	void sendTo(potato::net::SessionId sessionId, std::shared_ptr<potato::net::protocol::Payload> payload)
+	{
+		boost::asio::post(_io_context.get_executor(), [this, sessionId, payload]() {
+			auto session = _sessions.find(_sessionId);
+			if (session == _sessions.end())
+			{
+				return;
+			}
+
+			session->second->sendPayload(payload);
+			});
+	}
+
+	void sendMulticast(const std::vector<potato::net::SessionId>& sessionIds, std::shared_ptr<potato::net::protocol::Payload> payload)
+	{
+		boost::asio::post(_io_context.get_executor(), [this, sessionIds, payload]() {
+			for (auto sessionId : sessionIds)
+			{
+				sendTo(sessionId, payload);
+			}});
+	}
+
+	void sendBroadcast(potato::net::SessionId fromSessionId, std::shared_ptr<potato::net::protocol::Payload> payload)
+	{
+		boost::asio::post(_io_context.get_executor(), [this, fromSessionId, payload]() {
+			for (auto& sessionPair : _sessions)
+			{
+				if (fromSessionId == sessionPair.first)
+				{
+					continue;
+				}
+
+				sessionPair.second->sendPayload(payload);
+			}
+			});
 	}
 
 private:
 	void do_accept()
 	{
-		_acceptor.async_accept(
-			[this](boost::system::error_code ec, tcp::socket socket)
-			{
+		_acceptor.async_accept([this](boost::system::error_code ec, tcp::socket socket) {
 				std::cout << "async_accept\n";
 				boost::asio::ip::tcp::no_delay option(true);
 				socket.set_option(option);
@@ -161,11 +255,12 @@ private:
 					_rpcs.emplace_back(example);
 
 					session->subscribeReceivePayload([this, session](const potato::net::protocol::Payload& payload) {
+						_receiveCount++;
 						auto rpc = std::find_if(_rpcs.begin(), _rpcs.end(), [session, &payload](auto& rpc) {
 							return rpc->getSession()->getSessionId() == session->getSessionId()
 								&& rpc->getContractId() == payload.getHeader().contract_id
 								&& rpc->getRpcId() == payload.getHeader().rpc_id;
-						});
+							});
 						if (rpc != _rpcs.end())
 						{
 							(*rpc)->receievePayload(payload);
@@ -206,57 +301,16 @@ private:
 			});
 	}
 
+	std::thread _thread;
+	boost::asio::io_context _io_context;
+	eventpp::EventQueue<Send, void(std::vector<potato::net::SessionId>, std::shared_ptr<potato::net::protocol::Payload> payload)> _sendPayloadQueue;
 	std::atomic_int _sessionId = 0;
 	std::unordered_map<potato::net::SessionId, std::shared_ptr<potato::net::session>> _sessions;
 	std::vector<std::shared_ptr<torikime::RpcInterface>> _rpcs;
 	tcp::acceptor _acceptor;
-};
-
-class Service;
-class IServiceProvider
-{
-public:
-	IServiceProvider() {}
-	virtual ~IServiceProvider() {}
-
-	virtual bool isRunning() = 0;
-	virtual void start() = 0;
-	virtual void stop() = 0;
-};
-
-class NetworkServiceProvider : public IServiceProvider, public std::enable_shared_from_this<NetworkServiceProvider>
-{
-public:
-	NetworkServiceProvider() {}
-	NetworkServiceProvider(std::shared_ptr<Service> service) : _service(service)
-	{
-	}
-
-	bool isRunning() override { return true; }
-	void start() override
-	{
-		_thread = std::thread([this]()
-							  {
-            server s(_io_context, _port);
-
-            std::cout << "action server bootup\n";
-            _io_context.run(); });
-	}
-	void stop() override
-	{
-		_io_context.stop();
-	}
-
-	void setup(uint16_t port)
-	{
-		_port = port;
-	}
-
-private:
 	std::shared_ptr<Service> _service;
-	std::thread _thread;
-	boost::asio::io_context _io_context;
-	uint16_t _port = 0;
+	std::atomic<int32_t> _sendCount = 0;
+	std::atomic<int32_t> _receiveCount = 0;
 };
 
 class GameServiceProvider : public IServiceProvider, public std::enable_shared_from_this<GameServiceProvider>
@@ -270,18 +324,32 @@ public:
 	bool isRunning() override { return true; }
 	void start() override
 	{
-		_thread = std::thread([this]()
-							  {
-            std::cout << "start game service loop\n";
-            auto prev = std::chrono::high_resolution_clock::now();
-            while (_running)
-            {
-                auto now = std::chrono::high_resolution_clock::now();
-                auto spareTime = std::chrono::high_resolution_clock::now() - prev;
-                prev = now;
-                std::this_thread::sleep_for(std::chrono::milliseconds(std::max(0L, 100 - std::chrono::duration_cast<std::chrono::microseconds>(spareTime).count())));
-            }
-            std::cout << "end game service loop\n"; });
+		_thread = std::thread([this]() {
+			auto nerworkServiceProvider = _service->findServiceProvider<NetworkServiceProvider>();
+			std::cout << "start game service loop\n";
+			_service->getQueue().appendListener(ServiceProviderType::Game, [](const std::string& s, bool b) {
+				std::cout << "received queue " << s << ":" << b << "\n";
+				});
+			auto prev = std::chrono::high_resolution_clock::now();
+			while (_running)
+			{
+				_service->getQueue().process();
+
+				{
+					torikime::chat::send_message::Notification notification;
+					notification.set_message("hey");
+					notification.set_message_id(0);
+					notification.set_from("system");
+					nerworkServiceProvider->sendBroadcast(0, torikime::chat::send_message::Rpc::serializeNotification(notification));
+				}
+
+				auto now = std::chrono::high_resolution_clock::now();
+				auto spareTime = std::chrono::high_resolution_clock::now() - prev;
+				prev = now;
+				std::this_thread::sleep_for(std::chrono::milliseconds(std::max(0L, 100 - std::chrono::duration_cast<std::chrono::microseconds>(spareTime).count())));
+			}
+			std::cout << "end game service loop\n";
+			});
 	}
 
 	void stop() override
@@ -294,29 +362,27 @@ private:
 	std::shared_ptr<Service> _service;
 	std::atomic<bool> _running = true;
 	std::thread _thread;
+	eventpp::EventQueue<int, void(const std::string&, const bool)> queue;
 };
 
-class Service
+class SerializeServiceProvider : public IServiceProvider, public std::enable_shared_from_this<SerializeServiceProvider>
 {
 public:
-	template <typename T>
-	std::shared_ptr<T> registerServiceProvider(std::shared_ptr<T> serviceProvider)
+	SerializeServiceProvider(std::shared_ptr<Service> service) : _service(service)
 	{
-		_serviceProvider.push_back(serviceProvider);
-		return serviceProvider;
 	}
 
-	void run()
+	bool isRunning()
 	{
-		while (running)
-		{
-			std::this_thread::sleep_for(std::chrono::seconds(1));
-		}
+		return false;
 	}
+
+	void start() {}
+
+	void stop() {}
 
 private:
-	bool running = true;
-	std::list<std::shared_ptr<IServiceProvider>> _serviceProvider;
+	std::shared_ptr<Service> _service;
 };
 
 int main(int argc, char *argv[])
@@ -329,14 +395,15 @@ int main(int argc, char *argv[])
 			return 1;
 		}
 
-		Service service;
-		auto network = service.registerServiceProvider(std::make_shared<NetworkServiceProvider>());
-		auto game = service.registerServiceProvider(std::make_shared<GameServiceProvider>());
+		std::shared_ptr<Service> service = std::make_shared<Service>();
+		auto network = service->registerServiceProvider(std::make_shared<NetworkServiceProvider>(std::atoi(argv[1]), service));
+		auto game = service->registerServiceProvider(std::make_shared<GameServiceProvider>(service));
+		auto serialize = service->registerServiceProvider(std::make_shared<SerializeServiceProvider>(service));
 
-		network->setup(std::atoi(argv[1]));
 		network->start();
 		game->start();
-		service.run();
+		serialize->start();
+		service->run();
 	}
 	catch (std::exception &e)
 	{

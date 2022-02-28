@@ -25,18 +25,19 @@ namespace torikime::diagnosis::ping_pong
 		responseParcel.set_allocated_response(&response);
 		responseParcel.set_success(success);
 
-		potato::net::protocol::Payload payload;
-		payload.getHeader().contract_id = 2;
-		payload.getHeader().rpc_id = 1;
-		payload.getHeader().meta = static_cast<uint8_t>(potato::net::protocol::Meta::Response);
-		payload.setBufferSize(responseParcel.ByteSize());
-		responseParcel.SerializeToArray(payload.getPayloadData(), payload.getHeader().payloadSize);
+		std::shared_ptr<potato::net::protocol::Payload> payload = std::make_shared<potato::net::protocol::Payload>();
+		payload->getHeader().contract_id = 2;
+		payload->getHeader().rpc_id = 1;
+		payload->getHeader().meta = static_cast<uint8_t>(potato::net::protocol::Meta::Response);
+		payload->setBufferSize(responseParcel.ByteSize());
+		responseParcel.SerializeToArray(payload->getPayloadData(), payload->getHeader().payloadSize);
 		responseParcel.release_response();
 
 		_session->sendPayload(payload);
 
 		respond = true;
 	}
+
 
 
 

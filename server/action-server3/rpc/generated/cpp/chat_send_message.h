@@ -44,7 +44,7 @@ namespace torikime::chat::send_message
 
 
 
-		potato::net::protocol::Payload serializeNotification(torikime::chat::send_message::Notification&);
+		static std::shared_ptr<potato::net::protocol::Payload> serializeNotification(torikime::chat::send_message::Notification&);
 
 		bool receievePayload(const potato::net::protocol::Payload& payload) override;
 
@@ -58,7 +58,7 @@ namespace torikime::chat::send_message
 
 		std::shared_ptr<potato::net::session> _session;
 
-		std::atomic<std::uint32_t> _notificationId = 0;
+		static std::atomic<std::uint32_t> _notificationId;
 
 	};
 }

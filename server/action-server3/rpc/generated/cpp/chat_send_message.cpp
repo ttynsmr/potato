@@ -25,12 +25,12 @@ namespace torikime::chat::send_message
 		responseParcel.set_allocated_response(&response);
 		responseParcel.set_success(success);
 
-		potato::net::protocol::Payload payload;
-		payload.getHeader().contract_id = 1;
-		payload.getHeader().rpc_id = 0;
-		payload.getHeader().meta = static_cast<uint8_t>(potato::net::protocol::Meta::Response);
-		payload.setBufferSize(responseParcel.ByteSize());
-		responseParcel.SerializeToArray(payload.getPayloadData(), payload.getHeader().payloadSize);
+		std::shared_ptr<potato::net::protocol::Payload> payload = std::make_shared<potato::net::protocol::Payload>();
+		payload->getHeader().contract_id = 1;
+		payload->getHeader().rpc_id = 0;
+		payload->getHeader().meta = static_cast<uint8_t>(potato::net::protocol::Meta::Response);
+		payload->setBufferSize(responseParcel.ByteSize());
+		responseParcel.SerializeToArray(payload->getPayloadData(), payload->getHeader().payloadSize);
 		responseParcel.release_response();
 
 		_session->sendPayload(payload);
@@ -38,6 +38,9 @@ namespace torikime::chat::send_message
 		respond = true;
 	}
 
+
+
+	std::atomic<std::uint32_t> Rpc::_notificationId = 0;
 
 
 	Rpc::Rpc(std::shared_ptr<potato::net::session>& session) : _session(session)
@@ -59,18 +62,18 @@ namespace torikime::chat::send_message
 
 
 
-	potato::net::protocol::Payload Rpc::serializeNotification(torikime::chat::send_message::Notification& notification)
+	std::shared_ptr<potato::net::protocol::Payload> Rpc::serializeNotification(torikime::chat::send_message::Notification& notification)
 	{
 		torikime::chat::send_message::NotificationParcel notificationParcel;
 		notificationParcel.set_allocated_notification(&notification);
 		notificationParcel.set_notification_id(++_notificationId);
 
-		potato::net::protocol::Payload payload;
-		payload.getHeader().contract_id = 1;
-		payload.getHeader().rpc_id = 0;
-		payload.getHeader().meta = static_cast<uint8_t>(potato::net::protocol::Meta::Notification);
-		payload.setBufferSize(notificationParcel.ByteSize());
-		notificationParcel.SerializeToArray(payload.getPayloadData(), payload.getHeader().payloadSize);
+		std::shared_ptr<potato::net::protocol::Payload> payload = std::make_shared<potato::net::protocol::Payload>();
+		payload->getHeader().contract_id = 1;
+		payload->getHeader().rpc_id = 0;
+		payload->getHeader().meta = static_cast<uint8_t>(potato::net::protocol::Meta::Notification);
+		payload->setBufferSize(notificationParcel.ByteSize());
+		notificationParcel.SerializeToArray(payload->getPayloadData(), payload->getHeader().payloadSize);
 		notificationParcel.release_notification();
         return payload;
 	}

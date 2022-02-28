@@ -10,23 +10,26 @@ namespace torikime::unit::spawn
 {
 
 
+	std::atomic<std::uint32_t> Rpc::_notificationId = 0;
+
+
 	Rpc::Rpc(std::shared_ptr<potato::net::session>& session) : _session(session)
 	{
 	}
 
 
-	potato::net::protocol::Payload Rpc::serializeNotification(torikime::unit::spawn::Notification& notification)
+	std::shared_ptr<potato::net::protocol::Payload> Rpc::serializeNotification(torikime::unit::spawn::Notification& notification)
 	{
 		torikime::unit::spawn::NotificationParcel notificationParcel;
 		notificationParcel.set_allocated_notification(&notification);
 		notificationParcel.set_notification_id(++_notificationId);
 
-		potato::net::protocol::Payload payload;
-		payload.getHeader().contract_id = 5;
-		payload.getHeader().rpc_id = 2;
-		payload.getHeader().meta = static_cast<uint8_t>(potato::net::protocol::Meta::Notification);
-		payload.setBufferSize(notificationParcel.ByteSize());
-		notificationParcel.SerializeToArray(payload.getPayloadData(), payload.getHeader().payloadSize);
+		std::shared_ptr<potato::net::protocol::Payload> payload = std::make_shared<potato::net::protocol::Payload>();
+		payload->getHeader().contract_id = 5;
+		payload->getHeader().rpc_id = 2;
+		payload->getHeader().meta = static_cast<uint8_t>(potato::net::protocol::Meta::Notification);
+		payload->setBufferSize(notificationParcel.ByteSize());
+		notificationParcel.SerializeToArray(payload->getPayloadData(), payload->getHeader().payloadSize);
 		notificationParcel.release_notification();
         return payload;
 	}

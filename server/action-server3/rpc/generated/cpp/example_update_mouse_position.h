@@ -44,7 +44,7 @@ namespace torikime::example::update_mouse_position
 
 
 
-		potato::net::protocol::Payload serializeNotification(torikime::example::update_mouse_position::Notification&);
+		static std::shared_ptr<potato::net::protocol::Payload> serializeNotification(torikime::example::update_mouse_position::Notification&);
 
 		bool receievePayload(const potato::net::protocol::Payload& payload) override;
 
@@ -58,7 +58,7 @@ namespace torikime::example::update_mouse_position
 
 		std::shared_ptr<potato::net::session> _session;
 
-		std::atomic<std::uint32_t> _notificationId = 0;
+		static std::atomic<std::uint32_t> _notificationId;
 
 	};
 }

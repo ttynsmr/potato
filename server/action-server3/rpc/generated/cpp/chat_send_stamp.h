@@ -27,7 +27,7 @@ namespace torikime::chat::send_stamp
 		Rpc(std::shared_ptr<potato::net::session>& session);
 
 
-		potato::net::protocol::Payload serializeNotification(torikime::chat::send_stamp::Notification&);
+		static std::shared_ptr<potato::net::protocol::Payload> serializeNotification(torikime::chat::send_stamp::Notification&);
 
 		bool receievePayload(const potato::net::protocol::Payload& payload) override;
 
@@ -36,7 +36,7 @@ namespace torikime::chat::send_stamp
 
 		std::shared_ptr<potato::net::session> _session;
 
-		std::atomic<std::uint32_t> _notificationId = 0;
+		static std::atomic<std::uint32_t> _notificationId;
 
 	};
 }

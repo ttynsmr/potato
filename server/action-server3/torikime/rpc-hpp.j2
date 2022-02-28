@@ -46,7 +46,7 @@ namespace {{ namespace }}::{{ contract }}::{{ name }}
 {% endif %}
 
 {% if "notification" in rpc %}
-		potato::net::protocol::Payload serializeNotification({{ namespace }}::{{ contract }}::{{ name }}::Notification&);
+		static std::shared_ptr<potato::net::protocol::Payload> serializeNotification({{ namespace }}::{{ contract }}::{{ name }}::Notification&);
 {% endif -%}
 
 {# {% if "request" in rpc %} #}
@@ -62,7 +62,7 @@ namespace {{ namespace }}::{{ contract }}::{{ name }}
 {% endif %}
 		std::shared_ptr<potato::net::session> _session;
 {% if "notification" in rpc %}
-		std::atomic<std::uint32_t> _notificationId = 0;
+		static std::atomic<std::uint32_t> _notificationId;
 {% endif %}
 	};
 }

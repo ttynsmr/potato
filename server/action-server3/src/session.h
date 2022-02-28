@@ -19,7 +19,7 @@ namespace potato::net
 
 		std::shared_ptr<session> start();
 
-		void sendPayload(protocol::Payload& payload);
+		void sendPayload(std::shared_ptr<potato::net::protocol::Payload> payload);
 
 		using ReceivePayloadDelegate = std::function<void(const protocol::Payload& payload)>;
 		void subscribeReceivePayload(ReceivePayloadDelegate callback)
@@ -44,6 +44,7 @@ namespace potato::net
 
 		boost::asio::ip::tcp::socket _socket;
 		SessionId _sessionId;
+		uint64_t _lastReceivedTick = 0;
 
 		boost::asio::streambuf _receive_buffer;
 
