@@ -3,6 +3,10 @@ using System.Collections.Generic;
 using Potato.Network.Protocol;
 using UnityEngine;
 using System.Net.Sockets;
+using System.Collections.Concurrent;
+using System.Threading.Tasks;
+using System.Threading;
+using System;
 
 namespace Potato
 {
@@ -19,9 +23,13 @@ namespace Potato
 
             public void Disconnect()
             {
+                Debug.Log("disconnecting");
+                tokenSource.Cancel();
+                receieverTask.Wait();
                 rpcs.Clear();
                 client.Close();
                 client.Dispose();
+                Debug.Log("disconnected");
             }
 
             public void SendPayload(Payload payload)
@@ -35,39 +43,47 @@ namespace Potato
                 return (T)rpcs.Find(x => x is T);
             }
 
-            public IEnumerator ReceivePayload()
+            public void Start()
             {
-                while (true)
+                receieverTask = Task.Run(() =>
                 {
-                    while (client.Available <= PayloadHeader.Size)
+                    while (!tokenSource.IsCancellationRequested)
                     {
-                        yield return null;
+                        byte[] headerBuffer = new byte[PayloadHeader.Size];
+                        var readHeaderSize = client.GetStream().Read(headerBuffer, 0, PayloadHeader.Size);
+                        Debug.Assert(readHeaderSize == PayloadHeader.Size);
+
+                        Payload payload = new Payload
+                        {
+                            Header = PayloadHeader.Deserialize(headerBuffer)
+                        };
+                        payload.SetBufferSize(payload.Header.payloadSize);
+                        var readSize = client.GetStream().Read(payload.GetBuffer(), PayloadHeader.Size, payload.Header.payloadSize);
+                        Debug.Assert(readSize == payload.Header.payloadSize);
+
+                        var rpc = rpcs.Find(x => x.ContractId == payload.Header.contract_id
+                         && x.RpcId == payload.Header.rpc_id);
+
+                        if (rpc != null)
+                        {
+                            queue.Enqueue(() => { rpc.ReceievePayload(payload); });
+                        }
                     }
-
-                    byte[] headerBuffer = new byte[PayloadHeader.Size];
-                    client.GetStream().Read(headerBuffer, 0, PayloadHeader.Size);
-                    var header = PayloadHeader.Deserialize(headerBuffer);
-                    while (client.Available <= header.payloadSize)
-                    {
-                        yield return null;
-                    }
-
-                    Payload payload = new Payload();
-                    payload.Header = header;
-                    payload.SetBufferSize(header.payloadSize);
-                    client.GetStream().Read(payload.GetBuffer(), PayloadHeader.Size, header.payloadSize);
-                    // Debug.Log("received: " + payload.GetBuffer().Length + " bytes");
-                    // Debug.Log("contract:" + header.contract_id + ", rpc:" + header.rpc_id + ", meta" + header.meta + ", size" + header.payloadSize);
-
-                    rpcs.Find(x => x.ContractId == header.contract_id
-                     && x.RpcId == header.rpc_id)?.ReceievePayload(payload);
-                }
+                }, tokenSource.Token);
+                receieverTask.ContinueWith(((task) => { Debug.Log($"receieverTask was {task.Status}"); }));
             }
 
             public void Update()
             {
-                var position = Input.mousePosition;
+                while (queue.TryDequeue(out var action))
+                {
+                    action();
+                }
             }
+
+            CancellationTokenSource tokenSource = new CancellationTokenSource();
+            Task receieverTask;
+            private ConcurrentQueue<Action> queue = new ConcurrentQueue<Action>();
 
             private List<Torikime.IRpc> rpcs;
 

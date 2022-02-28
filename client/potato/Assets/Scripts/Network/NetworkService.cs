@@ -17,7 +17,7 @@ namespace Potato
 
             public void StartReceive()
             {
-                StartCoroutine(session.ReceivePayload());
+                session.Start();
             }
 
             public Session Session => session;
@@ -30,6 +30,10 @@ namespace Potato
             private void Update()
             {
                 session.Update();
+            }
+
+            private void OnDestroy()
+            {
             }
 
             private Session session;
