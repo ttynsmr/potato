@@ -322,32 +322,48 @@ public:
 	}
 
 	bool isRunning() override { return true; }
+
+	void initialize()
+	{
+		_service->getQueue().appendListener(ServiceProviderType::Game, [](const std::string& s, bool b) {
+			std::cout << "received queue " << s << ":" << b << "\n";
+			});
+	}
+
+	// TODO: move to message service
+	void sendSystemMessage(const std::string& message)
+	{
+		torikime::chat::send_message::Notification notification;
+		notification.set_message(message);
+		notification.set_message_id(++messageId);
+		notification.set_from("system");
+		// session id 0 is system
+		_nerworkServiceProvider.lock()->sendBroadcast(0, torikime::chat::send_message::Rpc::serializeNotification(notification));
+	}
+
+	void main()
+	{
+		auto prev = std::chrono::high_resolution_clock::now();
+		while (_running)
+		{
+			_service->getQueue().process();
+
+			sendSystemMessage("hey");
+
+			auto now = std::chrono::high_resolution_clock::now();
+			auto spareTime = std::chrono::high_resolution_clock::now() - prev;
+			prev = now;
+			std::this_thread::sleep_for(std::chrono::milliseconds(std::max(0L, 100 - std::chrono::duration_cast<std::chrono::microseconds>(spareTime).count())));
+		}
+	}
+
 	void start() override
 	{
 		_thread = std::thread([this]() {
-			auto nerworkServiceProvider = _service->findServiceProvider<NetworkServiceProvider>();
+			_nerworkServiceProvider = _service->findServiceProvider<NetworkServiceProvider>();
+			initialize();
 			std::cout << "start game service loop\n";
-			_service->getQueue().appendListener(ServiceProviderType::Game, [](const std::string& s, bool b) {
-				std::cout << "received queue " << s << ":" << b << "\n";
-				});
-			auto prev = std::chrono::high_resolution_clock::now();
-			while (_running)
-			{
-				_service->getQueue().process();
-
-				{
-					torikime::chat::send_message::Notification notification;
-					notification.set_message("hey");
-					notification.set_message_id(0);
-					notification.set_from("system");
-					nerworkServiceProvider->sendBroadcast(0, torikime::chat::send_message::Rpc::serializeNotification(notification));
-				}
-
-				auto now = std::chrono::high_resolution_clock::now();
-				auto spareTime = std::chrono::high_resolution_clock::now() - prev;
-				prev = now;
-				std::this_thread::sleep_for(std::chrono::milliseconds(std::max(0L, 100 - std::chrono::duration_cast<std::chrono::microseconds>(spareTime).count())));
-			}
+			main();
 			std::cout << "end game service loop\n";
 			});
 	}
@@ -359,6 +375,8 @@ public:
 	}
 
 private:
+	int64_t messageId = 0;
+	std::weak_ptr<NetworkServiceProvider> _nerworkServiceProvider;
 	std::shared_ptr<Service> _service;
 	std::atomic<bool> _running = true;
 	std::thread _thread;
