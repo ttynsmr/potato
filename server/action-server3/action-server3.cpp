@@ -109,7 +109,7 @@ private:
 class NetworkServiceProvider : public IServiceProvider, public std::enable_shared_from_this<NetworkServiceProvider>
 {
 public:
-	NetworkServiceProvider(uint16_t port, std::shared_ptr<Service> service) : _service(service), _acceptor(_io_context, tcp::endpoint(tcp::v4(), port)) {}
+	NetworkServiceProvider(uint16_t port, std::shared_ptr<Service> service) : _acceptor(_io_context, tcp::endpoint(tcp::v4(), port)), _service(service) {}
 
 	bool isRunning() override { return true; }
 	void start() override
@@ -169,6 +169,36 @@ public:
 			});
 	}
 
+	using AcceptedDelegate = std::function<void(std::shared_ptr<potato::net::session>)>;
+	void setAcceptedDelegate(AcceptedDelegate callback)
+	{
+		_acceptedDelegate = callback;
+	}
+
+	using SessionStartedDelegate = std::function<void(std::shared_ptr<potato::net::session>)>;
+	void setSessionStartedDelegate(SessionStartedDelegate callback)
+	{
+		_sessionStartedDelegate = callback;
+	}
+	
+	void registerRpc(std::shared_ptr<torikime::RpcInterface> rpc)
+	{
+		_rpcs.emplace_back(rpc);
+	}
+
+	int32_t getConnectionCount() const
+	{
+		return _sessions.size();
+	}
+
+	void processSessions(std::function<void(std::shared_ptr<potato::net::session>)> processor)
+	{
+		for (auto& other : _sessions)
+		{
+			processor(other.second);
+		}
+	}
+
 private:
 	void do_accept()
 	{
@@ -195,58 +225,7 @@ private:
 							}
 						});
 
-					auto chat = std::make_shared<torikime::chat::send_message::Rpc>(session);
-					std::weak_ptr<torikime::chat::send_message::Rpc> weak_chat = chat;
-					chat->subscribeRequest([this, weak_chat, session](const torikime::chat::send_message::RequestParcel& request, std::shared_ptr<torikime::chat::send_message::Rpc::Responser>& responser)
-						{
-							//std::cout << "receive RequestParcel\n";
-							const auto message = request.request().message();
-							torikime::chat::send_message::Response response;
-							const int64_t messageId = 0;
-							response.set_message_id(messageId);
-							responser->send(true, std::move(response));
-
-							torikime::chat::send_message::Notification notification;
-							notification.set_message(message);
-							notification.set_message_id(messageId);
-							notification.set_from(std::to_string(session->getSessionId()));
-							sendBroadcast(session->getSessionId(), weak_chat.lock()->serializeNotification(notification)); });
-					_rpcs.emplace_back(chat);
-
-					auto diagnosis = std::make_shared<torikime::diagnosis::sever_sessions::Rpc>(session);
-					diagnosis->subscribeRequest([this](const torikime::diagnosis::sever_sessions::RequestParcel&, std::shared_ptr<torikime::diagnosis::sever_sessions::Rpc::Responser>& responser)
-						{
-							torikime::diagnosis::sever_sessions::Response response;
-							response.set_session_count(_sessions.size());
-							responser->send(true, std::move(response)); });
-					_rpcs.emplace_back(diagnosis);
-
-					auto pingPong = std::make_shared<torikime::diagnosis::ping_pong::Rpc>(session);
-					pingPong->subscribeRequest([session](const torikime::diagnosis::ping_pong::RequestParcel& request, std::shared_ptr<torikime::diagnosis::ping_pong::Rpc::Responser>& responser)
-						{
-							std::cout << "receieve: ping" << session->getSessionId() << " request id: " << request.request_id() << "\n";
-							torikime::diagnosis::ping_pong::Response response;
-							response.set_receive_time(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count() + 1000);
-							response.set_send_time(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count() + 1000);
-							responser->send(true, std::move(response));
-							std::cout << "send: pong" << session->getSessionId() << "\n";
-						});
-					_rpcs.emplace_back(pingPong);
-
-					auto example = std::make_shared<torikime::example::update_mouse_position::Rpc>(session);
-					std::weak_ptr<torikime::example::update_mouse_position::Rpc> weak_example = example;
-					example->subscribeRequest([this, weak_example, session](const torikime::example::update_mouse_position::RequestParcel& request, std::shared_ptr<torikime::example::update_mouse_position::Rpc::Responser>& responser)
-						{
-							auto position = request.request().position();
-							torikime::example::update_mouse_position::Response response;
-							responser->send(true, std::move(response));
-
-							torikime::example::update_mouse_position::Notification notification;
-							notification.set_session_id(session->getSessionId());
-							notification.set_allocated_position(&position);
-							sendBroadcast(session->getSessionId(), weak_example.lock()->serializeNotification(notification));
-							notification.release_position(); });
-					_rpcs.emplace_back(example);
+					_acceptedDelegate(session);
 
 					session->subscribeReceivePayload([this, session](const potato::net::protocol::Payload& payload) {
 						_receiveCount++;
@@ -265,30 +244,7 @@ private:
 					session->start();
 					std::cout << "session: " << _sessionId << " accepted. current session count is " << _sessions.size() << "\n";
 
-					{
-						auto example = std::make_shared<torikime::example::spawn::Rpc>(session);
-						torikime::example::spawn::Notification notification;
-						notification.set_session_id(session->getSessionId());
-						auto position = new potato::Vector3();
-						position->set_x(0);
-						position->set_y(0);
-						position->set_z(0);
-						notification.set_allocated_position(new potato::Vector3());
-						sendBroadcast(session->getSessionId(), example->serializeNotification(notification));
-
-						for (auto& other : _sessions)
-						{
-							torikime::example::spawn::Notification notification;
-							notification.set_session_id(other.second->getSessionId());
-							auto position = new potato::Vector3();
-							position->set_x(0);
-							position->set_y(0);
-							position->set_z(0);
-							notification.set_allocated_position(new potato::Vector3());
-							auto payload = example->serializeNotification(notification);
-							sendTo(session->getSessionId(), payload);
-						}
-					}
+					_sessionStartedDelegate(session);
 				}
 
 				do_accept();
@@ -305,6 +261,8 @@ private:
 	std::shared_ptr<Service> _service;
 	std::atomic<int32_t> _sendCount = 0;
 	std::atomic<int32_t> _receiveCount = 0;
+	AcceptedDelegate _acceptedDelegate;
+	SessionStartedDelegate _sessionStartedDelegate;
 };
 
 class GameServiceProvider : public IServiceProvider, public std::enable_shared_from_this<GameServiceProvider>
@@ -321,6 +279,90 @@ public:
 	{
 		_service->getQueue().appendListener(ServiceProviderType::Game, [](const std::string& s, bool b) {
 			std::cout << "received queue " << s << ":" << b << "\n";
+			});
+
+		_nerworkServiceProvider.lock()->setAcceptedDelegate([this](auto _) { onAccepted(_); });
+		_nerworkServiceProvider.lock()->setSessionStartedDelegate([this](auto _) { onSessionStarted(_); });
+	}
+
+	void onAccepted(std::shared_ptr<potato::net::session> session)
+	{
+		auto chat = std::make_shared<torikime::chat::send_message::Rpc>(session);
+		std::weak_ptr<torikime::chat::send_message::Rpc> weak_chat = chat;
+		chat->subscribeRequest([this, weak_chat, session](const torikime::chat::send_message::RequestParcel& request, std::shared_ptr<torikime::chat::send_message::Rpc::Responser>& responser)
+			{
+				//std::cout << "receive RequestParcel\n";
+				const auto message = request.request().message();
+				torikime::chat::send_message::Response response;
+				const int64_t messageId = 0;
+				response.set_message_id(messageId);
+				responser->send(true, std::move(response));
+
+				torikime::chat::send_message::Notification notification;
+				notification.set_message(message);
+				notification.set_message_id(messageId);
+				notification.set_from(std::to_string(session->getSessionId()));
+				_nerworkServiceProvider.lock()->sendBroadcast(session->getSessionId(), weak_chat.lock()->serializeNotification(notification)); });
+		_nerworkServiceProvider.lock()->registerRpc(chat);
+
+		auto diagnosis = std::make_shared<torikime::diagnosis::sever_sessions::Rpc>(session);
+		diagnosis->subscribeRequest([this](const torikime::diagnosis::sever_sessions::RequestParcel&, std::shared_ptr<torikime::diagnosis::sever_sessions::Rpc::Responser>& responser)
+			{
+				torikime::diagnosis::sever_sessions::Response response;
+				response.set_session_count(_nerworkServiceProvider.lock()->getConnectionCount());
+				responser->send(true, std::move(response)); });
+		_nerworkServiceProvider.lock()->registerRpc(diagnosis);
+
+		auto pingPong = std::make_shared<torikime::diagnosis::ping_pong::Rpc>(session);
+		pingPong->subscribeRequest([session](const torikime::diagnosis::ping_pong::RequestParcel& request, std::shared_ptr<torikime::diagnosis::ping_pong::Rpc::Responser>& responser)
+			{
+				std::cout << "receieve: ping" << session->getSessionId() << " request id: " << request.request_id() << "\n";
+				torikime::diagnosis::ping_pong::Response response;
+				response.set_receive_time(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count() + 1000);
+				response.set_send_time(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count() + 1000);
+				responser->send(true, std::move(response));
+				std::cout << "send: pong" << session->getSessionId() << "\n";
+			});
+		_nerworkServiceProvider.lock()->registerRpc(pingPong);
+
+		auto example = std::make_shared<torikime::example::update_mouse_position::Rpc>(session);
+		std::weak_ptr<torikime::example::update_mouse_position::Rpc> weak_example = example;
+		example->subscribeRequest([this, weak_example, session](const torikime::example::update_mouse_position::RequestParcel& request, std::shared_ptr<torikime::example::update_mouse_position::Rpc::Responser>& responser)
+			{
+				auto position = request.request().position();
+				torikime::example::update_mouse_position::Response response;
+				responser->send(true, std::move(response));
+
+				torikime::example::update_mouse_position::Notification notification;
+				notification.set_session_id(session->getSessionId());
+				notification.set_allocated_position(&position);
+				_nerworkServiceProvider.lock()->sendBroadcast(session->getSessionId(), weak_example.lock()->serializeNotification(notification));
+				notification.release_position(); });
+		_nerworkServiceProvider.lock()->registerRpc(example);
+	}
+
+	void onSessionStarted(std::shared_ptr<potato::net::session> session)
+	{
+		auto example = std::make_shared<torikime::example::spawn::Rpc>(session);
+		torikime::example::spawn::Notification notification;
+		notification.set_session_id(session->getSessionId());
+		auto position = new potato::Vector3();
+		position->set_x(0);
+		position->set_y(0);
+		position->set_z(0);
+		notification.set_allocated_position(new potato::Vector3());
+		_nerworkServiceProvider.lock()->sendBroadcast(session->getSessionId(), example->serializeNotification(notification));
+
+		_nerworkServiceProvider.lock()->processSessions([this, example, session](auto other) {
+			torikime::example::spawn::Notification notification;
+			notification.set_session_id(other->getSessionId());
+			auto position = new potato::Vector3();
+			position->set_x(0);
+			position->set_y(0);
+			position->set_z(0);
+			notification.set_allocated_position(new potato::Vector3());
+			auto payload = example->serializeNotification(notification);
+			_nerworkServiceProvider.lock()->sendTo(session->getSessionId(), payload);
 			});
 	}
 
