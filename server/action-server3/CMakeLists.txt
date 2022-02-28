@@ -52,6 +52,9 @@ endif()
 #   BYPRODUCTS ${CMAKE_CURRENT_SOURCE_DIR}/proto/*
 #   )
 
+# eventpp
+ADD_SUBDIRECTORY(externals/eventpp)
+
 # add protocol buffer settings
 INCLUDE(FindProtobuf)
 FIND_PACKAGE(Protobuf REQUIRED)
@@ -78,7 +81,7 @@ add_executable (action-server3  ${ALL_SOURCES} "src/Payload.h" "src/Payload.cpp"
 
 find_package (Threads REQUIRED)
 
-target_link_libraries(action-server3 pthread proto ${PROTOBUF_LIBRARY} rpc_contracts)
+target_link_libraries(action-server3 pthread eventpp proto ${PROTOBUF_LIBRARY} rpc_contracts)
 
 set( BOOST_ROOT "/usr/lib/x86_64-linux-gnu/")
 

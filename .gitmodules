@@ -1,0 +1,3 @@
+[submodule "server/action-server3/externals/eventpp"]
+	path = server/action-server3/externals/eventpp
+	url = https://github.com/wqking/eventpp.git
