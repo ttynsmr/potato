@@ -73,13 +73,7 @@ public:
 	{
 		auto serviceProvider = [this] {
 			std::scoped_lock(_serviceProvidersLock);
-			for (auto& s : _serviceProviders)
-			{
-				std::cout << typeid(s).name() << "\n";
-			}
-
 			return std::find_if(_serviceProviders.begin(), _serviceProviders.end(), [](std::shared_ptr<IServiceProvider>& s) {
-				std::cout << typeid(s).name() << "\n";
 				return std::dynamic_pointer_cast<T>(s); });
 		}();
 
