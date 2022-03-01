@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -20,6 +21,8 @@ namespace Potato
         public Camera mainCamera;
 
         private Dictionary<int, GameObject> trails = new Dictionary<int, GameObject>();
+
+        private ConcurrentQueue<Action> callOnMainThread = new ConcurrentQueue<Action>();
 
         private void Start()
         {
@@ -110,7 +113,6 @@ namespace Potato
                 Debug.Log("ping sent");
                 yield return pingpong.RequestCoroutine(request, (response) =>
                 {
-                    Debug.Log("pong received");
                     var now = (long)(DateTime.UtcNow - UnixEpoch).TotalMilliseconds;
                     var sendGap = response.ReceiveTime - request.SendTime;
                     var receiveGap = now - response.ReceiveTime;
@@ -129,8 +131,17 @@ namespace Potato
                         $"server time: {response.SendTime}\n" +
                         $"adj time: {serverTime}\n" +
                         $"diff time: {serverTime - now - latency}\n";
-                    pingText.text = str;
+
+                    callOnMainThread.Enqueue(() => {
+                        Debug.Log("pong received");
+                        pingText.text = str;
+                    });
                 });
+
+                while (callOnMainThread.TryDequeue(out var action))
+                {
+                    action();
+                }
 
                 yield return new WaitForSeconds(1);
             }

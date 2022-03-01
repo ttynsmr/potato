@@ -27,7 +27,7 @@ namespace Potato
 
             }
 
-            private void Update()
+            private void FixedUpdate()
             {
                 session.Update();
             }

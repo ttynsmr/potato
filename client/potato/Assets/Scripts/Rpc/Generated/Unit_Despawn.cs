@@ -12,8 +12,11 @@ namespace Torikime
         {
             public class Rpc : Torikime.IRpc
             {
-                public ushort ContractId => 5;
-                public ushort RpcId => 3;
+                public static ushort StaticContractId = 5;
+                public static ushort StaticRpcId = 3;
+
+                public ushort ContractId => StaticContractId;
+                public ushort RpcId => StaticRpcId;
 
                 private Potato.Network.Session session;
                 public Rpc(Potato.Network.Session session)

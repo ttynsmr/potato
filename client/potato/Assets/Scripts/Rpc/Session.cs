@@ -64,6 +64,19 @@ namespace Potato
                         var rpc = rpcs.Find(x => x.ContractId == payload.Header.contract_id
                          && x.RpcId == payload.Header.rpc_id);
 
+                        if (rpc.ContractId == Torikime.Diagnosis.PingPong.Rpc.StaticContractId
+                        && rpc.RpcId == Torikime.Diagnosis.PingPong.Rpc.StaticRpcId)
+                        {
+                            try
+                            {
+                                rpc.ReceievePayload(payload);
+                            }
+                            catch (Exception)
+                            {
+                            }
+                            continue;
+                        }
+
                         if (rpc != null)
                         {
                             queue.Enqueue(() => { rpc.ReceievePayload(payload); });

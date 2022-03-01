@@ -12,8 +12,11 @@ namespace Torikime
         {
             public class Rpc : Torikime.IRpc
             {
-                public ushort ContractId => 2;
-                public ushort RpcId => 1;
+                public static ushort StaticContractId = 2;
+                public static ushort StaticRpcId = 1;
+
+                public ushort ContractId => StaticContractId;
+                public ushort RpcId => StaticRpcId;
 
                 private Potato.Network.Session session;
                 public Rpc(Potato.Network.Session session)
@@ -69,27 +72,11 @@ namespace Torikime
 
                 public IEnumerator RequestCoroutine(Request request, ResponseCallback callback)
                 {
-                    RequestParcel parcel = new RequestParcel();
-                    parcel.RequestId = ++requestId;
-                    parcel.Request = request;
-
                     bool wait = true;
-                    responseCallbacks.Add(parcel.RequestId, (response) => { wait = false; callback(response); });
-
-                    Potato.Network.Protocol.Payload payload = new Potato.Network.Protocol.Payload();
-                    using (System.IO.MemoryStream ms = new System.IO.MemoryStream())
-                    using (Google.Protobuf.CodedOutputStream output = new Google.Protobuf.CodedOutputStream(ms))
-                    {
-                        parcel.WriteTo(output);
-                        output.Flush();
-                        payload.SetBufferSize((int)ms.Length);
-                        payload.Header.contract_id = ContractId;
-                        payload.Header.rpc_id = RpcId;
-                        payload.Header.SerializeTo(payload.GetBuffer());
-                        ms.Position = 0;
-                        ms.Read(payload.GetBuffer(), Potato.Network.Protocol.PayloadHeader.Size, (int)ms.Length);
-                        session.SendPayload(payload);
-                    }
+                    Request(request, (response) => {
+                        wait = false;
+                        callback(response);
+                    });
 
                     while (wait)
                     {
