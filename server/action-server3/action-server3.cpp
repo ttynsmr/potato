@@ -318,8 +318,8 @@ public:
 			{
 				std::cout << "receieve: ping" << session->getSessionId() << " request id: " << request.request_id() << "\n";
 				torikime::diagnosis::ping_pong::Response response;
-				response.set_receive_time(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count() + 1000);
-				response.set_send_time(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count() + 1000);
+				response.set_receive_time(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
+				response.set_send_time(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
 				responser->send(true, std::move(response));
 				std::cout << "send: pong" << session->getSessionId() << "\n";
 			});

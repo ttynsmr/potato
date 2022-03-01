@@ -147,7 +147,7 @@ namespace Potato
             }
         }
 
-        private void Update()
+        private void LateUpdate()
         {
             var screenPosision = Input.mousePosition;
             screenPosision.z = 1;
