@@ -25,16 +25,35 @@ namespace Potato {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "Cg1tZXNzYWdlLnByb3RvEgZwb3RhdG8iKgoHVmVjdG9yMxIJCgF4GAEgASgC",
-            "EgkKAXkYAiABKAISCQoBehgDIAEoAmIGcHJvdG8z"));
+            "EgkKAXkYAiABKAISCQoBehgDIAEoAiIvCg1JbmRpdmlkdWFsaXR5Eh4KBHR5",
+            "cGUYASABKA4yEC5wb3RhdG8uVW5pdFR5cGUqmgEKCFVuaXRUeXBlEhIKDlVO",
+            "SVRfVFlQRV9OT05FEAASFAoQVU5JVF9UWVBFX1BMQVlFUhABEhMKD1VOSVRf",
+            "VFlQRV9FTkVNWRACEhQKEFVOSVRfVFlQRV9CVUxMRVQQAxISCg5VTklUX1RZ",
+            "UEVfV0FMTBAEEhIKDlVOSVRfVFlQRV9JVEVNEAUSEQoNVU5JVF9UWVBFX01B",
+            "WBAGYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
-          new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Potato.Vector3), global::Potato.Vector3.Parser, new[]{ "X", "Y", "Z" }, null, null, null)
+          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Potato.UnitType), }, new pbr::GeneratedClrTypeInfo[] {
+            new pbr::GeneratedClrTypeInfo(typeof(global::Potato.Vector3), global::Potato.Vector3.Parser, new[]{ "X", "Y", "Z" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Potato.Individuality), global::Potato.Individuality.Parser, new[]{ "Type" }, null, null, null)
           }));
     }
     #endregion
 
   }
+  #region Enums
+  public enum UnitType {
+    [pbr::OriginalName("UNIT_TYPE_NONE")] None = 0,
+    [pbr::OriginalName("UNIT_TYPE_PLAYER")] Player = 1,
+    [pbr::OriginalName("UNIT_TYPE_ENEMY")] Enemy = 2,
+    [pbr::OriginalName("UNIT_TYPE_BULLET")] Bullet = 3,
+    [pbr::OriginalName("UNIT_TYPE_WALL")] Wall = 4,
+    [pbr::OriginalName("UNIT_TYPE_ITEM")] Item = 5,
+    [pbr::OriginalName("UNIT_TYPE_MAX")] Max = 6,
+  }
+
+  #endregion
+
   #region Messages
   public sealed partial class Vector3 : pb::IMessage<Vector3> {
     private static readonly pb::MessageParser<Vector3> _parser = new pb::MessageParser<Vector3>(() => new Vector3());
@@ -213,6 +232,135 @@ namespace Potato {
           }
           case 29: {
             Z = input.ReadFloat();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class Individuality : pb::IMessage<Individuality> {
+    private static readonly pb::MessageParser<Individuality> _parser = new pb::MessageParser<Individuality>(() => new Individuality());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<Individuality> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::Potato.MessageReflection.Descriptor.MessageTypes[1]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public Individuality() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public Individuality(Individuality other) : this() {
+      type_ = other.type_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public Individuality Clone() {
+      return new Individuality(this);
+    }
+
+    /// <summary>Field number for the "type" field.</summary>
+    public const int TypeFieldNumber = 1;
+    private global::Potato.UnitType type_ = 0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Potato.UnitType Type {
+      get { return type_; }
+      set {
+        type_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as Individuality);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(Individuality other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Type != other.Type) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Type != 0) hash ^= Type.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Type != 0) {
+        output.WriteRawTag(8);
+        output.WriteEnum((int) Type);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Type != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Type);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(Individuality other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Type != 0) {
+        Type = other.Type;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            type_ = (global::Potato.UnitType) input.ReadEnum();
             break;
           }
         }

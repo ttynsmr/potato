@@ -25,16 +25,17 @@ namespace Torikime.Unit.Spawn {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "Ch9nZW5lcmF0ZWQvdW5pdC91bml0X3NwYXduLnByb3RvEhN0b3Jpa2ltZS51",
-            "bml0LnNwYXduGg1tZXNzYWdlLnByb3RvIlgKDE5vdGlmaWNhdGlvbhISCgpz",
-            "ZXNzaW9uX2lkGAEgASgFEiEKCHBvc2l0aW9uGAIgASgLMg8ucG90YXRvLlZl",
-            "Y3RvcjMSEQoJZGlyZWN0aW9uGAMgASgCImYKEk5vdGlmaWNhdGlvblBhcmNl",
-            "bBI3Cgxub3RpZmljYXRpb24YASABKAsyIS50b3Jpa2ltZS51bml0LnNwYXdu",
-            "Lk5vdGlmaWNhdGlvbhIXCg9ub3RpZmljYXRpb25faWQYAiABKA1iBnByb3Rv",
-            "Mw=="));
+            "bml0LnNwYXduGg1tZXNzYWdlLnByb3RvIoYBCgxOb3RpZmljYXRpb24SEgoK",
+            "c2Vzc2lvbl9pZBgBIAEoBRIhCghwb3NpdGlvbhgCIAEoCzIPLnBvdGF0by5W",
+            "ZWN0b3IzEhEKCWRpcmVjdGlvbhgDIAEoAhIsCg1pbmRpdmlkdWFsaXR5GAQg",
+            "ASgLMhUucG90YXRvLkluZGl2aWR1YWxpdHkiZgoSTm90aWZpY2F0aW9uUGFy",
+            "Y2VsEjcKDG5vdGlmaWNhdGlvbhgBIAEoCzIhLnRvcmlraW1lLnVuaXQuc3Bh",
+            "d24uTm90aWZpY2F0aW9uEhcKD25vdGlmaWNhdGlvbl9pZBgCIAEoDWIGcHJv",
+            "dG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Potato.MessageReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Torikime.Unit.Spawn.Notification), global::Torikime.Unit.Spawn.Notification.Parser, new[]{ "SessionId", "Position", "Direction" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Torikime.Unit.Spawn.Notification), global::Torikime.Unit.Spawn.Notification.Parser, new[]{ "SessionId", "Position", "Direction", "Individuality" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Torikime.Unit.Spawn.NotificationParcel), global::Torikime.Unit.Spawn.NotificationParcel.Parser, new[]{ "Notification", "NotificationId" }, null, null, null)
           }));
     }
@@ -70,6 +71,7 @@ namespace Torikime.Unit.Spawn {
       sessionId_ = other.sessionId_;
       position_ = other.position_ != null ? other.position_.Clone() : null;
       direction_ = other.direction_;
+      individuality_ = other.individuality_ != null ? other.individuality_.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -111,6 +113,17 @@ namespace Torikime.Unit.Spawn {
       }
     }
 
+    /// <summary>Field number for the "individuality" field.</summary>
+    public const int IndividualityFieldNumber = 4;
+    private global::Potato.Individuality individuality_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Potato.Individuality Individuality {
+      get { return individuality_; }
+      set {
+        individuality_ = value;
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as Notification);
@@ -127,6 +140,7 @@ namespace Torikime.Unit.Spawn {
       if (SessionId != other.SessionId) return false;
       if (!object.Equals(Position, other.Position)) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(Direction, other.Direction)) return false;
+      if (!object.Equals(Individuality, other.Individuality)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -136,6 +150,7 @@ namespace Torikime.Unit.Spawn {
       if (SessionId != 0) hash ^= SessionId.GetHashCode();
       if (position_ != null) hash ^= Position.GetHashCode();
       if (Direction != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(Direction);
+      if (individuality_ != null) hash ^= Individuality.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -161,6 +176,10 @@ namespace Torikime.Unit.Spawn {
         output.WriteRawTag(29);
         output.WriteFloat(Direction);
       }
+      if (individuality_ != null) {
+        output.WriteRawTag(34);
+        output.WriteMessage(Individuality);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -177,6 +196,9 @@ namespace Torikime.Unit.Spawn {
       }
       if (Direction != 0F) {
         size += 1 + 4;
+      }
+      if (individuality_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Individuality);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -200,6 +222,12 @@ namespace Torikime.Unit.Spawn {
       }
       if (other.Direction != 0F) {
         Direction = other.Direction;
+      }
+      if (other.individuality_ != null) {
+        if (individuality_ == null) {
+          individuality_ = new global::Potato.Individuality();
+        }
+        Individuality.MergeFrom(other.Individuality);
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -225,6 +253,13 @@ namespace Torikime.Unit.Spawn {
           }
           case 29: {
             Direction = input.ReadFloat();
+            break;
+          }
+          case 34: {
+            if (individuality_ == null) {
+              individuality_ = new global::Potato.Individuality();
+            }
+            input.ReadMessage(individuality_);
             break;
           }
         }

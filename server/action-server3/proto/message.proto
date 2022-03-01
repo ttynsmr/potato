@@ -2,14 +2,20 @@ syntax = "proto3";
 
 package potato;
 
-// message Message {
-//   int32 id = 1;
-//   string name = 2;
-//   string text = 3;
-// }
-
 message Vector3 {
   float x = 1;
   float y = 2;
   float z = 3;
 }
+
+enum UnitType {
+  UNIT_TYPE_NONE = 0;
+  UNIT_TYPE_PLAYER = 1;
+  UNIT_TYPE_ENEMY = 2;
+  UNIT_TYPE_BULLET = 3;
+  UNIT_TYPE_WALL = 4;
+  UNIT_TYPE_ITEM = 5;
+  UNIT_TYPE_MAX = 6;
+}
+
+message Individuality { UnitType type = 1; }

@@ -17,6 +17,7 @@ message Notification {
   int32 session_id = 1;
   potato.Vector3 position = 2;
   float direction = 3;
+  potato.Individuality individuality = 4;
 }
 
 message NotificationParcel

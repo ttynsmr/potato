@@ -38,6 +38,7 @@ contracts:
         session_id: int32
         position: potato.Vector3
         direction: float
+        individuality: potato.Individuality
     despawn:
       imports:
         - "message.proto"
