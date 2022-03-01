@@ -44,6 +44,8 @@ namespace torikime::channel::search
 	Rpc::Rpc(std::shared_ptr<potato::net::session>& session) : _session(session)
 	{
 	}
+
+
 	void Rpc::onSearchRequest(const potato::net::protocol::Payload& payload)
 	{
 		torikime::channel::search::RequestParcel requestParcel;

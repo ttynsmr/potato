@@ -46,6 +46,8 @@ namespace torikime::example::update_mouse_position
 	Rpc::Rpc(std::shared_ptr<potato::net::session>& session) : _session(session)
 	{
 	}
+
+
 	void Rpc::onUpdateMousePositionRequest(const potato::net::protocol::Payload& payload)
 	{
 		torikime::example::update_mouse_position::RequestParcel requestParcel;

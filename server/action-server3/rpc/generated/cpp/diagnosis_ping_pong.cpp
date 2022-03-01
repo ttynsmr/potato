@@ -44,6 +44,8 @@ namespace torikime::diagnosis::ping_pong
 	Rpc::Rpc(std::shared_ptr<potato::net::session>& session) : _session(session)
 	{
 	}
+
+
 	void Rpc::onPingPongRequest(const potato::net::protocol::Payload& payload)
 	{
 		torikime::diagnosis::ping_pong::RequestParcel requestParcel;

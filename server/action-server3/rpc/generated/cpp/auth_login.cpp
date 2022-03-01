@@ -44,6 +44,8 @@ namespace torikime::auth::login
 	Rpc::Rpc(std::shared_ptr<potato::net::session>& session) : _session(session)
 	{
 	}
+
+
 	void Rpc::onLoginRequest(const potato::net::protocol::Payload& payload)
 	{
 		torikime::auth::login::RequestParcel requestParcel;

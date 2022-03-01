@@ -46,6 +46,8 @@ namespace torikime::chat::send_message
 	Rpc::Rpc(std::shared_ptr<potato::net::session>& session) : _session(session)
 	{
 	}
+
+
 	void Rpc::onSendMessageRequest(const potato::net::protocol::Payload& payload)
 	{
 		torikime::chat::send_message::RequestParcel requestParcel;

@@ -46,6 +46,8 @@ namespace torikime::unit::stop
 	Rpc::Rpc(std::shared_ptr<potato::net::session>& session) : _session(session)
 	{
 	}
+
+
 	void Rpc::onStopRequest(const potato::net::protocol::Payload& payload)
 	{
 		torikime::unit::stop::RequestParcel requestParcel;

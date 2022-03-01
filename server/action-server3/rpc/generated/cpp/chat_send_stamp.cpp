@@ -18,6 +18,8 @@ namespace torikime::chat::send_stamp
 	}
 
 
+
+
 	std::shared_ptr<potato::net::protocol::Payload> Rpc::serializeNotification(torikime::chat::send_stamp::Notification& notification)
 	{
 		torikime::chat::send_stamp::NotificationParcel notificationParcel;

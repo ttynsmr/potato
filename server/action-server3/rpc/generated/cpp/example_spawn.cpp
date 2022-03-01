@@ -18,6 +18,8 @@ namespace torikime::example::spawn
 	}
 
 
+
+
 	std::shared_ptr<potato::net::protocol::Payload> Rpc::serializeNotification(torikime::example::spawn::Notification& notification)
 	{
 		torikime::example::spawn::NotificationParcel notificationParcel;

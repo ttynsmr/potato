@@ -44,6 +44,8 @@ namespace torikime::diagnosis::sever_sessions
 	Rpc::Rpc(std::shared_ptr<potato::net::session>& session) : _session(session)
 	{
 	}
+
+
 	void Rpc::onSeverSessionsRequest(const potato::net::protocol::Payload& payload)
 	{
 		torikime::diagnosis::sever_sessions::RequestParcel requestParcel;

@@ -48,7 +48,7 @@ namespace {{ namespace }}::{{ contract }}::{{ name }}
 	{
 	}
 
-{%- if "request" in rpc %}
+{% if "request" in rpc %}
 	void Rpc::on{{ name | camelize }}Request(const potato::net::protocol::Payload& payload)
 	{
 		{{ namespace }}::{{ contract }}::{{ name }}::RequestParcel requestParcel;

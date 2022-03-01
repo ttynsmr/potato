@@ -18,6 +18,8 @@ namespace torikime::unit::despawn
 	}
 
 
+
+
 	std::shared_ptr<potato::net::protocol::Payload> Rpc::serializeNotification(torikime::unit::despawn::Notification& notification)
 	{
 		torikime::unit::despawn::NotificationParcel notificationParcel;

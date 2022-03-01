@@ -46,6 +46,8 @@ namespace torikime::channel::create
 	Rpc::Rpc(std::shared_ptr<potato::net::session>& session) : _session(session)
 	{
 	}
+
+
 	void Rpc::onCreateRequest(const potato::net::protocol::Payload& payload)
 	{
 		torikime::channel::create::RequestParcel requestParcel;
