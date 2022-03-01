@@ -25,17 +25,17 @@ namespace Torikime.Unit.Spawn {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "Ch9nZW5lcmF0ZWQvdW5pdC91bml0X3NwYXduLnByb3RvEhN0b3Jpa2ltZS51",
-            "bml0LnNwYXduGg1tZXNzYWdlLnByb3RvIoYBCgxOb3RpZmljYXRpb24SEgoK",
-            "c2Vzc2lvbl9pZBgBIAEoBRIhCghwb3NpdGlvbhgCIAEoCzIPLnBvdGF0by5W",
-            "ZWN0b3IzEhEKCWRpcmVjdGlvbhgDIAEoAhIsCg1pbmRpdmlkdWFsaXR5GAQg",
-            "ASgLMhUucG90YXRvLkluZGl2aWR1YWxpdHkiZgoSTm90aWZpY2F0aW9uUGFy",
-            "Y2VsEjcKDG5vdGlmaWNhdGlvbhgBIAEoCzIhLnRvcmlraW1lLnVuaXQuc3Bh",
-            "d24uTm90aWZpY2F0aW9uEhcKD25vdGlmaWNhdGlvbl9pZBgCIAEoDWIGcHJv",
-            "dG8z"));
+            "bml0LnNwYXduGg1tZXNzYWdlLnByb3RvIpcBCgxOb3RpZmljYXRpb24SEgoK",
+            "c2Vzc2lvbl9pZBgBIAEoBRIPCgd1bml0X2lkGAIgASgEEiEKCHBvc2l0aW9u",
+            "GAMgASgLMg8ucG90YXRvLlZlY3RvcjMSEQoJZGlyZWN0aW9uGAQgASgCEiwK",
+            "DWluZGl2aWR1YWxpdHkYBSABKAsyFS5wb3RhdG8uSW5kaXZpZHVhbGl0eSJm",
+            "ChJOb3RpZmljYXRpb25QYXJjZWwSNwoMbm90aWZpY2F0aW9uGAEgASgLMiEu",
+            "dG9yaWtpbWUudW5pdC5zcGF3bi5Ob3RpZmljYXRpb24SFwoPbm90aWZpY2F0",
+            "aW9uX2lkGAIgASgNYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Potato.MessageReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Torikime.Unit.Spawn.Notification), global::Torikime.Unit.Spawn.Notification.Parser, new[]{ "SessionId", "Position", "Direction", "Individuality" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Torikime.Unit.Spawn.Notification), global::Torikime.Unit.Spawn.Notification.Parser, new[]{ "SessionId", "UnitId", "Position", "Direction", "Individuality" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Torikime.Unit.Spawn.NotificationParcel), global::Torikime.Unit.Spawn.NotificationParcel.Parser, new[]{ "Notification", "NotificationId" }, null, null, null)
           }));
     }
@@ -69,6 +69,7 @@ namespace Torikime.Unit.Spawn {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public Notification(Notification other) : this() {
       sessionId_ = other.sessionId_;
+      unitId_ = other.unitId_;
       position_ = other.position_ != null ? other.position_.Clone() : null;
       direction_ = other.direction_;
       individuality_ = other.individuality_ != null ? other.individuality_.Clone() : null;
@@ -91,8 +92,19 @@ namespace Torikime.Unit.Spawn {
       }
     }
 
+    /// <summary>Field number for the "unit_id" field.</summary>
+    public const int UnitIdFieldNumber = 2;
+    private ulong unitId_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public ulong UnitId {
+      get { return unitId_; }
+      set {
+        unitId_ = value;
+      }
+    }
+
     /// <summary>Field number for the "position" field.</summary>
-    public const int PositionFieldNumber = 2;
+    public const int PositionFieldNumber = 3;
     private global::Potato.Vector3 position_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Potato.Vector3 Position {
@@ -103,7 +115,7 @@ namespace Torikime.Unit.Spawn {
     }
 
     /// <summary>Field number for the "direction" field.</summary>
-    public const int DirectionFieldNumber = 3;
+    public const int DirectionFieldNumber = 4;
     private float direction_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public float Direction {
@@ -114,7 +126,7 @@ namespace Torikime.Unit.Spawn {
     }
 
     /// <summary>Field number for the "individuality" field.</summary>
-    public const int IndividualityFieldNumber = 4;
+    public const int IndividualityFieldNumber = 5;
     private global::Potato.Individuality individuality_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Potato.Individuality Individuality {
@@ -138,6 +150,7 @@ namespace Torikime.Unit.Spawn {
         return true;
       }
       if (SessionId != other.SessionId) return false;
+      if (UnitId != other.UnitId) return false;
       if (!object.Equals(Position, other.Position)) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(Direction, other.Direction)) return false;
       if (!object.Equals(Individuality, other.Individuality)) return false;
@@ -148,6 +161,7 @@ namespace Torikime.Unit.Spawn {
     public override int GetHashCode() {
       int hash = 1;
       if (SessionId != 0) hash ^= SessionId.GetHashCode();
+      if (UnitId != 0UL) hash ^= UnitId.GetHashCode();
       if (position_ != null) hash ^= Position.GetHashCode();
       if (Direction != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(Direction);
       if (individuality_ != null) hash ^= Individuality.GetHashCode();
@@ -168,16 +182,20 @@ namespace Torikime.Unit.Spawn {
         output.WriteRawTag(8);
         output.WriteInt32(SessionId);
       }
+      if (UnitId != 0UL) {
+        output.WriteRawTag(16);
+        output.WriteUInt64(UnitId);
+      }
       if (position_ != null) {
-        output.WriteRawTag(18);
+        output.WriteRawTag(26);
         output.WriteMessage(Position);
       }
       if (Direction != 0F) {
-        output.WriteRawTag(29);
+        output.WriteRawTag(37);
         output.WriteFloat(Direction);
       }
       if (individuality_ != null) {
-        output.WriteRawTag(34);
+        output.WriteRawTag(42);
         output.WriteMessage(Individuality);
       }
       if (_unknownFields != null) {
@@ -190,6 +208,9 @@ namespace Torikime.Unit.Spawn {
       int size = 0;
       if (SessionId != 0) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(SessionId);
+      }
+      if (UnitId != 0UL) {
+        size += 1 + pb::CodedOutputStream.ComputeUInt64Size(UnitId);
       }
       if (position_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(Position);
@@ -213,6 +234,9 @@ namespace Torikime.Unit.Spawn {
       }
       if (other.SessionId != 0) {
         SessionId = other.SessionId;
+      }
+      if (other.UnitId != 0UL) {
+        UnitId = other.UnitId;
       }
       if (other.position_ != null) {
         if (position_ == null) {
@@ -244,18 +268,22 @@ namespace Torikime.Unit.Spawn {
             SessionId = input.ReadInt32();
             break;
           }
-          case 18: {
+          case 16: {
+            UnitId = input.ReadUInt64();
+            break;
+          }
+          case 26: {
             if (position_ == null) {
               position_ = new global::Potato.Vector3();
             }
             input.ReadMessage(position_);
             break;
           }
-          case 29: {
+          case 37: {
             Direction = input.ReadFloat();
             break;
           }
-          case 34: {
+          case 42: {
             if (individuality_ == null) {
               individuality_ = new global::Potato.Individuality();
             }

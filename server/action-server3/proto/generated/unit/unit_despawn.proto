@@ -2,7 +2,7 @@
 syntax = "proto3";
 
 // contract_id = 5
-// rpc_id = 3
+// rpc_id = 2
 
 package torikime.unit.despawn;
 
@@ -15,8 +15,9 @@ import "message.proto";
 
 message Notification {
   int32 session_id = 1;
-  potato.Vector3 position = 2;
-  float direction = 3;
+  uint64 unit_id = 2;
+  potato.Vector3 position = 3;
+  float direction = 4;
 }
 
 message NotificationParcel

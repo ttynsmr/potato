@@ -8,12 +8,12 @@ namespace Torikime
 {
     namespace Unit
     {
-        namespace Stop
+        namespace SpawnReady
         {
             public class Rpc : Torikime.IRpc
             {
                 public static ushort StaticContractId = 5;
-                public static ushort StaticRpcId = 4;
+                public static ushort StaticRpcId = 0;
 
                 public ushort ContractId => StaticContractId;
                 public ushort RpcId => StaticRpcId;
@@ -28,17 +28,13 @@ namespace Torikime
                 {
                     switch (payload.Header.rpc_id)
                     {
-                        case 4:
+                        case 0:
                             switch ((Potato.Network.Protocol.Meta) payload.Header.meta)
                             {
                                 case Potato.Network.Protocol.Meta.Response:
-                                    onStopResponse(payload);
+                                    onSpawnReadyResponse(payload);
                                     return true;
 
-
-                                case Potato.Network.Protocol.Meta.Notification:
-                                    onStopNotification(payload);
-                                    return true;
 
                                 default:
                                     return false;
@@ -90,7 +86,7 @@ namespace Torikime
 
                 
 
-                void onStopResponse(Potato.Network.Protocol.Payload payload)
+                void onSpawnReadyResponse(Potato.Network.Protocol.Payload payload)
                 {
                     ResponseParcel responseParcel = new ResponseParcel();
                     responseParcel.MergeFrom(new Google.Protobuf.CodedInputStream(payload.GetBuffer(), Potato.Network.Protocol.PayloadHeader.Size, payload.GetBuffer().Length - Potato.Network.Protocol.PayloadHeader.Size));
@@ -103,14 +99,6 @@ namespace Torikime
                 }
 
 
-
-                public event Action<Notification> OnNotification;
-                void onStopNotification(Potato.Network.Protocol.Payload payload)
-                {
-                    NotificationParcel notificationParcel = new NotificationParcel();
-                    notificationParcel.MergeFrom(new Google.Protobuf.CodedInputStream(payload.GetBuffer(), Potato.Network.Protocol.PayloadHeader.Size, payload.GetBuffer().Length - Potato.Network.Protocol.PayloadHeader.Size));
-                    OnNotification?.Invoke(notificationParcel.Notification);
-                }
 
             }
         }

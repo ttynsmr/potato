@@ -1,6 +1,30 @@
 # yaml -> torikime -> generate .proto & rpc code.
 contracts:
   unit:
+    spawn_ready:
+      imports:
+        - "message.proto"
+      request:
+        area_id: int32
+      response:
+        ok: bool
+    spawn:
+      imports:
+        - "message.proto"
+      notification:
+        session_id: int32
+        unit_id: uint64
+        position: potato.Vector3
+        direction: float
+        individuality: potato.Individuality
+    despawn:
+      imports:
+        - "message.proto"
+      notification:
+        session_id: int32
+        unit_id: uint64
+        position: potato.Vector3
+        direction: float
     move:
       imports:
         - "message.proto"
@@ -31,18 +55,3 @@ contracts:
         session_id: int32
         from: potato.Vector3
         to: potato.Vector3
-    spawn:
-      imports:
-        - "message.proto"
-      notification:
-        session_id: int32
-        position: potato.Vector3
-        direction: float
-        individuality: potato.Individuality
-    despawn:
-      imports:
-        - "message.proto"
-      notification:
-        session_id: int32
-        position: potato.Vector3
-        direction: float

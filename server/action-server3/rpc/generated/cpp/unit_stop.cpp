@@ -27,7 +27,7 @@ namespace torikime::unit::stop
 
 		std::shared_ptr<potato::net::protocol::Payload> payload = std::make_shared<potato::net::protocol::Payload>();
 		payload->getHeader().contract_id = 5;
-		payload->getHeader().rpc_id = 1;
+		payload->getHeader().rpc_id = 4;
 		payload->getHeader().meta = static_cast<uint8_t>(potato::net::protocol::Meta::Response);
 		payload->setBufferSize(responseParcel.ByteSize());
 		responseParcel.SerializeToArray(payload->getPayloadData(), payload->getHeader().payloadSize);
@@ -72,7 +72,7 @@ namespace torikime::unit::stop
 
 		std::shared_ptr<potato::net::protocol::Payload> payload = std::make_shared<potato::net::protocol::Payload>();
 		payload->getHeader().contract_id = 5;
-		payload->getHeader().rpc_id = 1;
+		payload->getHeader().rpc_id = 4;
 		payload->getHeader().meta = static_cast<uint8_t>(potato::net::protocol::Meta::Notification);
 		payload->setBufferSize(notificationParcel.ByteSize());
 		notificationParcel.SerializeToArray(payload->getPayloadData(), payload->getHeader().payloadSize);
@@ -92,7 +92,7 @@ namespace torikime::unit::stop
 	{
 		switch (payload.getHeader().rpc_id)
 		{
-		case 1:
+		case 4:
 			onStopRequest(payload);
 			return true;
 

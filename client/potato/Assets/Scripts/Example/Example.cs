@@ -10,6 +10,7 @@ namespace Potato
     public class Example : MonoBehaviour
     {
         private Potato.Network.NetworkService networkService;
+        private UnitService unitService;
 
         public GameObject trailPrefab;
 
@@ -24,9 +25,11 @@ namespace Potato
 
         private ConcurrentQueue<Action> callOnMainThread = new ConcurrentQueue<Action>();
 
-        private void Start()
+        private IEnumerator Start()
         {
             myTrail = Instantiate(trailPrefab);
+
+            unitService = FindObjectOfType<UnitService>();
 
             networkService = FindObjectOfType<Potato.Network.NetworkService>();
             var session = networkService.Connect("127.0.0.1", 28888);
@@ -96,10 +99,28 @@ namespace Potato
                     trails.Remove(notification.SessionId);
                     Destroy(trail);
                 };
+
+                var unitSpawn = networkService.Session.GetRpc<Torikime.Unit.Spawn.Rpc>();
+                unitSpawn.OnNotification += (notification) =>
+                {
+                    var unit = new PlayerUnit(new UnitId(0), notification.Position.ToVector3(), notification.Direction);
+                    unitService.Register(unit);
+                };
+
+                var unitDespawn = networkService.Session.GetRpc<Torikime.Unit.Despawn.Rpc>();
+                unitDespawn.OnNotification += (notification) =>
+                {
+                    unitService.UnregisterByUnitId(new UnitId(notification.UnitId));
+                };
             }
 
             networkService.StartReceive();
             StartCoroutine(DoPingPong());
+
+            {
+                var rpc = networkService.Session.GetRpc<Torikime.Unit.SpawnReady.Rpc>();
+                yield return rpc.RequestCoroutine(new Torikime.Unit.SpawnReady.Request { AreaId = 0 }, (response) => { });
+            }
         }
 
         private IEnumerator DoPingPong()

@@ -13,7 +13,7 @@ namespace Torikime
             public class Rpc : Torikime.IRpc
             {
                 public static ushort StaticContractId = 5;
-                public static ushort StaticRpcId = 2;
+                public static ushort StaticRpcId = 1;
 
                 public ushort ContractId => StaticContractId;
                 public ushort RpcId => StaticRpcId;
@@ -28,7 +28,7 @@ namespace Torikime
                 {
                     switch (payload.Header.rpc_id)
                     {
-                        case 2:
+                        case 1:
                             switch ((Potato.Network.Protocol.Meta) payload.Header.meta)
                             {
 

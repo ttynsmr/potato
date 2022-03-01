@@ -2,7 +2,7 @@
 syntax = "proto3";
 
 // contract_id = 5
-// rpc_id = 0
+// rpc_id = 3
 
 package torikime.unit.move;
 

@@ -21,7 +21,7 @@ namespace torikime::unit::spawn
 	{
 	public:
 		std::uint32_t getContractId() const override { return 5; };
-		std::uint32_t getRpcId() const override { return 2; };
+		std::uint32_t getRpcId() const override { return 1; };
 		std::shared_ptr<potato::net::session>& getSession() override { return _session; };
 
 		Rpc(std::shared_ptr<potato::net::session>& session);

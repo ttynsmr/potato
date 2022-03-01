@@ -26,6 +26,11 @@ namespace Torikime
             rpcs.Add(new Example.UpdateMousePosition.Rpc(session));
             rpcs.Add(new Example.Spawn.Rpc(session));
             rpcs.Add(new Example.Despawn.Rpc(session));
+            rpcs.Add(new Unit.SpawnReady.Rpc(session));
+            rpcs.Add(new Unit.Spawn.Rpc(session));
+            rpcs.Add(new Unit.Despawn.Rpc(session));
+            rpcs.Add(new Unit.Move.Rpc(session));
+            rpcs.Add(new Unit.Stop.Rpc(session));
             return rpcs;
         }
 

@@ -25,16 +25,16 @@ namespace Torikime.Unit.Despawn {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "CiFnZW5lcmF0ZWQvdW5pdC91bml0X2Rlc3Bhd24ucHJvdG8SFXRvcmlraW1l",
-            "LnVuaXQuZGVzcGF3bhoNbWVzc2FnZS5wcm90byJYCgxOb3RpZmljYXRpb24S",
-            "EgoKc2Vzc2lvbl9pZBgBIAEoBRIhCghwb3NpdGlvbhgCIAEoCzIPLnBvdGF0",
-            "by5WZWN0b3IzEhEKCWRpcmVjdGlvbhgDIAEoAiJoChJOb3RpZmljYXRpb25Q",
-            "YXJjZWwSOQoMbm90aWZpY2F0aW9uGAEgASgLMiMudG9yaWtpbWUudW5pdC5k",
-            "ZXNwYXduLk5vdGlmaWNhdGlvbhIXCg9ub3RpZmljYXRpb25faWQYAiABKA1i",
-            "BnByb3RvMw=="));
+            "LnVuaXQuZGVzcGF3bhoNbWVzc2FnZS5wcm90byJpCgxOb3RpZmljYXRpb24S",
+            "EgoKc2Vzc2lvbl9pZBgBIAEoBRIPCgd1bml0X2lkGAIgASgEEiEKCHBvc2l0",
+            "aW9uGAMgASgLMg8ucG90YXRvLlZlY3RvcjMSEQoJZGlyZWN0aW9uGAQgASgC",
+            "ImgKEk5vdGlmaWNhdGlvblBhcmNlbBI5Cgxub3RpZmljYXRpb24YASABKAsy",
+            "Iy50b3Jpa2ltZS51bml0LmRlc3Bhd24uTm90aWZpY2F0aW9uEhcKD25vdGlm",
+            "aWNhdGlvbl9pZBgCIAEoDWIGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Potato.MessageReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Torikime.Unit.Despawn.Notification), global::Torikime.Unit.Despawn.Notification.Parser, new[]{ "SessionId", "Position", "Direction" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Torikime.Unit.Despawn.Notification), global::Torikime.Unit.Despawn.Notification.Parser, new[]{ "SessionId", "UnitId", "Position", "Direction" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Torikime.Unit.Despawn.NotificationParcel), global::Torikime.Unit.Despawn.NotificationParcel.Parser, new[]{ "Notification", "NotificationId" }, null, null, null)
           }));
     }
@@ -68,6 +68,7 @@ namespace Torikime.Unit.Despawn {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public Notification(Notification other) : this() {
       sessionId_ = other.sessionId_;
+      unitId_ = other.unitId_;
       position_ = other.position_ != null ? other.position_.Clone() : null;
       direction_ = other.direction_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
@@ -89,8 +90,19 @@ namespace Torikime.Unit.Despawn {
       }
     }
 
+    /// <summary>Field number for the "unit_id" field.</summary>
+    public const int UnitIdFieldNumber = 2;
+    private ulong unitId_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public ulong UnitId {
+      get { return unitId_; }
+      set {
+        unitId_ = value;
+      }
+    }
+
     /// <summary>Field number for the "position" field.</summary>
-    public const int PositionFieldNumber = 2;
+    public const int PositionFieldNumber = 3;
     private global::Potato.Vector3 position_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Potato.Vector3 Position {
@@ -101,7 +113,7 @@ namespace Torikime.Unit.Despawn {
     }
 
     /// <summary>Field number for the "direction" field.</summary>
-    public const int DirectionFieldNumber = 3;
+    public const int DirectionFieldNumber = 4;
     private float direction_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public float Direction {
@@ -125,6 +137,7 @@ namespace Torikime.Unit.Despawn {
         return true;
       }
       if (SessionId != other.SessionId) return false;
+      if (UnitId != other.UnitId) return false;
       if (!object.Equals(Position, other.Position)) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(Direction, other.Direction)) return false;
       return Equals(_unknownFields, other._unknownFields);
@@ -134,6 +147,7 @@ namespace Torikime.Unit.Despawn {
     public override int GetHashCode() {
       int hash = 1;
       if (SessionId != 0) hash ^= SessionId.GetHashCode();
+      if (UnitId != 0UL) hash ^= UnitId.GetHashCode();
       if (position_ != null) hash ^= Position.GetHashCode();
       if (Direction != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(Direction);
       if (_unknownFields != null) {
@@ -153,12 +167,16 @@ namespace Torikime.Unit.Despawn {
         output.WriteRawTag(8);
         output.WriteInt32(SessionId);
       }
+      if (UnitId != 0UL) {
+        output.WriteRawTag(16);
+        output.WriteUInt64(UnitId);
+      }
       if (position_ != null) {
-        output.WriteRawTag(18);
+        output.WriteRawTag(26);
         output.WriteMessage(Position);
       }
       if (Direction != 0F) {
-        output.WriteRawTag(29);
+        output.WriteRawTag(37);
         output.WriteFloat(Direction);
       }
       if (_unknownFields != null) {
@@ -171,6 +189,9 @@ namespace Torikime.Unit.Despawn {
       int size = 0;
       if (SessionId != 0) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(SessionId);
+      }
+      if (UnitId != 0UL) {
+        size += 1 + pb::CodedOutputStream.ComputeUInt64Size(UnitId);
       }
       if (position_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(Position);
@@ -191,6 +212,9 @@ namespace Torikime.Unit.Despawn {
       }
       if (other.SessionId != 0) {
         SessionId = other.SessionId;
+      }
+      if (other.UnitId != 0UL) {
+        UnitId = other.UnitId;
       }
       if (other.position_ != null) {
         if (position_ == null) {
@@ -216,14 +240,18 @@ namespace Torikime.Unit.Despawn {
             SessionId = input.ReadInt32();
             break;
           }
-          case 18: {
+          case 16: {
+            UnitId = input.ReadUInt64();
+            break;
+          }
+          case 26: {
             if (position_ == null) {
               position_ = new global::Potato.Vector3();
             }
             input.ReadMessage(position_);
             break;
           }
-          case 29: {
+          case 37: {
             Direction = input.ReadFloat();
             break;
           }

@@ -28,7 +28,7 @@ namespace torikime::unit::despawn
 
 		std::shared_ptr<potato::net::protocol::Payload> payload = std::make_shared<potato::net::protocol::Payload>();
 		payload->getHeader().contract_id = 5;
-		payload->getHeader().rpc_id = 3;
+		payload->getHeader().rpc_id = 2;
 		payload->getHeader().meta = static_cast<uint8_t>(potato::net::protocol::Meta::Notification);
 		payload->setBufferSize(notificationParcel.ByteSize());
 		notificationParcel.SerializeToArray(payload->getPayloadData(), payload->getHeader().payloadSize);
