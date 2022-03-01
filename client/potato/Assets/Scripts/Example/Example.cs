@@ -155,7 +155,7 @@ namespace Potato
 
                     callOnMainThread.Enqueue(() => {
                         Debug.Log("pong received");
-                        pingText.text = str;
+                        pingText.text = str + $"subjective latency: {(long)(DateTime.UtcNow - UnixEpoch).TotalMilliseconds - request.SendTime}\n";
                     });
                 });
 
