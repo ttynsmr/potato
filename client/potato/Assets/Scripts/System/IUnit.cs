@@ -1,6 +1,4 @@
 
-using Torikime.Unit.Move;
-
 public struct UnitId
 {
     private readonly ulong value;
@@ -16,5 +14,6 @@ public interface IUnit
 
     void Start();
     void Update(float deltaTime);
-    void InputMove(Notification notification);
+    void InputMove(MoveCommand moveCommand);
+    void InputStop(StopCommand stopCommand);
 }

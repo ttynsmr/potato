@@ -1,3 +1,4 @@
+using Potato;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -35,7 +36,32 @@ public class UnitService : MonoBehaviour
             return;
         }
 
-        unit.InputMove(notification);
+        MoveCommand moveCommand = new MoveCommand
+        {
+            StartTime = notification.Time,
+            From = notification.From.ToVector3(),
+            To = notification.To.ToVector3(),
+            Speed = notification.Speed,
+            Direction = 0,
+        };
+        unit.InputMove(moveCommand);
+    }
+
+    public void OnReceiveStop(Torikime.Unit.Stop.Notification notification)
+    {
+        var unitId = new UnitId(notification.UnitId);
+        var unit = units.Find((u) => { return u.UnitId.Equals(unitId); });
+        if (unit == null || unit is ControllablePlayerUnit)
+        {
+            Debug.LogWarning($"unit {notification.UnitId} not found");
+            return;
+        }
+
+        StopCommand stopCommand = new StopCommand
+        {
+            StopTime = notification.Time,
+        };
+        unit.InputStop(stopCommand);
     }
 
     private void Update()

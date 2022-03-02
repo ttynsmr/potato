@@ -234,6 +234,14 @@ private:
 								notification.set_session_id(_sessionId);
 								sendBroadcast(_sessionId, example->serializeNotification(notification));
 							}
+							{
+								auto session2 = session;
+								auto unitDespawn = std::make_shared<torikime::unit::despawn::Rpc>(session2);
+								torikime::unit::despawn::Notification notification;
+								notification.set_session_id(_sessionId);
+								notification.set_unit_id(_sessionId);
+								sendBroadcast(_sessionId, torikime::unit::despawn::Rpc::serializeNotification(notification));
+							}
 						});
 
 					_acceptedDelegate(session);

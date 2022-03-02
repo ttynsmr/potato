@@ -1,8 +1,8 @@
 using UnityEngine;
 
-interface ICommand { }
+public interface ICommand { }
 
-class MoveCommand : ICommand
+public class MoveCommand : ICommand
 {
     public MoveCommand LastMoveCommand;
     public long StartTime;
@@ -18,7 +18,7 @@ class MoveCommand : ICommand
     }
 }
 
-class StopCommand : ICommand
+public class StopCommand : ICommand
 {
     public MoveCommand LastMoveCommand;
     public long StopTime;

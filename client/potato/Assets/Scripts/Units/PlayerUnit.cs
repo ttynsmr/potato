@@ -15,7 +15,7 @@ public class PlayerUnit : IUnit
     private MoveCommand currentMove;
     private long simulatedNow = 0;
 
-    public Vector3 Positoin { get; private set; }
+    public Vector3 Position { get; private set; }
 
     public UnitId UnitId { get; private set; }
     public UnitService UnitService { get; set; }
@@ -30,23 +30,23 @@ public class PlayerUnit : IUnit
     {
         simulatedNow = _networkService.Now;
         Appearance = GameObject.Instantiate(UnitService.TestAvatar);
-        history.Add( new StopCommand
-        {
-            LastMoveCommand = null,
-            StopTime = simulatedNow,
-            Direction = 0
-        });
+        //history.Add(new StopCommand
+        //{
+        //    LastMoveCommand = null,
+        //    StopTime = simulatedNow,
+        //    Direction = 0
+        //});
     }
 
-    public void InputMove(Torikime.Unit.Move.Notification notification)
+    public void InputMove(MoveCommand moveCommand)
     {
-        inputQueue.Enqueue(new MoveCommand {
-            StartTime = notification.Time,
-            From = notification.From.ToVector3(),
-            To = notification.To.ToVector3(),
-            Speed = notification.Speed,
-            Direction = 0,
-        });
+        inputQueue.Enqueue(moveCommand);
+    }
+
+    public void InputStop(StopCommand stopCommand)
+    {
+        stopCommand.LastMoveCommand = (MoveCommand)history.Last();
+        inputQueue.Enqueue(stopCommand);
     }
 
     // Update is called once per frame
@@ -65,25 +65,35 @@ public class PlayerUnit : IUnit
     {
     }
 
-    void ProcessCommand(long now)
+    Vector3 CalcCurrentPosition(MoveCommand currentMove, long now)
+    {
+        var distance = (currentMove.To - currentMove.From).magnitude;
+        var progress = (now - currentMove.StartTime) / (distance / currentMove.Speed);
+        //Debug.Log($"distance:{distance}, progress:{progress}, estimate time:{(distance / currentMove.Speed)}");
+        return Vector3.Lerp(currentMove.From, currentMove.To, progress);
+    }
+
+    private void ProcessCommand(long now)
     {
         while (simulatedNow < now)
         {
-            var lastCommand = history.Count > 0 ? history.Last() : null;
             if (currentMove == null)
             {
-                if (lastCommand is StopCommand)
+                var lastCommand = history.Count > 0 ? history.Last() : null;
+                if (lastCommand != null)
                 {
-                    return;
+                    if (lastCommand is StopCommand)
+                    {
+                        var last = history.Last();
+                        var stopCommand = (StopCommand)last;
+                        Position = CalcCurrentPosition(stopCommand.LastMoveCommand, stopCommand.StopTime);
+                    }
                 }
-
-                currentMove = (MoveCommand)history.Last();
             }
-
-            var distance = (currentMove.To - currentMove.From).magnitude;
-            var progress = (simulatedNow - currentMove.StartTime) / (distance / currentMove.Speed);
-            Debug.Log($"distance:{distance}, progress:{progress}, estimate time:{(distance / currentMove.Speed)}");
-            Positoin = Vector3.Lerp(currentMove.From, currentMove.To, progress);
+            else
+            {
+                Position = CalcCurrentPosition(currentMove, simulatedNow);
+            }
 
             if (inputQueue.Count > 0)
             {
@@ -97,11 +107,13 @@ public class PlayerUnit : IUnit
                         currentMove = moveCommand;
                         break;
                     case StopCommand stopCommand:
+                        simulatedNow = stopCommand.StopTime;
                         stopCommand.LastMoveCommand = currentMove;
                         history.Add(stopCommand);
                         currentMove = null;
                         break;
                 }
+
             }
             else
             {
@@ -109,9 +121,48 @@ public class PlayerUnit : IUnit
             }
         }
 
+        //while (simulatedNow < now)
+        //{
+        //    var lastCommand = history.Count > 0 ? history.Last() : null;
+        //    if (currentMove == null)
+        //    {
+        //        if (lastCommand is StopCommand)
+        //        {
+        //            return;
+        //        }
+
+        //        currentMove = (MoveCommand)history.Last();
+        //    }
+
+        //    Positoin = CalcCurrentPosition(currentMove, simulatedNow);
+
+        //    if (inputQueue.Count > 0)
+        //    {
+        //        var command = inputQueue.Dequeue();
+        //        switch (command)
+        //        {
+        //            case MoveCommand moveCommand:
+        //                simulatedNow = moveCommand.StartTime;
+        //                moveCommand.LastMoveCommand = currentMove;
+        //                history.Add(moveCommand);
+        //                currentMove = moveCommand;
+        //                break;
+        //            case StopCommand stopCommand:
+        //                stopCommand.LastMoveCommand = currentMove;
+        //                history.Add(stopCommand);
+        //                currentMove = null;
+        //                break;
+        //        }
+        //    }
+        //    else
+        //    {
+        //        simulatedNow = now;
+        //    }
+        //}
+
         if (Appearance)
         {
-            Appearance.transform.position = Positoin;
+            Appearance.transform.position = Position;
         }
     }
 }

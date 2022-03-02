@@ -115,6 +115,9 @@ namespace Potato
 
                 var unitMove = networkService.Session.GetRpc<Torikime.Unit.Move.Rpc>();
                 unitMove.OnNotification += unitService.OnReceiveMove;
+
+                var unitStop = networkService.Session.GetRpc<Torikime.Unit.Stop.Rpc>();
+                unitStop.OnNotification += unitService.OnReceiveStop;
             }
 
             networkService.StartReceive();

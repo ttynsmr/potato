@@ -133,7 +133,7 @@ public class ControllablePlayerUnit : IUnit
         prevInputY = moveY;
     }
 
-    void ProcessCommand(long now)
+    private void ProcessCommand(long now)
     {
         var lastCommand = history.Count > 0 ? history.Last() : null;
         if (currentMove == null)
@@ -146,10 +146,6 @@ public class ControllablePlayerUnit : IUnit
             currentMove = (MoveCommand)history.Last();
         }
 
-        //var distance = (currentMove.To - currentMove.From).magnitude;
-        //var progress = (now - currentMove.StartTime) / (distance / currentMove.Speed);
-        //Debug.Log($"distance:{distance}, progress:{progress}, estimate time:{(distance / currentMove.Speed)}");
-        //Position = Vector3.Lerp(currentMove.From, currentMove.To, progress);
         Position = CalcCurrentPosition(currentMove, now);
 
         if (Appearance)
@@ -158,7 +154,12 @@ public class ControllablePlayerUnit : IUnit
         }
     }
 
-    public void InputMove(Notification notification)
+    public void InputMove(MoveCommand _)
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public void InputStop(StopCommand _)
     {
         throw new System.NotImplementedException();
     }

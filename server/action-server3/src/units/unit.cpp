@@ -22,8 +22,6 @@ void Unit::inputCommand(std::shared_ptr<ICommand> command)
 
 void Unit::update(int64_t now)
 {
-	std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-
 	auto updatePosition = [this](std::shared_ptr<MoveCommand> currentMove, int64_t now) {
 		auto distance = gml::length(currentMove->to - currentMove->from);
 		auto progress = (now - currentMove->startTime) / (distance / currentMove->speed);
