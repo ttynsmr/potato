@@ -32,12 +32,12 @@ namespace Torikime.Unit.Stop {
             "dG9yaWtpbWUudW5pdC5zdG9wLlJlcXVlc3QSEgoKcmVxdWVzdF9pZBgCIAEo",
             "DSJlCg5SZXNwb25zZVBhcmNlbBIuCghyZXNwb25zZRgBIAEoCzIcLnRvcmlr",
             "aW1lLnVuaXQuc3RvcC5SZXNwb25zZRISCgpyZXF1ZXN0X2lkGAIgASgNEg8K",
-            "B3N1Y2Nlc3MYAyABKAgifAoMTm90aWZpY2F0aW9uEg8KB3VuaXRfaWQYASAB",
-            "KAQSDAoEdGltZRgCIAEoAxIdCgRmcm9tGAMgASgLMg8ucG90YXRvLlZlY3Rv",
-            "cjMSGwoCdG8YBCABKAsyDy5wb3RhdG8uVmVjdG9yMxIRCglkaXJlY3Rpb24Y",
-            "BSABKAIiZQoSTm90aWZpY2F0aW9uUGFyY2VsEjYKDG5vdGlmaWNhdGlvbhgB",
-            "IAEoCzIgLnRvcmlraW1lLnVuaXQuc3RvcC5Ob3RpZmljYXRpb24SFwoPbm90",
-            "aWZpY2F0aW9uX2lkGAIgASgNYgZwcm90bzM="));
+            "B3N1Y2Nlc3MYAyABKAgiZAoMTm90aWZpY2F0aW9uEg8KB3VuaXRfaWQYASAB",
+            "KAQSDAoEdGltZRgCIAEoAxIRCglzdG9wX3RpbWUYAyABKAMSEQoJZGlyZWN0",
+            "aW9uGAQgASgCEg8KB21vdmVfaWQYBSABKAQiZQoSTm90aWZpY2F0aW9uUGFy",
+            "Y2VsEjYKDG5vdGlmaWNhdGlvbhgBIAEoCzIgLnRvcmlraW1lLnVuaXQuc3Rv",
+            "cC5Ob3RpZmljYXRpb24SFwoPbm90aWZpY2F0aW9uX2lkGAIgASgNYgZwcm90",
+            "bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Potato.MessageReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
@@ -45,7 +45,7 @@ namespace Torikime.Unit.Stop {
             new pbr::GeneratedClrTypeInfo(typeof(global::Torikime.Unit.Stop.Response), global::Torikime.Unit.Stop.Response.Parser, new[]{ "Ok" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Torikime.Unit.Stop.RequestParcel), global::Torikime.Unit.Stop.RequestParcel.Parser, new[]{ "Request", "RequestId" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Torikime.Unit.Stop.ResponseParcel), global::Torikime.Unit.Stop.ResponseParcel.Parser, new[]{ "Response", "RequestId", "Success" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Torikime.Unit.Stop.Notification), global::Torikime.Unit.Stop.Notification.Parser, new[]{ "UnitId", "Time", "From", "To", "Direction" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Torikime.Unit.Stop.Notification), global::Torikime.Unit.Stop.Notification.Parser, new[]{ "UnitId", "Time", "StopTime", "Direction", "MoveId" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Torikime.Unit.Stop.NotificationParcel), global::Torikime.Unit.Stop.NotificationParcel.Parser, new[]{ "Notification", "NotificationId" }, null, null, null)
           }));
     }
@@ -804,9 +804,9 @@ namespace Torikime.Unit.Stop {
     public Notification(Notification other) : this() {
       unitId_ = other.unitId_;
       time_ = other.time_;
-      from_ = other.from_ != null ? other.from_.Clone() : null;
-      to_ = other.to_ != null ? other.to_.Clone() : null;
+      stopTime_ = other.stopTime_;
       direction_ = other.direction_;
+      moveId_ = other.moveId_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -837,36 +837,36 @@ namespace Torikime.Unit.Stop {
       }
     }
 
-    /// <summary>Field number for the "from" field.</summary>
-    public const int FromFieldNumber = 3;
-    private global::Potato.Vector3 from_;
+    /// <summary>Field number for the "stop_time" field.</summary>
+    public const int StopTimeFieldNumber = 3;
+    private long stopTime_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::Potato.Vector3 From {
-      get { return from_; }
+    public long StopTime {
+      get { return stopTime_; }
       set {
-        from_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "to" field.</summary>
-    public const int ToFieldNumber = 4;
-    private global::Potato.Vector3 to_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::Potato.Vector3 To {
-      get { return to_; }
-      set {
-        to_ = value;
+        stopTime_ = value;
       }
     }
 
     /// <summary>Field number for the "direction" field.</summary>
-    public const int DirectionFieldNumber = 5;
+    public const int DirectionFieldNumber = 4;
     private float direction_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public float Direction {
       get { return direction_; }
       set {
         direction_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "move_id" field.</summary>
+    public const int MoveIdFieldNumber = 5;
+    private ulong moveId_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public ulong MoveId {
+      get { return moveId_; }
+      set {
+        moveId_ = value;
       }
     }
 
@@ -885,9 +885,9 @@ namespace Torikime.Unit.Stop {
       }
       if (UnitId != other.UnitId) return false;
       if (Time != other.Time) return false;
-      if (!object.Equals(From, other.From)) return false;
-      if (!object.Equals(To, other.To)) return false;
+      if (StopTime != other.StopTime) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(Direction, other.Direction)) return false;
+      if (MoveId != other.MoveId) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -896,9 +896,9 @@ namespace Torikime.Unit.Stop {
       int hash = 1;
       if (UnitId != 0UL) hash ^= UnitId.GetHashCode();
       if (Time != 0L) hash ^= Time.GetHashCode();
-      if (from_ != null) hash ^= From.GetHashCode();
-      if (to_ != null) hash ^= To.GetHashCode();
+      if (StopTime != 0L) hash ^= StopTime.GetHashCode();
       if (Direction != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(Direction);
+      if (MoveId != 0UL) hash ^= MoveId.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -920,17 +920,17 @@ namespace Torikime.Unit.Stop {
         output.WriteRawTag(16);
         output.WriteInt64(Time);
       }
-      if (from_ != null) {
-        output.WriteRawTag(26);
-        output.WriteMessage(From);
-      }
-      if (to_ != null) {
-        output.WriteRawTag(34);
-        output.WriteMessage(To);
+      if (StopTime != 0L) {
+        output.WriteRawTag(24);
+        output.WriteInt64(StopTime);
       }
       if (Direction != 0F) {
-        output.WriteRawTag(45);
+        output.WriteRawTag(37);
         output.WriteFloat(Direction);
+      }
+      if (MoveId != 0UL) {
+        output.WriteRawTag(40);
+        output.WriteUInt64(MoveId);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -946,14 +946,14 @@ namespace Torikime.Unit.Stop {
       if (Time != 0L) {
         size += 1 + pb::CodedOutputStream.ComputeInt64Size(Time);
       }
-      if (from_ != null) {
-        size += 1 + pb::CodedOutputStream.ComputeMessageSize(From);
-      }
-      if (to_ != null) {
-        size += 1 + pb::CodedOutputStream.ComputeMessageSize(To);
+      if (StopTime != 0L) {
+        size += 1 + pb::CodedOutputStream.ComputeInt64Size(StopTime);
       }
       if (Direction != 0F) {
         size += 1 + 4;
+      }
+      if (MoveId != 0UL) {
+        size += 1 + pb::CodedOutputStream.ComputeUInt64Size(MoveId);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -972,20 +972,14 @@ namespace Torikime.Unit.Stop {
       if (other.Time != 0L) {
         Time = other.Time;
       }
-      if (other.from_ != null) {
-        if (from_ == null) {
-          from_ = new global::Potato.Vector3();
-        }
-        From.MergeFrom(other.From);
-      }
-      if (other.to_ != null) {
-        if (to_ == null) {
-          to_ = new global::Potato.Vector3();
-        }
-        To.MergeFrom(other.To);
+      if (other.StopTime != 0L) {
+        StopTime = other.StopTime;
       }
       if (other.Direction != 0F) {
         Direction = other.Direction;
+      }
+      if (other.MoveId != 0UL) {
+        MoveId = other.MoveId;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -1006,22 +1000,16 @@ namespace Torikime.Unit.Stop {
             Time = input.ReadInt64();
             break;
           }
-          case 26: {
-            if (from_ == null) {
-              from_ = new global::Potato.Vector3();
-            }
-            input.ReadMessage(from_);
+          case 24: {
+            StopTime = input.ReadInt64();
             break;
           }
-          case 34: {
-            if (to_ == null) {
-              to_ = new global::Potato.Vector3();
-            }
-            input.ReadMessage(to_);
-            break;
-          }
-          case 45: {
+          case 37: {
             Direction = input.ReadFloat();
+            break;
+          }
+          case 40: {
+            MoveId = input.ReadUInt64();
             break;
           }
         }

@@ -52,6 +52,7 @@ contracts:
         from: potato.Vector3
         to: potato.Vector3
         speed: float
+        move_id: uint64
     stop:
       imports:
         - "message.proto"
@@ -66,6 +67,6 @@ contracts:
       notification:
         unit_id: uint64
         time: int64 # 移動開始時間
-        from: potato.Vector3
-        to: potato.Vector3
+        stop_time: int64 # 移動停止時間
         direction: float
+        move_id: uint64

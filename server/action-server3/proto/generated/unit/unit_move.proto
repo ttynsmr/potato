@@ -44,6 +44,7 @@ message Notification {
   potato.Vector3 from = 3;
   potato.Vector3 to = 4;
   float speed = 5;
+  uint64 move_id = 6;
 }
 
 message NotificationParcel

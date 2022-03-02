@@ -40,9 +40,9 @@ message ResponseParcel
 message Notification {
   uint64 unit_id = 1;
   int64 time = 2;
-  potato.Vector3 from = 3;
-  potato.Vector3 to = 4;
-  float direction = 5;
+  int64 stop_time = 3;
+  float direction = 4;
+  uint64 move_id = 5;
 }
 
 message NotificationParcel

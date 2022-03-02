@@ -449,6 +449,21 @@ public:
 					moveCommand->moveId = requestParcel.request().move_id();
 					(*unit)->inputCommand(moveCommand);
 				}
+
+				{
+					torikime::unit::move::Notification notification;
+					notification.set_unit_id(requestParcel.request().unit_id());
+					notification.set_time(requestParcel.request().time());
+					auto from = requestParcel.request().from();
+					auto to = requestParcel.request().to();
+					notification.set_allocated_from(&from);
+					notification.set_allocated_to(&to);
+					notification.set_speed(requestParcel.request().speed());
+					notification.set_move_id(requestParcel.request().move_id());
+					_nerworkServiceProvider.lock()->sendBroadcast(session->getSessionId(), torikime::unit::move::Rpc::serializeNotification(notification));
+					notification.release_to();
+					notification.release_from();
+				}
 			});
 		_nerworkServiceProvider.lock()->registerRpc(unitMove);
 
@@ -471,6 +486,16 @@ public:
 					stopCommand->direction = 0;
 					stopCommand->moveId = requestParcel.request().move_id();
 					(*unit)->inputCommand(stopCommand);
+				}
+
+				{
+					torikime::unit::stop::Notification notification;
+					notification.set_unit_id(requestParcel.request().unit_id());
+					notification.set_time(requestParcel.request().time());
+					notification.set_stop_time(requestParcel.request().stop_time());
+					notification.set_direction(requestParcel.request().direction());
+					notification.set_move_id(requestParcel.request().move_id());
+					_nerworkServiceProvider.lock()->sendBroadcast(session->getSessionId(), torikime::unit::stop::Rpc::serializeNotification(notification));
 				}
 			});
 		_nerworkServiceProvider.lock()->registerRpc(unitStop);
