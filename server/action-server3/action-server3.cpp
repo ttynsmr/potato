@@ -29,6 +29,11 @@
 #include "proto/example_update_mouse_position.pb.h"
 #include "proto/example_spawn.pb.h"
 #include "proto/example_despawn.pb.h"
+#include "proto/unit_spawn_ready.pb.h"
+#include "proto/unit_spawn.pb.h"
+#include "proto/unit_despawn.pb.h"
+#include "proto/unit_move.pb.h"
+#include "proto/unit_stop.pb.h"
 
 #include "src/rpc.h"
 #include "rpc/generated/cpp/chat_send_message.h"
@@ -37,6 +42,12 @@
 #include "rpc/generated/cpp/example_update_mouse_position.h"
 #include "rpc/generated/cpp/example_spawn.h"
 #include "rpc/generated/cpp/example_despawn.h"
+#include "rpc/generated/cpp/unit_spawn_ready.h"
+#include "rpc/generated/cpp/unit_spawn.h"
+#include "rpc/generated/cpp/unit_despawn.h"
+#include "rpc/generated/cpp/unit_move.h"
+#include "rpc/generated/cpp/unit_stop.h"
+#include "src/units/unit.h"
 
 using boost::asio::ip::tcp;
 
@@ -191,7 +202,7 @@ public:
 		return _sessions.size();
 	}
 
-	void processSessions(std::function<void(std::shared_ptr<potato::net::session>)> processor)
+	void visitSessions(std::function<void(std::shared_ptr<potato::net::session>)> processor)
 	{
 		for (auto& other : _sessions)
 		{
@@ -316,12 +327,12 @@ public:
 		auto pingPong = std::make_shared<torikime::diagnosis::ping_pong::Rpc>(session);
 		pingPong->subscribeRequest([session](const torikime::diagnosis::ping_pong::RequestParcel& request, std::shared_ptr<torikime::diagnosis::ping_pong::Rpc::Responser>& responser)
 			{
-				std::cout << "receieve: ping" << session->getSessionId() << " request id: " << request.request_id() << "\n";
+				//std::cout << "receieve: ping" << session->getSessionId() << " request id: " << request.request_id() << "\n";
 				torikime::diagnosis::ping_pong::Response response;
 				response.set_receive_time(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
 				response.set_send_time(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
 				responser->send(true, std::move(response));
-				std::cout << "send: pong" << session->getSessionId() << "\n";
+				//std::cout << "send: pong" << session->getSessionId() << "\n";
 			});
 		_nerworkServiceProvider.lock()->registerRpc(pingPong);
 
@@ -337,8 +348,132 @@ public:
 				notification.set_session_id(session->getSessionId());
 				notification.set_allocated_position(&position);
 				_nerworkServiceProvider.lock()->sendBroadcast(session->getSessionId(), weak_example.lock()->serializeNotification(notification));
-				notification.release_position(); });
+				notification.release_position();
+			});
 		_nerworkServiceProvider.lock()->registerRpc(example);
+
+		auto unitSpawnReady = std::make_shared<torikime::unit::spawn_ready::Rpc>(session);
+		unitSpawnReady->subscribeRequest([this, session](const auto& request, auto& responser)
+			{
+				auto unit = std::make_shared<Unit>(session->getSessionId());
+				units.emplace_back(unit);
+
+				// response
+				{
+					auto area_id = request.request().area_id();
+					torikime::unit::spawn_ready::Response response;
+					response.set_session_id(session->getSessionId());
+					response.set_unit_id(session->getSessionId()); // TODO: generate unit id at unit service
+					auto position = new potato::Vector3();
+					position->set_x(0);
+					position->set_y(0);
+					position->set_z(0);
+					response.set_allocated_position(new potato::Vector3());
+					response.set_direction(0);
+					auto individuality = new potato::Individuality();
+					individuality->set_type(potato::UNIT_TYPE_PLAYER);
+					response.set_allocated_individuality(individuality);
+					response.set_cause(potato::UNIT_SPAWN_CAUSE_LOGGEDIN);
+					auto avatar = new potato::Avatar();
+					avatar->set_name(std::string("hoge"));
+					response.set_allocated_avatar(avatar);
+					responser->send(true, std::move(response));
+				}
+
+				{
+					// broadcast spawn to neighbors
+					torikime::unit::spawn::Notification notification;
+					notification.set_session_id(session->getSessionId());
+					notification.set_unit_id(session->getSessionId()); // TODO: generate unit id at unit service
+					auto position = new potato::Vector3();
+					position->set_x(0);
+					position->set_y(0);
+					position->set_z(0);
+					notification.set_allocated_position(new potato::Vector3());
+					notification.set_direction(0);
+					auto individuality = new potato::Individuality();
+					individuality->set_type(potato::UNIT_TYPE_PLAYER);
+					notification.set_allocated_individuality(individuality);
+					notification.set_cause(potato::UNIT_SPAWN_CAUSE_LOGGEDIN);
+					auto avatar = new potato::Avatar();
+					avatar->set_name(std::string("hoge"));
+					notification.set_allocated_avatar(avatar);
+					_nerworkServiceProvider.lock()->sendBroadcast(session->getSessionId(), torikime::unit::spawn::Rpc::serializeNotification(notification));
+
+					// notify neighbors to spawner
+					_nerworkServiceProvider.lock()->visitSessions([this, session](auto other) {
+						torikime::unit::spawn::Notification notification;
+						notification.set_session_id(other->getSessionId());
+						auto position = new potato::Vector3();
+						position->set_x(0);
+						position->set_y(0);
+						position->set_z(0);
+						notification.set_allocated_position(new potato::Vector3());
+						notification.set_direction(0);
+						auto individuality = new potato::Individuality();
+						individuality->set_type(potato::UNIT_TYPE_PLAYER);
+						notification.set_allocated_individuality(individuality);
+						notification.set_cause(potato::UNIT_SPAWN_CAUSE_ASIS);
+						auto avatar = new potato::Avatar();
+						avatar->set_name(std::string("hoge"));
+						notification.set_allocated_avatar(avatar);
+						auto payload = torikime::unit::spawn::Rpc::serializeNotification(notification);
+						_nerworkServiceProvider.lock()->sendTo(session->getSessionId(), payload);
+						});
+				}
+			});
+		_nerworkServiceProvider.lock()->registerRpc(unitSpawnReady);
+
+		auto unitMove = std::make_shared<torikime::unit::move::Rpc>(session);
+		unitMove->subscribeRequest([this, session](const auto& requestParcel, auto& responser)
+			{
+				{
+					torikime::unit::move::Response response;
+					response.set_ok(true);
+					responser->send(true, std::move(response));
+				}
+
+				auto unit = std::find_if(units.begin(), units.end(), [requestParcel](auto& u) {
+					return requestParcel.request().unit_id() == u->getUnitId();
+					});
+				if (unit != units.end())
+				{
+					auto moveCommand = std::make_shared<MoveCommand>();
+					moveCommand->startTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+					const auto& from = requestParcel.request().from();
+					const auto& to = requestParcel.request().to();
+					moveCommand->from = { from.x(), from.y(), from.z() };
+					moveCommand->to = { to.x(), to.y(), to.z() };
+					moveCommand->speed = requestParcel.request().speed();
+					moveCommand->direction = 0;
+					moveCommand->moveId = requestParcel.request().move_id();
+					(*unit)->inputCommand(moveCommand);
+				}
+			});
+		_nerworkServiceProvider.lock()->registerRpc(unitMove);
+
+		auto unitStop = std::make_shared<torikime::unit::stop::Rpc>(session);
+		unitStop->subscribeRequest([this, session](const auto& requestParcel, auto& responser)
+			{
+				{
+					torikime::unit::stop::Response response;
+					response.set_ok(true);
+					responser->send(true, std::move(response));
+				}
+
+				auto unit = std::find_if(units.begin(), units.end(), [requestParcel](auto& u) {
+					return requestParcel.request().unit_id() == u->getUnitId();
+					});
+				if (unit != units.end())
+				{
+					auto stopCommand = std::make_shared<StopCommand>();
+					stopCommand->stopTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+					stopCommand->direction = 0;
+					stopCommand->moveId = requestParcel.request().move_id();
+					(*unit)->inputCommand(stopCommand);
+				}
+			});
+		_nerworkServiceProvider.lock()->registerRpc(unitStop);
 	}
 
 	void onSessionStarted(std::shared_ptr<potato::net::session> session)
@@ -353,7 +488,7 @@ public:
 		notification.set_allocated_position(new potato::Vector3());
 		_nerworkServiceProvider.lock()->sendBroadcast(session->getSessionId(), example->serializeNotification(notification));
 
-		_nerworkServiceProvider.lock()->processSessions([this, example, session](auto other) {
+		_nerworkServiceProvider.lock()->visitSessions([this, example, session](auto other) {
 			torikime::example::spawn::Notification notification;
 			notification.set_session_id(other->getSessionId());
 			auto position = new potato::Vector3();
@@ -384,12 +519,22 @@ public:
 		{
 			_service->getQueue().process();
 
+			{
+				const auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+				for (auto& unit : units)
+				{
+					unit->update(now);
+				}
+			}
+
 			sendSystemMessage("hey");
 
-			auto now = std::chrono::high_resolution_clock::now();
-			auto spareTime = std::chrono::high_resolution_clock::now() - prev;
-			prev = now;
-			std::this_thread::sleep_for(std::chrono::milliseconds(std::max(0L, 100 - std::chrono::duration_cast<std::chrono::microseconds>(spareTime).count())));
+			{
+				auto now = std::chrono::high_resolution_clock::now();
+				auto spareTime = std::chrono::high_resolution_clock::now() - prev;
+				prev = now;
+				std::this_thread::sleep_for(std::chrono::milliseconds(std::max(0L, 100 - std::chrono::duration_cast<std::chrono::microseconds>(spareTime).count())));
+			}
 		}
 	}
 
@@ -411,6 +556,7 @@ public:
 	}
 
 private:
+	std::list<std::shared_ptr<Unit>> units;
 	int64_t messageId = 0;
 	std::weak_ptr<NetworkServiceProvider> _nerworkServiceProvider;
 	std::shared_ptr<Service> _service;

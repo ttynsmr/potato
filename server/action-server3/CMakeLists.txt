@@ -55,6 +55,9 @@ endif()
 # eventpp
 ADD_SUBDIRECTORY(externals/eventpp)
 
+# gml
+INCLUDE_DIRECTORIES(externals/gml/include)
+
 # add protocol buffer settings
 INCLUDE(FindProtobuf)
 FIND_PACKAGE(Protobuf REQUIRED)
@@ -75,7 +78,7 @@ list(APPEND ALL_SOURCES "action-server3.cpp")
 message("ALL_SOURCES: ${ALL_SOURCES}")
 
 # ソースをこのプロジェクトの実行可能ファイルに追加します。
-add_executable (action-server3  ${ALL_SOURCES} "src/Payload.h" "src/Payload.cpp" "src/rpc.h" "src/rpc.cpp" "src/session.h" "src/session.cpp")
+add_executable (action-server3  ${ALL_SOURCES} "src/Payload.h" "src/Payload.cpp" "src/rpc.h" "src/rpc.cpp" "src/session.h" "src/session.cpp" "src/units/unit.cpp" "src/units/unit.h")
 
 #target_compile_features(${TARGET_NAME} PRIVATE cxx_std_17)
 

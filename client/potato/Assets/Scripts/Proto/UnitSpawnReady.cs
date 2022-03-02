@@ -26,17 +26,21 @@ namespace Torikime.Unit.SpawnReady {
           string.Concat(
             "CiVnZW5lcmF0ZWQvdW5pdC91bml0X3NwYXduX3JlYWR5LnByb3RvEhl0b3Jp",
             "a2ltZS51bml0LnNwYXduX3JlYWR5Gg1tZXNzYWdlLnByb3RvIhoKB1JlcXVl",
-            "c3QSDwoHYXJlYV9pZBgBIAEoBSIWCghSZXNwb25zZRIKCgJvaxgBIAEoCCJY",
-            "Cg1SZXF1ZXN0UGFyY2VsEjMKB3JlcXVlc3QYASABKAsyIi50b3Jpa2ltZS51",
-            "bml0LnNwYXduX3JlYWR5LlJlcXVlc3QSEgoKcmVxdWVzdF9pZBgCIAEoDSJs",
-            "Cg5SZXNwb25zZVBhcmNlbBI1CghyZXNwb25zZRgBIAEoCzIjLnRvcmlraW1l",
-            "LnVuaXQuc3Bhd25fcmVhZHkuUmVzcG9uc2USEgoKcmVxdWVzdF9pZBgCIAEo",
-            "DRIPCgdzdWNjZXNzGAMgASgIYgZwcm90bzM="));
+            "c3QSDwoHYXJlYV9pZBgBIAEoBSLaAQoIUmVzcG9uc2USEgoKc2Vzc2lvbl9p",
+            "ZBgBIAEoBRIPCgd1bml0X2lkGAIgASgEEiEKCHBvc2l0aW9uGAMgASgLMg8u",
+            "cG90YXRvLlZlY3RvcjMSEQoJZGlyZWN0aW9uGAQgASgCEiwKDWluZGl2aWR1",
+            "YWxpdHkYBSABKAsyFS5wb3RhdG8uSW5kaXZpZHVhbGl0eRIlCgVjYXVzZRgG",
+            "IAEoDjIWLnBvdGF0by5Vbml0U3Bhd25DYXVzZRIeCgZhdmF0YXIYByABKAsy",
+            "Di5wb3RhdG8uQXZhdGFyIlgKDVJlcXVlc3RQYXJjZWwSMwoHcmVxdWVzdBgB",
+            "IAEoCzIiLnRvcmlraW1lLnVuaXQuc3Bhd25fcmVhZHkuUmVxdWVzdBISCgpy",
+            "ZXF1ZXN0X2lkGAIgASgNImwKDlJlc3BvbnNlUGFyY2VsEjUKCHJlc3BvbnNl",
+            "GAEgASgLMiMudG9yaWtpbWUudW5pdC5zcGF3bl9yZWFkeS5SZXNwb25zZRIS",
+            "CgpyZXF1ZXN0X2lkGAIgASgNEg8KB3N1Y2Nlc3MYAyABKAhiBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Potato.MessageReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::Torikime.Unit.SpawnReady.Request), global::Torikime.Unit.SpawnReady.Request.Parser, new[]{ "AreaId" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Torikime.Unit.SpawnReady.Response), global::Torikime.Unit.SpawnReady.Response.Parser, new[]{ "Ok" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Torikime.Unit.SpawnReady.Response), global::Torikime.Unit.SpawnReady.Response.Parser, new[]{ "SessionId", "UnitId", "Position", "Direction", "Individuality", "Cause", "Avatar" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Torikime.Unit.SpawnReady.RequestParcel), global::Torikime.Unit.SpawnReady.RequestParcel.Parser, new[]{ "Request", "RequestId" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Torikime.Unit.SpawnReady.ResponseParcel), global::Torikime.Unit.SpawnReady.ResponseParcel.Parser, new[]{ "Response", "RequestId", "Success" }, null, null, null)
           }));
@@ -199,7 +203,13 @@ namespace Torikime.Unit.SpawnReady {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public Response(Response other) : this() {
-      ok_ = other.ok_;
+      sessionId_ = other.sessionId_;
+      unitId_ = other.unitId_;
+      position_ = other.position_ != null ? other.position_.Clone() : null;
+      direction_ = other.direction_;
+      individuality_ = other.individuality_ != null ? other.individuality_.Clone() : null;
+      cause_ = other.cause_;
+      avatar_ = other.avatar_ != null ? other.avatar_.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -208,14 +218,80 @@ namespace Torikime.Unit.SpawnReady {
       return new Response(this);
     }
 
-    /// <summary>Field number for the "ok" field.</summary>
-    public const int OkFieldNumber = 1;
-    private bool ok_;
+    /// <summary>Field number for the "session_id" field.</summary>
+    public const int SessionIdFieldNumber = 1;
+    private int sessionId_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool Ok {
-      get { return ok_; }
+    public int SessionId {
+      get { return sessionId_; }
       set {
-        ok_ = value;
+        sessionId_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "unit_id" field.</summary>
+    public const int UnitIdFieldNumber = 2;
+    private ulong unitId_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public ulong UnitId {
+      get { return unitId_; }
+      set {
+        unitId_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "position" field.</summary>
+    public const int PositionFieldNumber = 3;
+    private global::Potato.Vector3 position_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Potato.Vector3 Position {
+      get { return position_; }
+      set {
+        position_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "direction" field.</summary>
+    public const int DirectionFieldNumber = 4;
+    private float direction_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public float Direction {
+      get { return direction_; }
+      set {
+        direction_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "individuality" field.</summary>
+    public const int IndividualityFieldNumber = 5;
+    private global::Potato.Individuality individuality_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Potato.Individuality Individuality {
+      get { return individuality_; }
+      set {
+        individuality_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "cause" field.</summary>
+    public const int CauseFieldNumber = 6;
+    private global::Potato.UnitSpawnCause cause_ = 0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Potato.UnitSpawnCause Cause {
+      get { return cause_; }
+      set {
+        cause_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "avatar" field.</summary>
+    public const int AvatarFieldNumber = 7;
+    private global::Potato.Avatar avatar_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Potato.Avatar Avatar {
+      get { return avatar_; }
+      set {
+        avatar_ = value;
       }
     }
 
@@ -232,14 +308,26 @@ namespace Torikime.Unit.SpawnReady {
       if (ReferenceEquals(other, this)) {
         return true;
       }
-      if (Ok != other.Ok) return false;
+      if (SessionId != other.SessionId) return false;
+      if (UnitId != other.UnitId) return false;
+      if (!object.Equals(Position, other.Position)) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(Direction, other.Direction)) return false;
+      if (!object.Equals(Individuality, other.Individuality)) return false;
+      if (Cause != other.Cause) return false;
+      if (!object.Equals(Avatar, other.Avatar)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (Ok != false) hash ^= Ok.GetHashCode();
+      if (SessionId != 0) hash ^= SessionId.GetHashCode();
+      if (UnitId != 0UL) hash ^= UnitId.GetHashCode();
+      if (position_ != null) hash ^= Position.GetHashCode();
+      if (Direction != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(Direction);
+      if (individuality_ != null) hash ^= Individuality.GetHashCode();
+      if (Cause != 0) hash ^= Cause.GetHashCode();
+      if (avatar_ != null) hash ^= Avatar.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -253,9 +341,33 @@ namespace Torikime.Unit.SpawnReady {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (Ok != false) {
+      if (SessionId != 0) {
         output.WriteRawTag(8);
-        output.WriteBool(Ok);
+        output.WriteInt32(SessionId);
+      }
+      if (UnitId != 0UL) {
+        output.WriteRawTag(16);
+        output.WriteUInt64(UnitId);
+      }
+      if (position_ != null) {
+        output.WriteRawTag(26);
+        output.WriteMessage(Position);
+      }
+      if (Direction != 0F) {
+        output.WriteRawTag(37);
+        output.WriteFloat(Direction);
+      }
+      if (individuality_ != null) {
+        output.WriteRawTag(42);
+        output.WriteMessage(Individuality);
+      }
+      if (Cause != 0) {
+        output.WriteRawTag(48);
+        output.WriteEnum((int) Cause);
+      }
+      if (avatar_ != null) {
+        output.WriteRawTag(58);
+        output.WriteMessage(Avatar);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -265,8 +377,26 @@ namespace Torikime.Unit.SpawnReady {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (Ok != false) {
-        size += 1 + 1;
+      if (SessionId != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(SessionId);
+      }
+      if (UnitId != 0UL) {
+        size += 1 + pb::CodedOutputStream.ComputeUInt64Size(UnitId);
+      }
+      if (position_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Position);
+      }
+      if (Direction != 0F) {
+        size += 1 + 4;
+      }
+      if (individuality_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Individuality);
+      }
+      if (Cause != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Cause);
+      }
+      if (avatar_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Avatar);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -279,8 +409,35 @@ namespace Torikime.Unit.SpawnReady {
       if (other == null) {
         return;
       }
-      if (other.Ok != false) {
-        Ok = other.Ok;
+      if (other.SessionId != 0) {
+        SessionId = other.SessionId;
+      }
+      if (other.UnitId != 0UL) {
+        UnitId = other.UnitId;
+      }
+      if (other.position_ != null) {
+        if (position_ == null) {
+          position_ = new global::Potato.Vector3();
+        }
+        Position.MergeFrom(other.Position);
+      }
+      if (other.Direction != 0F) {
+        Direction = other.Direction;
+      }
+      if (other.individuality_ != null) {
+        if (individuality_ == null) {
+          individuality_ = new global::Potato.Individuality();
+        }
+        Individuality.MergeFrom(other.Individuality);
+      }
+      if (other.Cause != 0) {
+        Cause = other.Cause;
+      }
+      if (other.avatar_ != null) {
+        if (avatar_ == null) {
+          avatar_ = new global::Potato.Avatar();
+        }
+        Avatar.MergeFrom(other.Avatar);
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -294,7 +451,40 @@ namespace Torikime.Unit.SpawnReady {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 8: {
-            Ok = input.ReadBool();
+            SessionId = input.ReadInt32();
+            break;
+          }
+          case 16: {
+            UnitId = input.ReadUInt64();
+            break;
+          }
+          case 26: {
+            if (position_ == null) {
+              position_ = new global::Potato.Vector3();
+            }
+            input.ReadMessage(position_);
+            break;
+          }
+          case 37: {
+            Direction = input.ReadFloat();
+            break;
+          }
+          case 42: {
+            if (individuality_ == null) {
+              individuality_ = new global::Potato.Individuality();
+            }
+            input.ReadMessage(individuality_);
+            break;
+          }
+          case 48: {
+            cause_ = (global::Potato.UnitSpawnCause) input.ReadEnum();
+            break;
+          }
+          case 58: {
+            if (avatar_ == null) {
+              avatar_ = new global::Potato.Avatar();
+            }
+            input.ReadMessage(avatar_);
             break;
           }
         }

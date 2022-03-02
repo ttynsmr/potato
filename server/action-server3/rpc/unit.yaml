@@ -7,7 +7,13 @@ contracts:
       request:
         area_id: int32
       response:
-        ok: bool
+        session_id: int32
+        unit_id: uint64
+        position: potato.Vector3
+        direction: float
+        individuality: potato.Individuality
+        cause: potato.UnitSpawnCause
+        avatar: potato.Avatar
     spawn:
       imports:
         - "message.proto"
@@ -17,6 +23,8 @@ contracts:
         position: potato.Vector3
         direction: float
         individuality: potato.Individuality
+        cause: potato.UnitSpawnCause
+        avatar: potato.Avatar
     despawn:
       imports:
         - "message.proto"
@@ -25,19 +33,22 @@ contracts:
         unit_id: uint64
         position: potato.Vector3
         direction: float
+        cause: potato.UnitSpawnCause
     move:
       imports:
         - "message.proto"
       request:
-        time: int64
+        unit_id: uint64
+        time: int64 # 移動開始時間
         from: potato.Vector3
         to: potato.Vector3
         speed: float
+        move_id: uint64
       response:
         ok: bool
       notification:
-        session_id: int32
-        time: int64
+        unit_id: uint64
+        time: int64 # 移動開始時間
         from: potato.Vector3
         to: potato.Vector3
         speed: float
@@ -45,13 +56,16 @@ contracts:
       imports:
         - "message.proto"
       request:
-        session_id: int32
-        from: potato.Vector3
-        to: potato.Vector3
+        unit_id: uint64
+        time: int64 # 移動開始時間
+        stop_time: int64 # 移動停止時間
         direction: float
+        move_id: uint64
       response:
         ok: bool
       notification:
-        session_id: int32
+        unit_id: uint64
+        time: int64 # 移動開始時間
         from: potato.Vector3
         to: potato.Vector3
+        direction: float

@@ -38,7 +38,7 @@ namespace Potato
                 var sendMessage = networkService.Session.GetRpc<Torikime.Chat.SendMessage.Rpc>();
                 sendMessage.OnNotification += (notification) =>
                 {
-                    Debug.Log("Notification received: " + notification.From + "[" + notification.Message + "]");
+                    //Debug.Log("Notification received: " + notification.From + "[" + notification.Message + "]");
                 };
 
                 Debug.Log("Request sent");
@@ -103,7 +103,7 @@ namespace Potato
                 var unitSpawn = networkService.Session.GetRpc<Torikime.Unit.Spawn.Rpc>();
                 unitSpawn.OnNotification += (notification) =>
                 {
-                    var unit = new PlayerUnit(new UnitId(0), notification.Position.ToVector3(), notification.Direction);
+                    var unit = new PlayerUnit(networkService, new UnitId(notification.UnitId), notification.Position.ToVector3(), notification.Direction, notification.Avatar);
                     unitService.Register(unit);
                 };
 
@@ -112,6 +112,9 @@ namespace Potato
                 {
                     unitService.UnregisterByUnitId(new UnitId(notification.UnitId));
                 };
+
+                var unitMove = networkService.Session.GetRpc<Torikime.Unit.Move.Rpc>();
+                unitMove.OnNotification += unitService.OnReceiveMove;
             }
 
             networkService.StartReceive();
@@ -119,9 +122,21 @@ namespace Potato
 
             {
                 var rpc = networkService.Session.GetRpc<Torikime.Unit.SpawnReady.Rpc>();
-                yield return rpc.RequestCoroutine(new Torikime.Unit.SpawnReady.Request { AreaId = 0 }, (response) => { });
+                yield return rpc.RequestCoroutine(new Torikime.Unit.SpawnReady.Request { AreaId = 0 }, (response) => {
+                    var unit = new ControllablePlayerUnit(networkService, new UnitId(response.UnitId), response.Position.ToVector3(), response.Direction, response.Avatar);
+                    unitService.Register(unit);
+                });
             }
         }
+
+        public long __now;
+        public long __serverTime;
+        public long __diffTime;
+        public long __sendGap;
+        public long __receiveGap;
+        public long __latency;
+        public long __gap;
+        public long __subjectiveLatency;
 
         private IEnumerator DoPingPong()
         {
@@ -131,31 +146,34 @@ namespace Potato
                 var request = new Torikime.Diagnosis.PingPong.Request();
                 DateTime UnixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, 0);
                 request.SendTime = (long)(DateTime.UtcNow - UnixEpoch).TotalMilliseconds;
-                Debug.Log("ping sent");
+                //Debug.Log("ping sent");
                 yield return pingpong.RequestCoroutine(request, (response) =>
                 {
-                    var now = (long)(DateTime.UtcNow - UnixEpoch).TotalMilliseconds;
-                    var sendGap = response.ReceiveTime - request.SendTime;
-                    var receiveGap = now - response.ReceiveTime;
-                    var latency = now - request.SendTime;
-                    var gap = (sendGap + receiveGap + latency) / 2;
-                    var serverTime = response.SendTime + gap + latency;
+                    __now = (long)(DateTime.UtcNow - UnixEpoch).TotalMilliseconds;
+                    __sendGap = response.ReceiveTime - request.SendTime;
+                    __receiveGap = __now - response.ReceiveTime;
+                    __latency = __now - request.SendTime;
+                    __gap = (__sendGap + __receiveGap + __latency) / 2;
+                    __serverTime = response.SendTime + __gap + __latency;
+                    __diffTime = __serverTime - __now - __latency;
                     var str = $"client send: {request.SendTime}\n" +
                         $"server received: {response.ReceiveTime}\n" +
                         $"server send: {response.SendTime}\n" +
-                        $"client received: {now}\n" +
-                        $"latency: {latency}\n" +
+                        $"client received: {__now}\n" +
+                        $"latency: {__latency}\n" +
                         $"send gap: {response.ReceiveTime - request.SendTime}\n" +
-                        $"receive gap: {now - response.SendTime}\n" +
-                        $"gap: {gap}\n" +
-                        $"client time: {now}\n" +
+                        $"receive gap: {__now - response.SendTime}\n" +
+                        $"gap: {__gap}\n" +
+                        $"client time: {__now}\n" +
                         $"server time: {response.SendTime}\n" +
-                        $"adj time: {serverTime}\n" +
-                        $"diff time: {serverTime - now - latency}\n";
+                        $"adj time: {__serverTime}\n" +
+                        $"diff time: {__diffTime}\n";
 
                     callOnMainThread.Enqueue(() => {
-                        Debug.Log("pong received");
-                        pingText.text = str + $"subjective latency: {(long)(DateTime.UtcNow - UnixEpoch).TotalMilliseconds - request.SendTime}\n";
+                        //Debug.Log("pong received");
+                        __subjectiveLatency = (long)(DateTime.UtcNow - UnixEpoch).TotalMilliseconds - request.SendTime;
+                        pingText.text = str + $"subjective latency: {__subjectiveLatency}\n";
+                        networkService.ServerTimeDifference = __diffTime;
                     });
                 });
 

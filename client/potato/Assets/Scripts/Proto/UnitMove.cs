@@ -25,27 +25,28 @@ namespace Torikime.Unit.Move {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "Ch5nZW5lcmF0ZWQvdW5pdC91bml0X21vdmUucHJvdG8SEnRvcmlraW1lLnVu",
-            "aXQubW92ZRoNbWVzc2FnZS5wcm90byJiCgdSZXF1ZXN0EgwKBHRpbWUYASAB",
-            "KAMSHQoEZnJvbRgCIAEoCzIPLnBvdGF0by5WZWN0b3IzEhsKAnRvGAMgASgL",
-            "Mg8ucG90YXRvLlZlY3RvcjMSDQoFc3BlZWQYBCABKAIiFgoIUmVzcG9uc2US",
-            "CgoCb2sYASABKAgiUQoNUmVxdWVzdFBhcmNlbBIsCgdyZXF1ZXN0GAEgASgL",
-            "MhsudG9yaWtpbWUudW5pdC5tb3ZlLlJlcXVlc3QSEgoKcmVxdWVzdF9pZBgC",
-            "IAEoDSJlCg5SZXNwb25zZVBhcmNlbBIuCghyZXNwb25zZRgBIAEoCzIcLnRv",
-            "cmlraW1lLnVuaXQubW92ZS5SZXNwb25zZRISCgpyZXF1ZXN0X2lkGAIgASgN",
-            "Eg8KB3N1Y2Nlc3MYAyABKAgiewoMTm90aWZpY2F0aW9uEhIKCnNlc3Npb25f",
-            "aWQYASABKAUSDAoEdGltZRgCIAEoAxIdCgRmcm9tGAMgASgLMg8ucG90YXRv",
-            "LlZlY3RvcjMSGwoCdG8YBCABKAsyDy5wb3RhdG8uVmVjdG9yMxINCgVzcGVl",
-            "ZBgFIAEoAiJlChJOb3RpZmljYXRpb25QYXJjZWwSNgoMbm90aWZpY2F0aW9u",
-            "GAEgASgLMiAudG9yaWtpbWUudW5pdC5tb3ZlLk5vdGlmaWNhdGlvbhIXCg9u",
-            "b3RpZmljYXRpb25faWQYAiABKA1iBnByb3RvMw=="));
+            "aXQubW92ZRoNbWVzc2FnZS5wcm90byKEAQoHUmVxdWVzdBIPCgd1bml0X2lk",
+            "GAEgASgEEgwKBHRpbWUYAiABKAMSHQoEZnJvbRgDIAEoCzIPLnBvdGF0by5W",
+            "ZWN0b3IzEhsKAnRvGAQgASgLMg8ucG90YXRvLlZlY3RvcjMSDQoFc3BlZWQY",
+            "BSABKAISDwoHbW92ZV9pZBgGIAEoBCIWCghSZXNwb25zZRIKCgJvaxgBIAEo",
+            "CCJRCg1SZXF1ZXN0UGFyY2VsEiwKB3JlcXVlc3QYASABKAsyGy50b3Jpa2lt",
+            "ZS51bml0Lm1vdmUuUmVxdWVzdBISCgpyZXF1ZXN0X2lkGAIgASgNImUKDlJl",
+            "c3BvbnNlUGFyY2VsEi4KCHJlc3BvbnNlGAEgASgLMhwudG9yaWtpbWUudW5p",
+            "dC5tb3ZlLlJlc3BvbnNlEhIKCnJlcXVlc3RfaWQYAiABKA0SDwoHc3VjY2Vz",
+            "cxgDIAEoCCJ4CgxOb3RpZmljYXRpb24SDwoHdW5pdF9pZBgBIAEoBBIMCgR0",
+            "aW1lGAIgASgDEh0KBGZyb20YAyABKAsyDy5wb3RhdG8uVmVjdG9yMxIbCgJ0",
+            "bxgEIAEoCzIPLnBvdGF0by5WZWN0b3IzEg0KBXNwZWVkGAUgASgCImUKEk5v",
+            "dGlmaWNhdGlvblBhcmNlbBI2Cgxub3RpZmljYXRpb24YASABKAsyIC50b3Jp",
+            "a2ltZS51bml0Lm1vdmUuTm90aWZpY2F0aW9uEhcKD25vdGlmaWNhdGlvbl9p",
+            "ZBgCIAEoDWIGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Potato.MessageReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Torikime.Unit.Move.Request), global::Torikime.Unit.Move.Request.Parser, new[]{ "Time", "From", "To", "Speed" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Torikime.Unit.Move.Request), global::Torikime.Unit.Move.Request.Parser, new[]{ "UnitId", "Time", "From", "To", "Speed", "MoveId" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Torikime.Unit.Move.Response), global::Torikime.Unit.Move.Response.Parser, new[]{ "Ok" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Torikime.Unit.Move.RequestParcel), global::Torikime.Unit.Move.RequestParcel.Parser, new[]{ "Request", "RequestId" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Torikime.Unit.Move.ResponseParcel), global::Torikime.Unit.Move.ResponseParcel.Parser, new[]{ "Response", "RequestId", "Success" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Torikime.Unit.Move.Notification), global::Torikime.Unit.Move.Notification.Parser, new[]{ "SessionId", "Time", "From", "To", "Speed" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Torikime.Unit.Move.Notification), global::Torikime.Unit.Move.Notification.Parser, new[]{ "UnitId", "Time", "From", "To", "Speed" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Torikime.Unit.Move.NotificationParcel), global::Torikime.Unit.Move.NotificationParcel.Parser, new[]{ "Notification", "NotificationId" }, null, null, null)
           }));
     }
@@ -78,10 +79,12 @@ namespace Torikime.Unit.Move {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public Request(Request other) : this() {
+      unitId_ = other.unitId_;
       time_ = other.time_;
       from_ = other.from_ != null ? other.from_.Clone() : null;
       to_ = other.to_ != null ? other.to_.Clone() : null;
       speed_ = other.speed_;
+      moveId_ = other.moveId_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -90,8 +93,19 @@ namespace Torikime.Unit.Move {
       return new Request(this);
     }
 
+    /// <summary>Field number for the "unit_id" field.</summary>
+    public const int UnitIdFieldNumber = 1;
+    private ulong unitId_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public ulong UnitId {
+      get { return unitId_; }
+      set {
+        unitId_ = value;
+      }
+    }
+
     /// <summary>Field number for the "time" field.</summary>
-    public const int TimeFieldNumber = 1;
+    public const int TimeFieldNumber = 2;
     private long time_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public long Time {
@@ -102,7 +116,7 @@ namespace Torikime.Unit.Move {
     }
 
     /// <summary>Field number for the "from" field.</summary>
-    public const int FromFieldNumber = 2;
+    public const int FromFieldNumber = 3;
     private global::Potato.Vector3 from_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Potato.Vector3 From {
@@ -113,7 +127,7 @@ namespace Torikime.Unit.Move {
     }
 
     /// <summary>Field number for the "to" field.</summary>
-    public const int ToFieldNumber = 3;
+    public const int ToFieldNumber = 4;
     private global::Potato.Vector3 to_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Potato.Vector3 To {
@@ -124,13 +138,24 @@ namespace Torikime.Unit.Move {
     }
 
     /// <summary>Field number for the "speed" field.</summary>
-    public const int SpeedFieldNumber = 4;
+    public const int SpeedFieldNumber = 5;
     private float speed_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public float Speed {
       get { return speed_; }
       set {
         speed_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "move_id" field.</summary>
+    public const int MoveIdFieldNumber = 6;
+    private ulong moveId_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public ulong MoveId {
+      get { return moveId_; }
+      set {
+        moveId_ = value;
       }
     }
 
@@ -147,20 +172,24 @@ namespace Torikime.Unit.Move {
       if (ReferenceEquals(other, this)) {
         return true;
       }
+      if (UnitId != other.UnitId) return false;
       if (Time != other.Time) return false;
       if (!object.Equals(From, other.From)) return false;
       if (!object.Equals(To, other.To)) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(Speed, other.Speed)) return false;
+      if (MoveId != other.MoveId) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
+      if (UnitId != 0UL) hash ^= UnitId.GetHashCode();
       if (Time != 0L) hash ^= Time.GetHashCode();
       if (from_ != null) hash ^= From.GetHashCode();
       if (to_ != null) hash ^= To.GetHashCode();
       if (Speed != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(Speed);
+      if (MoveId != 0UL) hash ^= MoveId.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -174,21 +203,29 @@ namespace Torikime.Unit.Move {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (Time != 0L) {
+      if (UnitId != 0UL) {
         output.WriteRawTag(8);
+        output.WriteUInt64(UnitId);
+      }
+      if (Time != 0L) {
+        output.WriteRawTag(16);
         output.WriteInt64(Time);
       }
       if (from_ != null) {
-        output.WriteRawTag(18);
+        output.WriteRawTag(26);
         output.WriteMessage(From);
       }
       if (to_ != null) {
-        output.WriteRawTag(26);
+        output.WriteRawTag(34);
         output.WriteMessage(To);
       }
       if (Speed != 0F) {
-        output.WriteRawTag(37);
+        output.WriteRawTag(45);
         output.WriteFloat(Speed);
+      }
+      if (MoveId != 0UL) {
+        output.WriteRawTag(48);
+        output.WriteUInt64(MoveId);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -198,6 +235,9 @@ namespace Torikime.Unit.Move {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
+      if (UnitId != 0UL) {
+        size += 1 + pb::CodedOutputStream.ComputeUInt64Size(UnitId);
+      }
       if (Time != 0L) {
         size += 1 + pb::CodedOutputStream.ComputeInt64Size(Time);
       }
@@ -210,6 +250,9 @@ namespace Torikime.Unit.Move {
       if (Speed != 0F) {
         size += 1 + 4;
       }
+      if (MoveId != 0UL) {
+        size += 1 + pb::CodedOutputStream.ComputeUInt64Size(MoveId);
+      }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
       }
@@ -220,6 +263,9 @@ namespace Torikime.Unit.Move {
     public void MergeFrom(Request other) {
       if (other == null) {
         return;
+      }
+      if (other.UnitId != 0UL) {
+        UnitId = other.UnitId;
       }
       if (other.Time != 0L) {
         Time = other.Time;
@@ -239,6 +285,9 @@ namespace Torikime.Unit.Move {
       if (other.Speed != 0F) {
         Speed = other.Speed;
       }
+      if (other.MoveId != 0UL) {
+        MoveId = other.MoveId;
+      }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
@@ -251,25 +300,33 @@ namespace Torikime.Unit.Move {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 8: {
+            UnitId = input.ReadUInt64();
+            break;
+          }
+          case 16: {
             Time = input.ReadInt64();
             break;
           }
-          case 18: {
+          case 26: {
             if (from_ == null) {
               from_ = new global::Potato.Vector3();
             }
             input.ReadMessage(from_);
             break;
           }
-          case 26: {
+          case 34: {
             if (to_ == null) {
               to_ = new global::Potato.Vector3();
             }
             input.ReadMessage(to_);
             break;
           }
-          case 37: {
+          case 45: {
             Speed = input.ReadFloat();
+            break;
+          }
+          case 48: {
+            MoveId = input.ReadUInt64();
             break;
           }
         }
@@ -786,7 +843,7 @@ namespace Torikime.Unit.Move {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public Notification(Notification other) : this() {
-      sessionId_ = other.sessionId_;
+      unitId_ = other.unitId_;
       time_ = other.time_;
       from_ = other.from_ != null ? other.from_.Clone() : null;
       to_ = other.to_ != null ? other.to_.Clone() : null;
@@ -799,14 +856,14 @@ namespace Torikime.Unit.Move {
       return new Notification(this);
     }
 
-    /// <summary>Field number for the "session_id" field.</summary>
-    public const int SessionIdFieldNumber = 1;
-    private int sessionId_;
+    /// <summary>Field number for the "unit_id" field.</summary>
+    public const int UnitIdFieldNumber = 1;
+    private ulong unitId_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public int SessionId {
-      get { return sessionId_; }
+    public ulong UnitId {
+      get { return unitId_; }
       set {
-        sessionId_ = value;
+        unitId_ = value;
       }
     }
 
@@ -867,7 +924,7 @@ namespace Torikime.Unit.Move {
       if (ReferenceEquals(other, this)) {
         return true;
       }
-      if (SessionId != other.SessionId) return false;
+      if (UnitId != other.UnitId) return false;
       if (Time != other.Time) return false;
       if (!object.Equals(From, other.From)) return false;
       if (!object.Equals(To, other.To)) return false;
@@ -878,7 +935,7 @@ namespace Torikime.Unit.Move {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (SessionId != 0) hash ^= SessionId.GetHashCode();
+      if (UnitId != 0UL) hash ^= UnitId.GetHashCode();
       if (Time != 0L) hash ^= Time.GetHashCode();
       if (from_ != null) hash ^= From.GetHashCode();
       if (to_ != null) hash ^= To.GetHashCode();
@@ -896,9 +953,9 @@ namespace Torikime.Unit.Move {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (SessionId != 0) {
+      if (UnitId != 0UL) {
         output.WriteRawTag(8);
-        output.WriteInt32(SessionId);
+        output.WriteUInt64(UnitId);
       }
       if (Time != 0L) {
         output.WriteRawTag(16);
@@ -924,8 +981,8 @@ namespace Torikime.Unit.Move {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (SessionId != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(SessionId);
+      if (UnitId != 0UL) {
+        size += 1 + pb::CodedOutputStream.ComputeUInt64Size(UnitId);
       }
       if (Time != 0L) {
         size += 1 + pb::CodedOutputStream.ComputeInt64Size(Time);
@@ -950,8 +1007,8 @@ namespace Torikime.Unit.Move {
       if (other == null) {
         return;
       }
-      if (other.SessionId != 0) {
-        SessionId = other.SessionId;
+      if (other.UnitId != 0UL) {
+        UnitId = other.UnitId;
       }
       if (other.Time != 0L) {
         Time = other.Time;
@@ -983,7 +1040,7 @@ namespace Torikime.Unit.Move {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 8: {
-            SessionId = input.ReadInt32();
+            UnitId = input.ReadUInt64();
             break;
           }
           case 16: {

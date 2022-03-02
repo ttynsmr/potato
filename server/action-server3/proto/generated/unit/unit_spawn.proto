@@ -19,6 +19,8 @@ message Notification {
   potato.Vector3 position = 3;
   float direction = 4;
   potato.Individuality individuality = 5;
+  potato.UnitSpawnCause cause = 6;
+  potato.Avatar avatar = 7;
 }
 
 message NotificationParcel

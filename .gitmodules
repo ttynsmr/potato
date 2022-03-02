@@ -1,3 +1,6 @@
 [submodule "server/action-server3/externals/eventpp"]
 	path = server/action-server3/externals/eventpp
 	url = https://github.com/wqking/eventpp.git
+[submodule "server/action-server3/externals/gml"]
+	path = server/action-server3/externals/gml
+	url = https://github.com/ilmola/gml.git

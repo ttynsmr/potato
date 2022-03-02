@@ -26,16 +26,22 @@ namespace Potato {
           string.Concat(
             "Cg1tZXNzYWdlLnByb3RvEgZwb3RhdG8iKgoHVmVjdG9yMxIJCgF4GAEgASgC",
             "EgkKAXkYAiABKAISCQoBehgDIAEoAiIvCg1JbmRpdmlkdWFsaXR5Eh4KBHR5",
-            "cGUYASABKA4yEC5wb3RhdG8uVW5pdFR5cGUqmgEKCFVuaXRUeXBlEhIKDlVO",
-            "SVRfVFlQRV9OT05FEAASFAoQVU5JVF9UWVBFX1BMQVlFUhABEhMKD1VOSVRf",
-            "VFlQRV9FTkVNWRACEhQKEFVOSVRfVFlQRV9CVUxMRVQQAxISCg5VTklUX1RZ",
-            "UEVfV0FMTBAEEhIKDlVOSVRfVFlQRV9JVEVNEAUSEQoNVU5JVF9UWVBFX01B",
-            "WBAGYgZwcm90bzM="));
+            "cGUYASABKA4yEC5wb3RhdG8uVW5pdFR5cGUiFgoGQXZhdGFyEgwKBG5hbWUY",
+            "ASABKAkqmgEKCFVuaXRUeXBlEhIKDlVOSVRfVFlQRV9OT05FEAASFAoQVU5J",
+            "VF9UWVBFX1BMQVlFUhABEhMKD1VOSVRfVFlQRV9FTkVNWRACEhQKEFVOSVRf",
+            "VFlQRV9CVUxMRVQQAxISCg5VTklUX1RZUEVfV0FMTBAEEhIKDlVOSVRfVFlQ",
+            "RV9JVEVNEAUSEQoNVU5JVF9UWVBFX01BWBAGKsMBCg5Vbml0U3Bhd25DYXVz",
+            "ZRIZChVVTklUX1NQQVdOX0NBVVNFX05PTkUQABIZChVVTklUX1NQQVdOX0NB",
+            "VVNFX0FTSVMQARIdChlVTklUX1NQQVdOX0NBVVNFX0xPR0dFRElOEAISHgoa",
+            "VU5JVF9TUEFXTl9DQVVTRV9MT0dHRURPVVQQAxIfChtVTklUX1NQQVdOX0NB",
+            "VVNFX0ZBU1RUUkFWRUwQBBIbChdVTklUX1NQQVdOX0NBVVNFX1JFVElSRRAF",
+            "YgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
-          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Potato.UnitType), }, new pbr::GeneratedClrTypeInfo[] {
+          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Potato.UnitType), typeof(global::Potato.UnitSpawnCause), }, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::Potato.Vector3), global::Potato.Vector3.Parser, new[]{ "X", "Y", "Z" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Potato.Individuality), global::Potato.Individuality.Parser, new[]{ "Type" }, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::Potato.Individuality), global::Potato.Individuality.Parser, new[]{ "Type" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Potato.Avatar), global::Potato.Avatar.Parser, new[]{ "Name" }, null, null, null)
           }));
     }
     #endregion
@@ -50,6 +56,15 @@ namespace Potato {
     [pbr::OriginalName("UNIT_TYPE_WALL")] Wall = 4,
     [pbr::OriginalName("UNIT_TYPE_ITEM")] Item = 5,
     [pbr::OriginalName("UNIT_TYPE_MAX")] Max = 6,
+  }
+
+  public enum UnitSpawnCause {
+    [pbr::OriginalName("UNIT_SPAWN_CAUSE_NONE")] None = 0,
+    [pbr::OriginalName("UNIT_SPAWN_CAUSE_ASIS")] Asis = 1,
+    [pbr::OriginalName("UNIT_SPAWN_CAUSE_LOGGEDIN")] Loggedin = 2,
+    [pbr::OriginalName("UNIT_SPAWN_CAUSE_LOGGEDOUT")] Loggedout = 3,
+    [pbr::OriginalName("UNIT_SPAWN_CAUSE_FASTTRAVEL")] Fasttravel = 4,
+    [pbr::OriginalName("UNIT_SPAWN_CAUSE_RETIRE")] Retire = 5,
   }
 
   #endregion
@@ -361,6 +376,135 @@ namespace Potato {
             break;
           case 8: {
             type_ = (global::Potato.UnitType) input.ReadEnum();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class Avatar : pb::IMessage<Avatar> {
+    private static readonly pb::MessageParser<Avatar> _parser = new pb::MessageParser<Avatar>(() => new Avatar());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<Avatar> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::Potato.MessageReflection.Descriptor.MessageTypes[2]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public Avatar() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public Avatar(Avatar other) : this() {
+      name_ = other.name_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public Avatar Clone() {
+      return new Avatar(this);
+    }
+
+    /// <summary>Field number for the "name" field.</summary>
+    public const int NameFieldNumber = 1;
+    private string name_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string Name {
+      get { return name_; }
+      set {
+        name_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as Avatar);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(Avatar other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Name != other.Name) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Name.Length != 0) hash ^= Name.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Name.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(Name);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Name.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Name);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(Avatar other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Name.Length != 0) {
+        Name = other.Name;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            Name = input.ReadString();
             break;
           }
         }

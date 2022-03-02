@@ -18,4 +18,15 @@ enum UnitType {
   UNIT_TYPE_MAX = 6;
 }
 
+enum UnitSpawnCause {
+  UNIT_SPAWN_CAUSE_NONE = 0;
+  UNIT_SPAWN_CAUSE_ASIS = 1;
+  UNIT_SPAWN_CAUSE_LOGGEDIN = 2;
+  UNIT_SPAWN_CAUSE_LOGGEDOUT = 3;
+  UNIT_SPAWN_CAUSE_FASTTRAVEL = 4;
+  UNIT_SPAWN_CAUSE_RETIRE = 5;
+}
+
 message Individuality { UnitType type = 1; }
+
+message Avatar { string name = 1; }
