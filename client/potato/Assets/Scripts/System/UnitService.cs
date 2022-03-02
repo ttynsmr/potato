@@ -59,7 +59,7 @@ public class UnitService : MonoBehaviour
 
         StopCommand stopCommand = new StopCommand
         {
-            StopTime = notification.Time,
+            StopTime = notification.StopTime,
         };
         unit.InputStop(stopCommand);
     }
