@@ -29,6 +29,10 @@ jobs:
           restore-keys: |
             Library-
 
+      - name: apt update
+        run: sudo apt-get update
+      - name: Various installations
+        run: sudo apt-get install -yq tree
       - name: protocol buffers
         run: sudo apt-get install -yq protobuf-compiler
 
@@ -44,6 +48,11 @@ jobs:
           popd
           ./generate_csharp_proto.sh
           popd
+
+      - name: list output
+        run: |
+          tree server
+          tree client/potato/Assets/Scripts
 
       # Test
       - name: Run tests
