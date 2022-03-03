@@ -25,7 +25,7 @@ namespace Torikime.Unit.SpawnReady {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "CiVnZW5lcmF0ZWQvdW5pdC91bml0X3NwYXduX3JlYWR5LnByb3RvEhl0b3Jp",
-            "a2ltZS51bml0LnNwYXduX3JlYWR5Gg1tZXNzYWdlLnByb3RvIhoKB1JlcXVl",
+            "a2ltZS51bml0LnNwYXduX3JlYWR5Gg1NZXNzYWdlLnByb3RvIhoKB1JlcXVl",
             "c3QSDwoHYXJlYV9pZBgBIAEoBSLiAQoIUmVzcG9uc2USEgoKc2Vzc2lvbl9p",
             "ZBgBIAEoBRIPCgd1bml0X2lkGAIgASgEEiMKCHBvc2l0aW9uGAMgASgLMhEu",
             "dG9yaWtpbWUuVmVjdG9yMxIRCglkaXJlY3Rpb24YBCABKAISLgoNaW5kaXZp",

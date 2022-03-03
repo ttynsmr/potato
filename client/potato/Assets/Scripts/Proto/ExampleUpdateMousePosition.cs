@@ -26,7 +26,7 @@ namespace Torikime.Example.UpdateMousePosition {
           string.Concat(
             "CjVnZW5lcmF0ZWQvZXhhbXBsZS9leGFtcGxlX3VwZGF0ZV9tb3VzZV9wb3Np",
             "dGlvbi5wcm90bxImdG9yaWtpbWUuZXhhbXBsZS51cGRhdGVfbW91c2VfcG9z",
-            "aXRpb24aDW1lc3NhZ2UucHJvdG8iLgoHUmVxdWVzdBIjCghwb3NpdGlvbhgB",
+            "aXRpb24aDU1lc3NhZ2UucHJvdG8iLgoHUmVxdWVzdBIjCghwb3NpdGlvbhgB",
             "IAEoCzIRLnRvcmlraW1lLlZlY3RvcjMiFgoIUmVzcG9uc2USCgoCb2sYASAB",
             "KAgiZQoNUmVxdWVzdFBhcmNlbBJACgdyZXF1ZXN0GAEgASgLMi8udG9yaWtp",
             "bWUuZXhhbXBsZS51cGRhdGVfbW91c2VfcG9zaXRpb24uUmVxdWVzdBISCgpy",

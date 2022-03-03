@@ -22,7 +22,7 @@
 #include "src/session.h"
 #include "src/Payload.h"
 
-#include "proto/message.pb.h"
+#include "proto/Message.pb.h"
 #include "proto/chat_send_message.pb.h"
 #include "proto/diagnosis_sever_sessions.pb.h"
 #include "proto/diagnosis_ping_pong.pb.h"

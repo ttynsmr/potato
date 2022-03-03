@@ -3,7 +3,7 @@ contracts:
   unit:
     spawn_ready:
       imports:
-        - "message.proto"
+        - "Message.proto"
       request:
         area_id: int32
       response:
@@ -16,7 +16,7 @@ contracts:
         avatar: torikime.Avatar
     spawn:
       imports:
-        - "message.proto"
+        - "Message.proto"
       notification:
         session_id: int32
         unit_id: uint64
@@ -27,7 +27,7 @@ contracts:
         avatar: torikime.Avatar
     despawn:
       imports:
-        - "message.proto"
+        - "Message.proto"
       notification:
         session_id: int32
         unit_id: uint64
@@ -36,7 +36,7 @@ contracts:
         cause: torikime.UnitSpawnCause
     move:
       imports:
-        - "message.proto"
+        - "Message.proto"
       request:
         unit_id: uint64
         time: int64 # 移動開始時間

@@ -7,7 +7,7 @@ syntax = "proto3";
 package torikime.example.spawn;
 
 
-import "message.proto";
+import "Message.proto";
 
 
 

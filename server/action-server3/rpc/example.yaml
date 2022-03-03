@@ -3,7 +3,7 @@ contracts:
   example:
     update_mouse_position:
       imports:
-        - "message.proto"
+        - "Message.proto"
       request:
         position: torikime.Vector3
       response:
@@ -13,7 +13,7 @@ contracts:
         position: torikime.Vector3
     spawn:
       imports:
-        - "message.proto"
+        - "Message.proto"
       notification:
         session_id: int32
         position: torikime.Vector3

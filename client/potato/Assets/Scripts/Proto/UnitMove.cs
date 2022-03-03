@@ -25,7 +25,7 @@ namespace Torikime.Unit.Move {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "Ch5nZW5lcmF0ZWQvdW5pdC91bml0X21vdmUucHJvdG8SEnRvcmlraW1lLnVu",
-            "aXQubW92ZRoNbWVzc2FnZS5wcm90byKIAQoHUmVxdWVzdBIPCgd1bml0X2lk",
+            "aXQubW92ZRoNTWVzc2FnZS5wcm90byKIAQoHUmVxdWVzdBIPCgd1bml0X2lk",
             "GAEgASgEEgwKBHRpbWUYAiABKAMSHwoEZnJvbRgDIAEoCzIRLnRvcmlraW1l",
             "LlZlY3RvcjMSHQoCdG8YBCABKAsyES50b3Jpa2ltZS5WZWN0b3IzEg0KBXNw",
             "ZWVkGAUgASgCEg8KB21vdmVfaWQYBiABKAQiFgoIUmVzcG9uc2USCgoCb2sY",
