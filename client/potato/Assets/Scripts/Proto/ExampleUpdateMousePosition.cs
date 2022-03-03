@@ -26,20 +26,20 @@ namespace Torikime.Example.UpdateMousePosition {
           string.Concat(
             "CjVnZW5lcmF0ZWQvZXhhbXBsZS9leGFtcGxlX3VwZGF0ZV9tb3VzZV9wb3Np",
             "dGlvbi5wcm90bxImdG9yaWtpbWUuZXhhbXBsZS51cGRhdGVfbW91c2VfcG9z",
-            "aXRpb24aDW1lc3NhZ2UucHJvdG8iLAoHUmVxdWVzdBIhCghwb3NpdGlvbhgB",
-            "IAEoCzIPLnBvdGF0by5WZWN0b3IzIhYKCFJlc3BvbnNlEgoKAm9rGAEgASgI",
-            "ImUKDVJlcXVlc3RQYXJjZWwSQAoHcmVxdWVzdBgBIAEoCzIvLnRvcmlraW1l",
-            "LmV4YW1wbGUudXBkYXRlX21vdXNlX3Bvc2l0aW9uLlJlcXVlc3QSEgoKcmVx",
-            "dWVzdF9pZBgCIAEoDSJ5Cg5SZXNwb25zZVBhcmNlbBJCCghyZXNwb25zZRgB",
-            "IAEoCzIwLnRvcmlraW1lLmV4YW1wbGUudXBkYXRlX21vdXNlX3Bvc2l0aW9u",
-            "LlJlc3BvbnNlEhIKCnJlcXVlc3RfaWQYAiABKA0SDwoHc3VjY2VzcxgDIAEo",
-            "CCJFCgxOb3RpZmljYXRpb24SEgoKc2Vzc2lvbl9pZBgBIAEoBRIhCghwb3Np",
-            "dGlvbhgCIAEoCzIPLnBvdGF0by5WZWN0b3IzInkKEk5vdGlmaWNhdGlvblBh",
-            "cmNlbBJKCgxub3RpZmljYXRpb24YASABKAsyNC50b3Jpa2ltZS5leGFtcGxl",
-            "LnVwZGF0ZV9tb3VzZV9wb3NpdGlvbi5Ob3RpZmljYXRpb24SFwoPbm90aWZp",
-            "Y2F0aW9uX2lkGAIgASgNYgZwcm90bzM="));
+            "aXRpb24aDW1lc3NhZ2UucHJvdG8iLgoHUmVxdWVzdBIjCghwb3NpdGlvbhgB",
+            "IAEoCzIRLnRvcmlraW1lLlZlY3RvcjMiFgoIUmVzcG9uc2USCgoCb2sYASAB",
+            "KAgiZQoNUmVxdWVzdFBhcmNlbBJACgdyZXF1ZXN0GAEgASgLMi8udG9yaWtp",
+            "bWUuZXhhbXBsZS51cGRhdGVfbW91c2VfcG9zaXRpb24uUmVxdWVzdBISCgpy",
+            "ZXF1ZXN0X2lkGAIgASgNInkKDlJlc3BvbnNlUGFyY2VsEkIKCHJlc3BvbnNl",
+            "GAEgASgLMjAudG9yaWtpbWUuZXhhbXBsZS51cGRhdGVfbW91c2VfcG9zaXRp",
+            "b24uUmVzcG9uc2USEgoKcmVxdWVzdF9pZBgCIAEoDRIPCgdzdWNjZXNzGAMg",
+            "ASgIIkcKDE5vdGlmaWNhdGlvbhISCgpzZXNzaW9uX2lkGAEgASgFEiMKCHBv",
+            "c2l0aW9uGAIgASgLMhEudG9yaWtpbWUuVmVjdG9yMyJ5ChJOb3RpZmljYXRp",
+            "b25QYXJjZWwSSgoMbm90aWZpY2F0aW9uGAEgASgLMjQudG9yaWtpbWUuZXhh",
+            "bXBsZS51cGRhdGVfbW91c2VfcG9zaXRpb24uTm90aWZpY2F0aW9uEhcKD25v",
+            "dGlmaWNhdGlvbl9pZBgCIAEoDWIGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
-          new pbr::FileDescriptor[] { global::Potato.MessageReflection.Descriptor, },
+          new pbr::FileDescriptor[] { global::Torikime.MessageReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::Torikime.Example.UpdateMousePosition.Request), global::Torikime.Example.UpdateMousePosition.Request.Parser, new[]{ "Position" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Torikime.Example.UpdateMousePosition.Response), global::Torikime.Example.UpdateMousePosition.Response.Parser, new[]{ "Ok" }, null, null, null),
@@ -89,9 +89,9 @@ namespace Torikime.Example.UpdateMousePosition {
 
     /// <summary>Field number for the "position" field.</summary>
     public const int PositionFieldNumber = 1;
-    private global::Potato.Vector3 position_;
+    private global::Torikime.Vector3 position_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::Potato.Vector3 Position {
+    public global::Torikime.Vector3 Position {
       get { return position_; }
       set {
         position_ = value;
@@ -160,7 +160,7 @@ namespace Torikime.Example.UpdateMousePosition {
       }
       if (other.position_ != null) {
         if (position_ == null) {
-          position_ = new global::Potato.Vector3();
+          position_ = new global::Torikime.Vector3();
         }
         Position.MergeFrom(other.Position);
       }
@@ -177,7 +177,7 @@ namespace Torikime.Example.UpdateMousePosition {
             break;
           case 10: {
             if (position_ == null) {
-              position_ = new global::Potato.Vector3();
+              position_ = new global::Torikime.Vector3();
             }
             input.ReadMessage(position_);
             break;
@@ -719,9 +719,9 @@ namespace Torikime.Example.UpdateMousePosition {
 
     /// <summary>Field number for the "position" field.</summary>
     public const int PositionFieldNumber = 2;
-    private global::Potato.Vector3 position_;
+    private global::Torikime.Vector3 position_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::Potato.Vector3 Position {
+    public global::Torikime.Vector3 Position {
       get { return position_; }
       set {
         position_ = value;
@@ -802,7 +802,7 @@ namespace Torikime.Example.UpdateMousePosition {
       }
       if (other.position_ != null) {
         if (position_ == null) {
-          position_ = new global::Potato.Vector3();
+          position_ = new global::Torikime.Vector3();
         }
         Position.MergeFrom(other.Position);
       }
@@ -823,7 +823,7 @@ namespace Torikime.Example.UpdateMousePosition {
           }
           case 18: {
             if (position_ == null) {
-              position_ = new global::Potato.Vector3();
+              position_ = new global::Torikime.Vector3();
             }
             input.ReadMessage(position_);
             break;

@@ -7,8 +7,6 @@ syntax = "proto3";
 package torikime.unit.stop;
 
 
-import "message.proto";
-
 
 
 

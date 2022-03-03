@@ -20,7 +20,7 @@ public class PlayerUnit : IUnit
     public UnitId UnitId { get; private set; }
     public UnitService UnitService { get; set; }
 
-    public PlayerUnit(Potato.Network.NetworkService networkService, UnitId unitId, Vector3 position, float direction, Potato.Avatar avatar)
+    public PlayerUnit(Potato.Network.NetworkService networkService, UnitId unitId, Vector3 position, float direction, Torikime.Avatar avatar)
     {
         _networkService = networkService;
         UnitId = unitId;

@@ -13,7 +13,7 @@ import "message.proto";
 
 
 message Request {
-  potato.Vector3 position = 1;
+  torikime.Vector3 position = 1;
 }
 
 message Response {
@@ -35,7 +35,7 @@ message ResponseParcel
 
 message Notification {
   int32 session_id = 1;
-  potato.Vector3 position = 2;
+  torikime.Vector3 position = 2;
 }
 
 message NotificationParcel

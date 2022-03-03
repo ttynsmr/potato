@@ -25,22 +25,22 @@ namespace Torikime.Unit.Move {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "Ch5nZW5lcmF0ZWQvdW5pdC91bml0X21vdmUucHJvdG8SEnRvcmlraW1lLnVu",
-            "aXQubW92ZRoNbWVzc2FnZS5wcm90byKEAQoHUmVxdWVzdBIPCgd1bml0X2lk",
-            "GAEgASgEEgwKBHRpbWUYAiABKAMSHQoEZnJvbRgDIAEoCzIPLnBvdGF0by5W",
-            "ZWN0b3IzEhsKAnRvGAQgASgLMg8ucG90YXRvLlZlY3RvcjMSDQoFc3BlZWQY",
-            "BSABKAISDwoHbW92ZV9pZBgGIAEoBCIWCghSZXNwb25zZRIKCgJvaxgBIAEo",
-            "CCJRCg1SZXF1ZXN0UGFyY2VsEiwKB3JlcXVlc3QYASABKAsyGy50b3Jpa2lt",
-            "ZS51bml0Lm1vdmUuUmVxdWVzdBISCgpyZXF1ZXN0X2lkGAIgASgNImUKDlJl",
-            "c3BvbnNlUGFyY2VsEi4KCHJlc3BvbnNlGAEgASgLMhwudG9yaWtpbWUudW5p",
-            "dC5tb3ZlLlJlc3BvbnNlEhIKCnJlcXVlc3RfaWQYAiABKA0SDwoHc3VjY2Vz",
-            "cxgDIAEoCCKJAQoMTm90aWZpY2F0aW9uEg8KB3VuaXRfaWQYASABKAQSDAoE",
-            "dGltZRgCIAEoAxIdCgRmcm9tGAMgASgLMg8ucG90YXRvLlZlY3RvcjMSGwoC",
-            "dG8YBCABKAsyDy5wb3RhdG8uVmVjdG9yMxINCgVzcGVlZBgFIAEoAhIPCgdt",
-            "b3ZlX2lkGAYgASgEImUKEk5vdGlmaWNhdGlvblBhcmNlbBI2Cgxub3RpZmlj",
-            "YXRpb24YASABKAsyIC50b3Jpa2ltZS51bml0Lm1vdmUuTm90aWZpY2F0aW9u",
-            "EhcKD25vdGlmaWNhdGlvbl9pZBgCIAEoDWIGcHJvdG8z"));
+            "aXQubW92ZRoNbWVzc2FnZS5wcm90byKIAQoHUmVxdWVzdBIPCgd1bml0X2lk",
+            "GAEgASgEEgwKBHRpbWUYAiABKAMSHwoEZnJvbRgDIAEoCzIRLnRvcmlraW1l",
+            "LlZlY3RvcjMSHQoCdG8YBCABKAsyES50b3Jpa2ltZS5WZWN0b3IzEg0KBXNw",
+            "ZWVkGAUgASgCEg8KB21vdmVfaWQYBiABKAQiFgoIUmVzcG9uc2USCgoCb2sY",
+            "ASABKAgiUQoNUmVxdWVzdFBhcmNlbBIsCgdyZXF1ZXN0GAEgASgLMhsudG9y",
+            "aWtpbWUudW5pdC5tb3ZlLlJlcXVlc3QSEgoKcmVxdWVzdF9pZBgCIAEoDSJl",
+            "Cg5SZXNwb25zZVBhcmNlbBIuCghyZXNwb25zZRgBIAEoCzIcLnRvcmlraW1l",
+            "LnVuaXQubW92ZS5SZXNwb25zZRISCgpyZXF1ZXN0X2lkGAIgASgNEg8KB3N1",
+            "Y2Nlc3MYAyABKAgijQEKDE5vdGlmaWNhdGlvbhIPCgd1bml0X2lkGAEgASgE",
+            "EgwKBHRpbWUYAiABKAMSHwoEZnJvbRgDIAEoCzIRLnRvcmlraW1lLlZlY3Rv",
+            "cjMSHQoCdG8YBCABKAsyES50b3Jpa2ltZS5WZWN0b3IzEg0KBXNwZWVkGAUg",
+            "ASgCEg8KB21vdmVfaWQYBiABKAQiZQoSTm90aWZpY2F0aW9uUGFyY2VsEjYK",
+            "DG5vdGlmaWNhdGlvbhgBIAEoCzIgLnRvcmlraW1lLnVuaXQubW92ZS5Ob3Rp",
+            "ZmljYXRpb24SFwoPbm90aWZpY2F0aW9uX2lkGAIgASgNYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
-          new pbr::FileDescriptor[] { global::Potato.MessageReflection.Descriptor, },
+          new pbr::FileDescriptor[] { global::Torikime.MessageReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::Torikime.Unit.Move.Request), global::Torikime.Unit.Move.Request.Parser, new[]{ "UnitId", "Time", "From", "To", "Speed", "MoveId" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Torikime.Unit.Move.Response), global::Torikime.Unit.Move.Response.Parser, new[]{ "Ok" }, null, null, null),
@@ -117,9 +117,9 @@ namespace Torikime.Unit.Move {
 
     /// <summary>Field number for the "from" field.</summary>
     public const int FromFieldNumber = 3;
-    private global::Potato.Vector3 from_;
+    private global::Torikime.Vector3 from_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::Potato.Vector3 From {
+    public global::Torikime.Vector3 From {
       get { return from_; }
       set {
         from_ = value;
@@ -128,9 +128,9 @@ namespace Torikime.Unit.Move {
 
     /// <summary>Field number for the "to" field.</summary>
     public const int ToFieldNumber = 4;
-    private global::Potato.Vector3 to_;
+    private global::Torikime.Vector3 to_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::Potato.Vector3 To {
+    public global::Torikime.Vector3 To {
       get { return to_; }
       set {
         to_ = value;
@@ -272,13 +272,13 @@ namespace Torikime.Unit.Move {
       }
       if (other.from_ != null) {
         if (from_ == null) {
-          from_ = new global::Potato.Vector3();
+          from_ = new global::Torikime.Vector3();
         }
         From.MergeFrom(other.From);
       }
       if (other.to_ != null) {
         if (to_ == null) {
-          to_ = new global::Potato.Vector3();
+          to_ = new global::Torikime.Vector3();
         }
         To.MergeFrom(other.To);
       }
@@ -309,14 +309,14 @@ namespace Torikime.Unit.Move {
           }
           case 26: {
             if (from_ == null) {
-              from_ = new global::Potato.Vector3();
+              from_ = new global::Torikime.Vector3();
             }
             input.ReadMessage(from_);
             break;
           }
           case 34: {
             if (to_ == null) {
-              to_ = new global::Potato.Vector3();
+              to_ = new global::Torikime.Vector3();
             }
             input.ReadMessage(to_);
             break;
@@ -881,9 +881,9 @@ namespace Torikime.Unit.Move {
 
     /// <summary>Field number for the "from" field.</summary>
     public const int FromFieldNumber = 3;
-    private global::Potato.Vector3 from_;
+    private global::Torikime.Vector3 from_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::Potato.Vector3 From {
+    public global::Torikime.Vector3 From {
       get { return from_; }
       set {
         from_ = value;
@@ -892,9 +892,9 @@ namespace Torikime.Unit.Move {
 
     /// <summary>Field number for the "to" field.</summary>
     public const int ToFieldNumber = 4;
-    private global::Potato.Vector3 to_;
+    private global::Torikime.Vector3 to_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::Potato.Vector3 To {
+    public global::Torikime.Vector3 To {
       get { return to_; }
       set {
         to_ = value;
@@ -1036,13 +1036,13 @@ namespace Torikime.Unit.Move {
       }
       if (other.from_ != null) {
         if (from_ == null) {
-          from_ = new global::Potato.Vector3();
+          from_ = new global::Torikime.Vector3();
         }
         From.MergeFrom(other.From);
       }
       if (other.to_ != null) {
         if (to_ == null) {
-          to_ = new global::Potato.Vector3();
+          to_ = new global::Torikime.Vector3();
         }
         To.MergeFrom(other.To);
       }
@@ -1073,14 +1073,14 @@ namespace Torikime.Unit.Move {
           }
           case 26: {
             if (from_ == null) {
-              from_ = new global::Potato.Vector3();
+              from_ = new global::Torikime.Vector3();
             }
             input.ReadMessage(from_);
             break;
           }
           case 34: {
             if (to_ == null) {
-              to_ = new global::Potato.Vector3();
+              to_ = new global::Torikime.Vector3();
             }
             input.ReadMessage(to_);
             break;

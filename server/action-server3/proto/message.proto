@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package potato;
+package torikime;
 
 message Vector3 {
   float x = 1;

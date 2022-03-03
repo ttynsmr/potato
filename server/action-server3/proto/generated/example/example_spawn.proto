@@ -15,7 +15,7 @@ import "message.proto";
 
 message Notification {
   int32 session_id = 1;
-  potato.Vector3 position = 2;
+  torikime.Vector3 position = 2;
 }
 
 message NotificationParcel

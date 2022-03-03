@@ -39,7 +39,7 @@ namespace Torikime.Unit.Stop {
             "cC5Ob3RpZmljYXRpb24SFwoPbm90aWZpY2F0aW9uX2lkGAIgASgNYgZwcm90",
             "bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
-          new pbr::FileDescriptor[] { global::Potato.MessageReflection.Descriptor, },
+          new pbr::FileDescriptor[] { global::Torikime.MessageReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::Torikime.Unit.Stop.Request), global::Torikime.Unit.Stop.Request.Parser, new[]{ "UnitId", "Time", "StopTime", "Direction", "MoveId" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Torikime.Unit.Stop.Response), global::Torikime.Unit.Stop.Response.Parser, new[]{ "Ok" }, null, null, null),

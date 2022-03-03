@@ -25,17 +25,17 @@ namespace Torikime.Unit.Spawn {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "Ch9nZW5lcmF0ZWQvdW5pdC91bml0X3NwYXduLnByb3RvEhN0b3Jpa2ltZS51",
-            "bml0LnNwYXduGg1tZXNzYWdlLnByb3RvIt4BCgxOb3RpZmljYXRpb24SEgoK",
-            "c2Vzc2lvbl9pZBgBIAEoBRIPCgd1bml0X2lkGAIgASgEEiEKCHBvc2l0aW9u",
-            "GAMgASgLMg8ucG90YXRvLlZlY3RvcjMSEQoJZGlyZWN0aW9uGAQgASgCEiwK",
-            "DWluZGl2aWR1YWxpdHkYBSABKAsyFS5wb3RhdG8uSW5kaXZpZHVhbGl0eRIl",
-            "CgVjYXVzZRgGIAEoDjIWLnBvdGF0by5Vbml0U3Bhd25DYXVzZRIeCgZhdmF0",
-            "YXIYByABKAsyDi5wb3RhdG8uQXZhdGFyImYKEk5vdGlmaWNhdGlvblBhcmNl",
-            "bBI3Cgxub3RpZmljYXRpb24YASABKAsyIS50b3Jpa2ltZS51bml0LnNwYXdu",
-            "Lk5vdGlmaWNhdGlvbhIXCg9ub3RpZmljYXRpb25faWQYAiABKA1iBnByb3Rv",
-            "Mw=="));
+            "bml0LnNwYXduGg1tZXNzYWdlLnByb3RvIuYBCgxOb3RpZmljYXRpb24SEgoK",
+            "c2Vzc2lvbl9pZBgBIAEoBRIPCgd1bml0X2lkGAIgASgEEiMKCHBvc2l0aW9u",
+            "GAMgASgLMhEudG9yaWtpbWUuVmVjdG9yMxIRCglkaXJlY3Rpb24YBCABKAIS",
+            "LgoNaW5kaXZpZHVhbGl0eRgFIAEoCzIXLnRvcmlraW1lLkluZGl2aWR1YWxp",
+            "dHkSJwoFY2F1c2UYBiABKA4yGC50b3Jpa2ltZS5Vbml0U3Bhd25DYXVzZRIg",
+            "CgZhdmF0YXIYByABKAsyEC50b3Jpa2ltZS5BdmF0YXIiZgoSTm90aWZpY2F0",
+            "aW9uUGFyY2VsEjcKDG5vdGlmaWNhdGlvbhgBIAEoCzIhLnRvcmlraW1lLnVu",
+            "aXQuc3Bhd24uTm90aWZpY2F0aW9uEhcKD25vdGlmaWNhdGlvbl9pZBgCIAEo",
+            "DWIGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
-          new pbr::FileDescriptor[] { global::Potato.MessageReflection.Descriptor, },
+          new pbr::FileDescriptor[] { global::Torikime.MessageReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::Torikime.Unit.Spawn.Notification), global::Torikime.Unit.Spawn.Notification.Parser, new[]{ "SessionId", "UnitId", "Position", "Direction", "Individuality", "Cause", "Avatar" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Torikime.Unit.Spawn.NotificationParcel), global::Torikime.Unit.Spawn.NotificationParcel.Parser, new[]{ "Notification", "NotificationId" }, null, null, null)
@@ -109,9 +109,9 @@ namespace Torikime.Unit.Spawn {
 
     /// <summary>Field number for the "position" field.</summary>
     public const int PositionFieldNumber = 3;
-    private global::Potato.Vector3 position_;
+    private global::Torikime.Vector3 position_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::Potato.Vector3 Position {
+    public global::Torikime.Vector3 Position {
       get { return position_; }
       set {
         position_ = value;
@@ -131,9 +131,9 @@ namespace Torikime.Unit.Spawn {
 
     /// <summary>Field number for the "individuality" field.</summary>
     public const int IndividualityFieldNumber = 5;
-    private global::Potato.Individuality individuality_;
+    private global::Torikime.Individuality individuality_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::Potato.Individuality Individuality {
+    public global::Torikime.Individuality Individuality {
       get { return individuality_; }
       set {
         individuality_ = value;
@@ -142,9 +142,9 @@ namespace Torikime.Unit.Spawn {
 
     /// <summary>Field number for the "cause" field.</summary>
     public const int CauseFieldNumber = 6;
-    private global::Potato.UnitSpawnCause cause_ = 0;
+    private global::Torikime.UnitSpawnCause cause_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::Potato.UnitSpawnCause Cause {
+    public global::Torikime.UnitSpawnCause Cause {
       get { return cause_; }
       set {
         cause_ = value;
@@ -153,9 +153,9 @@ namespace Torikime.Unit.Spawn {
 
     /// <summary>Field number for the "avatar" field.</summary>
     public const int AvatarFieldNumber = 7;
-    private global::Potato.Avatar avatar_;
+    private global::Torikime.Avatar avatar_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::Potato.Avatar Avatar {
+    public global::Torikime.Avatar Avatar {
       get { return avatar_; }
       set {
         avatar_ = value;
@@ -284,7 +284,7 @@ namespace Torikime.Unit.Spawn {
       }
       if (other.position_ != null) {
         if (position_ == null) {
-          position_ = new global::Potato.Vector3();
+          position_ = new global::Torikime.Vector3();
         }
         Position.MergeFrom(other.Position);
       }
@@ -293,7 +293,7 @@ namespace Torikime.Unit.Spawn {
       }
       if (other.individuality_ != null) {
         if (individuality_ == null) {
-          individuality_ = new global::Potato.Individuality();
+          individuality_ = new global::Torikime.Individuality();
         }
         Individuality.MergeFrom(other.Individuality);
       }
@@ -302,7 +302,7 @@ namespace Torikime.Unit.Spawn {
       }
       if (other.avatar_ != null) {
         if (avatar_ == null) {
-          avatar_ = new global::Potato.Avatar();
+          avatar_ = new global::Torikime.Avatar();
         }
         Avatar.MergeFrom(other.Avatar);
       }
@@ -327,7 +327,7 @@ namespace Torikime.Unit.Spawn {
           }
           case 26: {
             if (position_ == null) {
-              position_ = new global::Potato.Vector3();
+              position_ = new global::Torikime.Vector3();
             }
             input.ReadMessage(position_);
             break;
@@ -338,18 +338,18 @@ namespace Torikime.Unit.Spawn {
           }
           case 42: {
             if (individuality_ == null) {
-              individuality_ = new global::Potato.Individuality();
+              individuality_ = new global::Torikime.Individuality();
             }
             input.ReadMessage(individuality_);
             break;
           }
           case 48: {
-            cause_ = (global::Potato.UnitSpawnCause) input.ReadEnum();
+            cause_ = (global::Torikime.UnitSpawnCause) input.ReadEnum();
             break;
           }
           case 58: {
             if (avatar_ == null) {
-              avatar_ = new global::Potato.Avatar();
+              avatar_ = new global::Torikime.Avatar();
             }
             input.ReadMessage(avatar_);
             break;

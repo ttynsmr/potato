@@ -25,15 +25,15 @@ namespace Torikime.Unit.Despawn {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "CiFnZW5lcmF0ZWQvdW5pdC91bml0X2Rlc3Bhd24ucHJvdG8SFXRvcmlraW1l",
-            "LnVuaXQuZGVzcGF3bhoNbWVzc2FnZS5wcm90byKQAQoMTm90aWZpY2F0aW9u",
-            "EhIKCnNlc3Npb25faWQYASABKAUSDwoHdW5pdF9pZBgCIAEoBBIhCghwb3Np",
-            "dGlvbhgDIAEoCzIPLnBvdGF0by5WZWN0b3IzEhEKCWRpcmVjdGlvbhgEIAEo",
-            "AhIlCgVjYXVzZRgFIAEoDjIWLnBvdGF0by5Vbml0U3Bhd25DYXVzZSJoChJO",
-            "b3RpZmljYXRpb25QYXJjZWwSOQoMbm90aWZpY2F0aW9uGAEgASgLMiMudG9y",
-            "aWtpbWUudW5pdC5kZXNwYXduLk5vdGlmaWNhdGlvbhIXCg9ub3RpZmljYXRp",
-            "b25faWQYAiABKA1iBnByb3RvMw=="));
+            "LnVuaXQuZGVzcGF3bhoNbWVzc2FnZS5wcm90byKUAQoMTm90aWZpY2F0aW9u",
+            "EhIKCnNlc3Npb25faWQYASABKAUSDwoHdW5pdF9pZBgCIAEoBBIjCghwb3Np",
+            "dGlvbhgDIAEoCzIRLnRvcmlraW1lLlZlY3RvcjMSEQoJZGlyZWN0aW9uGAQg",
+            "ASgCEicKBWNhdXNlGAUgASgOMhgudG9yaWtpbWUuVW5pdFNwYXduQ2F1c2Ui",
+            "aAoSTm90aWZpY2F0aW9uUGFyY2VsEjkKDG5vdGlmaWNhdGlvbhgBIAEoCzIj",
+            "LnRvcmlraW1lLnVuaXQuZGVzcGF3bi5Ob3RpZmljYXRpb24SFwoPbm90aWZp",
+            "Y2F0aW9uX2lkGAIgASgNYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
-          new pbr::FileDescriptor[] { global::Potato.MessageReflection.Descriptor, },
+          new pbr::FileDescriptor[] { global::Torikime.MessageReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::Torikime.Unit.Despawn.Notification), global::Torikime.Unit.Despawn.Notification.Parser, new[]{ "SessionId", "UnitId", "Position", "Direction", "Cause" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Torikime.Unit.Despawn.NotificationParcel), global::Torikime.Unit.Despawn.NotificationParcel.Parser, new[]{ "Notification", "NotificationId" }, null, null, null)
@@ -105,9 +105,9 @@ namespace Torikime.Unit.Despawn {
 
     /// <summary>Field number for the "position" field.</summary>
     public const int PositionFieldNumber = 3;
-    private global::Potato.Vector3 position_;
+    private global::Torikime.Vector3 position_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::Potato.Vector3 Position {
+    public global::Torikime.Vector3 Position {
       get { return position_; }
       set {
         position_ = value;
@@ -127,9 +127,9 @@ namespace Torikime.Unit.Despawn {
 
     /// <summary>Field number for the "cause" field.</summary>
     public const int CauseFieldNumber = 5;
-    private global::Potato.UnitSpawnCause cause_ = 0;
+    private global::Torikime.UnitSpawnCause cause_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::Potato.UnitSpawnCause Cause {
+    public global::Torikime.UnitSpawnCause Cause {
       get { return cause_; }
       set {
         cause_ = value;
@@ -240,7 +240,7 @@ namespace Torikime.Unit.Despawn {
       }
       if (other.position_ != null) {
         if (position_ == null) {
-          position_ = new global::Potato.Vector3();
+          position_ = new global::Torikime.Vector3();
         }
         Position.MergeFrom(other.Position);
       }
@@ -271,7 +271,7 @@ namespace Torikime.Unit.Despawn {
           }
           case 26: {
             if (position_ == null) {
-              position_ = new global::Potato.Vector3();
+              position_ = new global::Torikime.Vector3();
             }
             input.ReadMessage(position_);
             break;
@@ -281,7 +281,7 @@ namespace Torikime.Unit.Despawn {
             break;
           }
           case 40: {
-            cause_ = (global::Potato.UnitSpawnCause) input.ReadEnum();
+            cause_ = (global::Torikime.UnitSpawnCause) input.ReadEnum();
             break;
           }
         }

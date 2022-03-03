@@ -9,39 +9,39 @@ contracts:
       response:
         session_id: int32
         unit_id: uint64
-        position: potato.Vector3
+        position: torikime.Vector3
         direction: float
-        individuality: potato.Individuality
-        cause: potato.UnitSpawnCause
-        avatar: potato.Avatar
+        individuality: torikime.Individuality
+        cause: torikime.UnitSpawnCause
+        avatar: torikime.Avatar
     spawn:
       imports:
         - "message.proto"
       notification:
         session_id: int32
         unit_id: uint64
-        position: potato.Vector3
+        position: torikime.Vector3
         direction: float
-        individuality: potato.Individuality
-        cause: potato.UnitSpawnCause
-        avatar: potato.Avatar
+        individuality: torikime.Individuality
+        cause: torikime.UnitSpawnCause
+        avatar: torikime.Avatar
     despawn:
       imports:
         - "message.proto"
       notification:
         session_id: int32
         unit_id: uint64
-        position: potato.Vector3
+        position: torikime.Vector3
         direction: float
-        cause: potato.UnitSpawnCause
+        cause: torikime.UnitSpawnCause
     move:
       imports:
         - "message.proto"
       request:
         unit_id: uint64
         time: int64 # 移動開始時間
-        from: potato.Vector3
-        to: potato.Vector3
+        from: torikime.Vector3
+        to: torikime.Vector3
         speed: float
         move_id: uint64
       response:
@@ -49,13 +49,11 @@ contracts:
       notification:
         unit_id: uint64
         time: int64 # 移動開始時間
-        from: potato.Vector3
-        to: potato.Vector3
+        from: torikime.Vector3
+        to: torikime.Vector3
         speed: float
         move_id: uint64
     stop:
-      imports:
-        - "message.proto"
       request:
         unit_id: uint64
         time: int64 # 移動開始時間

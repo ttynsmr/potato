@@ -9,7 +9,7 @@ using pb = global::Google.Protobuf;
 using pbc = global::Google.Protobuf.Collections;
 using pbr = global::Google.Protobuf.Reflection;
 using scg = global::System.Collections.Generic;
-namespace Potato {
+namespace Torikime {
 
   /// <summary>Holder for reflection information generated from message.proto</summary>
   public static partial class MessageReflection {
@@ -24,24 +24,24 @@ namespace Potato {
     static MessageReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
-            "Cg1tZXNzYWdlLnByb3RvEgZwb3RhdG8iKgoHVmVjdG9yMxIJCgF4GAEgASgC",
-            "EgkKAXkYAiABKAISCQoBehgDIAEoAiIvCg1JbmRpdmlkdWFsaXR5Eh4KBHR5",
-            "cGUYASABKA4yEC5wb3RhdG8uVW5pdFR5cGUiFgoGQXZhdGFyEgwKBG5hbWUY",
-            "ASABKAkqmgEKCFVuaXRUeXBlEhIKDlVOSVRfVFlQRV9OT05FEAASFAoQVU5J",
-            "VF9UWVBFX1BMQVlFUhABEhMKD1VOSVRfVFlQRV9FTkVNWRACEhQKEFVOSVRf",
-            "VFlQRV9CVUxMRVQQAxISCg5VTklUX1RZUEVfV0FMTBAEEhIKDlVOSVRfVFlQ",
-            "RV9JVEVNEAUSEQoNVU5JVF9UWVBFX01BWBAGKsMBCg5Vbml0U3Bhd25DYXVz",
-            "ZRIZChVVTklUX1NQQVdOX0NBVVNFX05PTkUQABIZChVVTklUX1NQQVdOX0NB",
-            "VVNFX0FTSVMQARIdChlVTklUX1NQQVdOX0NBVVNFX0xPR0dFRElOEAISHgoa",
-            "VU5JVF9TUEFXTl9DQVVTRV9MT0dHRURPVVQQAxIfChtVTklUX1NQQVdOX0NB",
-            "VVNFX0ZBU1RUUkFWRUwQBBIbChdVTklUX1NQQVdOX0NBVVNFX1JFVElSRRAF",
-            "YgZwcm90bzM="));
+            "Cg1tZXNzYWdlLnByb3RvEgh0b3Jpa2ltZSIqCgdWZWN0b3IzEgkKAXgYASAB",
+            "KAISCQoBeRgCIAEoAhIJCgF6GAMgASgCIjEKDUluZGl2aWR1YWxpdHkSIAoE",
+            "dHlwZRgBIAEoDjISLnRvcmlraW1lLlVuaXRUeXBlIhYKBkF2YXRhchIMCgRu",
+            "YW1lGAEgASgJKpoBCghVbml0VHlwZRISCg5VTklUX1RZUEVfTk9ORRAAEhQK",
+            "EFVOSVRfVFlQRV9QTEFZRVIQARITCg9VTklUX1RZUEVfRU5FTVkQAhIUChBV",
+            "TklUX1RZUEVfQlVMTEVUEAMSEgoOVU5JVF9UWVBFX1dBTEwQBBISCg5VTklU",
+            "X1RZUEVfSVRFTRAFEhEKDVVOSVRfVFlQRV9NQVgQBirDAQoOVW5pdFNwYXdu",
+            "Q2F1c2USGQoVVU5JVF9TUEFXTl9DQVVTRV9OT05FEAASGQoVVU5JVF9TUEFX",
+            "Tl9DQVVTRV9BU0lTEAESHQoZVU5JVF9TUEFXTl9DQVVTRV9MT0dHRURJThAC",
+            "Eh4KGlVOSVRfU1BBV05fQ0FVU0VfTE9HR0VET1VUEAMSHwobVU5JVF9TUEFX",
+            "Tl9DQVVTRV9GQVNUVFJBVkVMEAQSGwoXVU5JVF9TUEFXTl9DQVVTRV9SRVRJ",
+            "UkUQBWIGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
-          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Potato.UnitType), typeof(global::Potato.UnitSpawnCause), }, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Potato.Vector3), global::Potato.Vector3.Parser, new[]{ "X", "Y", "Z" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Potato.Individuality), global::Potato.Individuality.Parser, new[]{ "Type" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Potato.Avatar), global::Potato.Avatar.Parser, new[]{ "Name" }, null, null, null)
+          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Torikime.UnitType), typeof(global::Torikime.UnitSpawnCause), }, new pbr::GeneratedClrTypeInfo[] {
+            new pbr::GeneratedClrTypeInfo(typeof(global::Torikime.Vector3), global::Torikime.Vector3.Parser, new[]{ "X", "Y", "Z" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Torikime.Individuality), global::Torikime.Individuality.Parser, new[]{ "Type" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Torikime.Avatar), global::Torikime.Avatar.Parser, new[]{ "Name" }, null, null, null)
           }));
     }
     #endregion
@@ -78,7 +78,7 @@ namespace Potato {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Potato.MessageReflection.Descriptor.MessageTypes[0]; }
+      get { return global::Torikime.MessageReflection.Descriptor.MessageTypes[0]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -263,7 +263,7 @@ namespace Potato {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Potato.MessageReflection.Descriptor.MessageTypes[1]; }
+      get { return global::Torikime.MessageReflection.Descriptor.MessageTypes[1]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -291,9 +291,9 @@ namespace Potato {
 
     /// <summary>Field number for the "type" field.</summary>
     public const int TypeFieldNumber = 1;
-    private global::Potato.UnitType type_ = 0;
+    private global::Torikime.UnitType type_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::Potato.UnitType Type {
+    public global::Torikime.UnitType Type {
       get { return type_; }
       set {
         type_ = value;
@@ -375,7 +375,7 @@ namespace Potato {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 8: {
-            type_ = (global::Potato.UnitType) input.ReadEnum();
+            type_ = (global::Torikime.UnitType) input.ReadEnum();
             break;
           }
         }
@@ -392,7 +392,7 @@ namespace Potato {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Potato.MessageReflection.Descriptor.MessageTypes[2]; }
+      get { return global::Torikime.MessageReflection.Descriptor.MessageTypes[2]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]

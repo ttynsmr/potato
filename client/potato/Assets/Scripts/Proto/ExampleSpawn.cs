@@ -25,13 +25,13 @@ namespace Torikime.Example.Spawn {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "CiVnZW5lcmF0ZWQvZXhhbXBsZS9leGFtcGxlX3NwYXduLnByb3RvEhZ0b3Jp",
-            "a2ltZS5leGFtcGxlLnNwYXduGg1tZXNzYWdlLnByb3RvIkUKDE5vdGlmaWNh",
-            "dGlvbhISCgpzZXNzaW9uX2lkGAEgASgFEiEKCHBvc2l0aW9uGAIgASgLMg8u",
-            "cG90YXRvLlZlY3RvcjMiaQoSTm90aWZpY2F0aW9uUGFyY2VsEjoKDG5vdGlm",
-            "aWNhdGlvbhgBIAEoCzIkLnRvcmlraW1lLmV4YW1wbGUuc3Bhd24uTm90aWZp",
-            "Y2F0aW9uEhcKD25vdGlmaWNhdGlvbl9pZBgCIAEoDWIGcHJvdG8z"));
+            "a2ltZS5leGFtcGxlLnNwYXduGg1tZXNzYWdlLnByb3RvIkcKDE5vdGlmaWNh",
+            "dGlvbhISCgpzZXNzaW9uX2lkGAEgASgFEiMKCHBvc2l0aW9uGAIgASgLMhEu",
+            "dG9yaWtpbWUuVmVjdG9yMyJpChJOb3RpZmljYXRpb25QYXJjZWwSOgoMbm90",
+            "aWZpY2F0aW9uGAEgASgLMiQudG9yaWtpbWUuZXhhbXBsZS5zcGF3bi5Ob3Rp",
+            "ZmljYXRpb24SFwoPbm90aWZpY2F0aW9uX2lkGAIgASgNYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
-          new pbr::FileDescriptor[] { global::Potato.MessageReflection.Descriptor, },
+          new pbr::FileDescriptor[] { global::Torikime.MessageReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::Torikime.Example.Spawn.Notification), global::Torikime.Example.Spawn.Notification.Parser, new[]{ "SessionId", "Position" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Torikime.Example.Spawn.NotificationParcel), global::Torikime.Example.Spawn.NotificationParcel.Parser, new[]{ "Notification", "NotificationId" }, null, null, null)
@@ -89,9 +89,9 @@ namespace Torikime.Example.Spawn {
 
     /// <summary>Field number for the "position" field.</summary>
     public const int PositionFieldNumber = 2;
-    private global::Potato.Vector3 position_;
+    private global::Torikime.Vector3 position_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::Potato.Vector3 Position {
+    public global::Torikime.Vector3 Position {
       get { return position_; }
       set {
         position_ = value;
@@ -172,7 +172,7 @@ namespace Torikime.Example.Spawn {
       }
       if (other.position_ != null) {
         if (position_ == null) {
-          position_ = new global::Potato.Vector3();
+          position_ = new global::Torikime.Vector3();
         }
         Position.MergeFrom(other.Position);
       }
@@ -193,7 +193,7 @@ namespace Torikime.Example.Spawn {
           }
           case 18: {
             if (position_ == null) {
-              position_ = new global::Potato.Vector3();
+              position_ = new global::Torikime.Vector3();
             }
             input.ReadMessage(position_);
             break;
