@@ -6,12 +6,7 @@ syntax = "proto3";
 
 package torikime.unit.despawn;
 
-
 import "Message.proto";
-
-
-
-
 
 message Notification {
   int32 session_id = 1;
@@ -21,8 +16,7 @@ message Notification {
   torikime.UnitSpawnCause cause = 5;
 }
 
-message NotificationParcel
-{
-  Notification notification  = 1;
+message NotificationParcel {
+  Notification notification = 1;
   uint32 notification_id = 2;
 }

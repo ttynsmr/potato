@@ -34,7 +34,7 @@ def convert_rpc_to_protobuf(env, out_dir, params, args):
 
     rendered_s = tmpl.render(params)
 
-    filename = f'{params["contract"]}/{params["contract"]}_{params["name"]}.proto'
+    filename = f'{params["contract"]}_{params["name"]}.proto'
     out_filename = f'{out_dir}/{filename}'
     cache_filename = f'{args.cache_dir}/{filename}.hash'
     if is_cached(cache_filename, rendered_s, args):
