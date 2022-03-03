@@ -110,6 +110,10 @@ public class PlayerUnit : IUnit
                         var last = history.Last();
                         var stopCommand = (StopCommand)last;
                         Position = CalcCurrentPosition(stopCommand.LastMoveCommand, stopCommand.StopTime);
+                        if (inputQueue.Count == 0)
+                        {
+                            break;
+                        }
                     }
                 }
             }

@@ -61,6 +61,10 @@ void Unit::update(int64_t now)
 					auto last = history.back();
 					auto stopCommand = std::dynamic_pointer_cast<StopCommand>(last);
 					updatePosition(stopCommand->lastMoveCommand.lock(), stopCommand->stopTime);
+					if (inputQueue.size() == 0)
+					{
+						break;
+					}
 				}
 			}
 		}

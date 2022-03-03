@@ -52,6 +52,11 @@ namespace Potato
                         byte[] headerBuffer = new byte[PayloadHeader.Size];
                         var readHeaderSize = client.GetStream().Read(headerBuffer, 0, PayloadHeader.Size);
                         Debug.Assert(readHeaderSize == PayloadHeader.Size);
+                        if (!client.Connected)
+                        {
+                            tokenSource.Cancel();
+                            break;
+                        }
 
                         Payload payload = new Payload
                         {
@@ -60,6 +65,11 @@ namespace Potato
                         payload.SetBufferSize(payload.Header.payloadSize);
                         var readSize = client.GetStream().Read(payload.GetBuffer(), PayloadHeader.Size, payload.Header.payloadSize);
                         Debug.Assert(readSize == payload.Header.payloadSize);
+                        if (!client.Connected)
+                        {
+                            tokenSource.Cancel();
+                            break;
+                        }
 
                         var rpc = rpcs.Find(x => x.ContractId == payload.Header.contract_id
                          && x.RpcId == payload.Header.rpc_id);
@@ -73,6 +83,11 @@ namespace Potato
                             }
                             catch (Exception)
                             {
+                                if (!client.Connected)
+                                {
+                                    tokenSource.Cancel();
+                                    break;
+                                }
                             }
                             continue;
                         }
@@ -83,7 +98,14 @@ namespace Potato
                         }
                     }
                 }, tokenSource.Token);
-                receieverTask.ContinueWith(((task) => { Debug.Log($"receieverTask was {task.Status}"); }));
+                receieverTask.ContinueWith((task) => {
+                    Debug.Log($"receieverTask was {task.Status}");
+                    OnDisconnect();
+                });
+            }
+
+            private void OnDisconnect()
+            {
             }
 
             public void Update()
