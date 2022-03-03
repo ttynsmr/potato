@@ -46,7 +46,10 @@ jobs:
           pipenv install pyyaml jinja2 inflection
           pipenv run python torikime.py -o "../proto/generated" -s "../../../client/potato/Assets/Scripts/Rpc/Generated" -i "../rpc"
           popd
-          ./generate_csharp_proto.sh
+          # ./generate_csharp_proto.sh
+          protoc --proto_path=./proto --csharp_out=../../client/potato/Assets/Scripts/Proto ./proto/*.proto
+          protoc --proto_path=./proto --csharp_out=../../client/potato/Assets/Scripts/Proto ./proto/generated/*/*.proto
+          find ./proto -name "*.proto"
           popd
 
       - name: list output
