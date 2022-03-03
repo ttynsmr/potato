@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    name: Build my project ✨
+    name: ✨Build my project
     runs-on: ubuntu-latest
     steps:
       # Checkout
@@ -24,6 +24,19 @@ jobs:
           key: Library-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
           restore-keys: |
             Library-
+
+      - name: ⚗Generate RPC
+        run: |
+          pushd server/action-server3
+          pushd torikime
+          python -m pip install --upgrade pip
+          pip install pipenv --upgrade-strategy=only-if-needed
+          pipenv install
+          python torikime.py --help
+          python torikime.py -o ../proto/generated -s ../../client/potato/Assets/Scripts/Rpc/Generated" -i ../rpc
+          popd
+          ./generate_csharp_proto.sh
+          popd
 
       # Test
       - name: Run tests
