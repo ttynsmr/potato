@@ -3,7 +3,7 @@
 #include <list>
 #include <queue>
 #include <memory>
-#include <gml/gml.hpp>
+#include <Eigen/Core>
 
 class ICommand {
 public:
@@ -16,8 +16,8 @@ class MoveCommand : public ICommand
 public:
 	std::weak_ptr<MoveCommand> lastMoveCommand;
 	long startTime;
-	gml::vec3 from;
-	gml::vec3 to;
+	Eigen::Vector3f from;
+	Eigen::Vector3f to;
 	float speed;
 	float direction;
 	uint64_t moveId;
@@ -55,7 +55,7 @@ public:
 		return sessionId;
 	}
 
-	const gml::vec3& getPosition() const
+	const Eigen::Vector3f& getPosition() const
 	{
 		return position;
 	}
@@ -69,7 +69,7 @@ private:
 	UnitId unitId = 0;
 	SessionId sessionId = 0;
 	int64_t simulatedNow = 0;
-	gml::vec3 position = {};
+	Eigen::Vector3f position = {};
 	std::shared_ptr<MoveCommand> currentMove;
 	std::queue< std::shared_ptr<ICommand>> inputQueue;
 	std::list<std::shared_ptr<ICommand>> history;
