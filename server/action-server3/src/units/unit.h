@@ -36,23 +36,42 @@ class Unit
 {
 public:
 	using UnitId = int64_t;
-	Unit(UnitId unitId);
+	using SessionId = int64_t;
+	Unit(UnitId unitId, SessionId sessionId);
 
 	void inputCommand(std::shared_ptr<ICommand> command);
 	void update(int64_t now);
 
 	std::shared_ptr<ICommand> getLastCommand();
+	std::shared_ptr<MoveCommand> getLastMoveCommand();
 
 	UnitId getUnitId() const
 	{
 		return unitId;
 	}
 
+	SessionId getSessionId() const
+	{
+		return sessionId;
+	}
+
+	const gml::vec3& getPosition() const
+	{
+		return position;
+	}
+
+	bool isMoving() const
+	{
+		return _isMoving;
+	}
+
 private:
-	UnitId unitId;
+	UnitId unitId = 0;
+	SessionId sessionId = 0;
 	int64_t simulatedNow = 0;
-	gml::vec3 Positoin;
+	gml::vec3 position = {};
 	std::shared_ptr<MoveCommand> currentMove;
 	std::queue< std::shared_ptr<ICommand>> inputQueue;
 	std::list<std::shared_ptr<ICommand>> history;
+	bool _isMoving = false;
 };

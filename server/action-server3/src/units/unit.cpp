@@ -2,11 +2,25 @@
 #include <gml/gml.hpp>
 #include <chrono>
 
-Unit::Unit(UnitId unitId) : unitId(unitId) {}
+Unit::Unit(UnitId unitId, SessionId sessionId) : unitId(unitId), sessionId(sessionId) {}
 
 std::shared_ptr<ICommand> Unit::getLastCommand()
 {
 	return history.size() > 0 ? history.back() : nullptr;
+}
+
+std::shared_ptr<MoveCommand> Unit::getLastMoveCommand()
+{
+	auto lastCommand = getLastCommand();
+	auto lastCommandAsStopCommand = std::dynamic_pointer_cast<StopCommand>(lastCommand);
+	if (lastCommandAsStopCommand != nullptr)
+	{
+		return lastCommandAsStopCommand->lastMoveCommand.lock();
+	}
+	else
+	{
+		return std::dynamic_pointer_cast<MoveCommand>(lastCommand);
+	}
 }
 
 void Unit::inputCommand(std::shared_ptr<ICommand> command)
@@ -15,6 +29,11 @@ void Unit::inputCommand(std::shared_ptr<ICommand> command)
 	if (stopCommand != nullptr)
 	{
 		stopCommand->lastMoveCommand = std::dynamic_pointer_cast<MoveCommand>(getLastCommand());
+		_isMoving = false;
+	}
+	else
+	{
+		_isMoving = true;
 	}
 
 	inputQueue.emplace(command);
@@ -26,8 +45,8 @@ void Unit::update(int64_t now)
 		auto distance = gml::length(currentMove->to - currentMove->from);
 		auto progress = (now - currentMove->startTime) / (distance / currentMove->speed);
 		//Debug.Log($"distance:{distance}, progress:{progress}, estimate time:{(distance / currentMove.Speed)}");
-		Positoin = gml::mix(currentMove->from, currentMove->to, progress);
-		std::cout << "time: " << now << " position[" << currentMove->moveId << "]: x:" << Positoin[0] << " y:" << Positoin[1] << " z:" << Positoin[2] << "\n";
+		position = gml::mix(currentMove->from, currentMove->to, progress);
+		std::cout << "unit[" << unitId << "] time: " << now << " position[" << currentMove->moveId << "]: x:" << position[0] << " y:" << position[1] << " z:" << position[2] << "\n";
 	};
 
 	while (simulatedNow < now)

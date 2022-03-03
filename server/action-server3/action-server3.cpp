@@ -186,6 +186,12 @@ public:
 		_acceptedDelegate = callback;
 	}
 
+	using DisconnectDelegate = std::function<void(std::shared_ptr<potato::net::session>)>;
+	void setDisconnectedDelegate(DisconnectDelegate callback)
+	{
+		_disconnectedDelegate = callback;
+	}
+
 	using SessionStartedDelegate = std::function<void(std::shared_ptr<potato::net::session>)>;
 	void setSessionStartedDelegate(SessionStartedDelegate callback)
 	{
@@ -242,6 +248,8 @@ private:
 								notification.set_unit_id(_sessionId);
 								sendBroadcast(_sessionId, torikime::unit::despawn::Rpc::serializeNotification(notification));
 							}
+
+							_disconnectedDelegate(session);
 						});
 
 					_acceptedDelegate(session);
@@ -281,6 +289,7 @@ private:
 	std::atomic<int32_t> _sendCount = 0;
 	std::atomic<int32_t> _receiveCount = 0;
 	AcceptedDelegate _acceptedDelegate;
+	DisconnectDelegate _disconnectedDelegate;
 	SessionStartedDelegate _sessionStartedDelegate;
 };
 
@@ -302,6 +311,7 @@ public:
 
 		_nerworkServiceProvider.lock()->setAcceptedDelegate([this](auto _) { onAccepted(_); });
 		_nerworkServiceProvider.lock()->setSessionStartedDelegate([this](auto _) { onSessionStarted(_); });
+		_nerworkServiceProvider.lock()->setDisconnectedDelegate([this](auto _) { onDisconnected(_); });
 	}
 
 	void onAccepted(std::shared_ptr<potato::net::session> session)
@@ -363,8 +373,8 @@ public:
 		auto unitSpawnReady = std::make_shared<torikime::unit::spawn_ready::Rpc>(session);
 		unitSpawnReady->subscribeRequest([this, session](const auto& request, auto& responser)
 			{
-				auto unit = std::make_shared<Unit>(session->getSessionId());
-				units.emplace_back(unit);
+				auto newUnit = std::make_shared<Unit>(session->getSessionId(), session->getSessionId());
+				units.emplace_back(newUnit);
 
 				// response
 				{
@@ -408,26 +418,75 @@ public:
 					notification.set_allocated_avatar(avatar);
 					_nerworkServiceProvider.lock()->sendBroadcast(session->getSessionId(), torikime::unit::spawn::Rpc::serializeNotification(notification));
 
-					// notify neighbors to spawner
-					_nerworkServiceProvider.lock()->visitSessions([this, session](auto other) {
-						torikime::unit::spawn::Notification notification;
-						notification.set_session_id(other->getSessionId());
-						auto position = new potato::Vector3();
-						position->set_x(0);
-						position->set_y(0);
-						position->set_z(0);
-						notification.set_allocated_position(new potato::Vector3());
-						notification.set_direction(0);
-						auto individuality = new potato::Individuality();
-						individuality->set_type(potato::UNIT_TYPE_PLAYER);
-						notification.set_allocated_individuality(individuality);
-						notification.set_cause(potato::UNIT_SPAWN_CAUSE_ASIS);
-						auto avatar = new potato::Avatar();
-						avatar->set_name(std::string("hoge"));
-						notification.set_allocated_avatar(avatar);
-						auto payload = torikime::unit::spawn::Rpc::serializeNotification(notification);
-						_nerworkServiceProvider.lock()->sendTo(session->getSessionId(), payload);
-						});
+					for (auto unit : units)
+					{
+						if (unit->getUnitId() == newUnit->getUnitId())
+						{
+							continue;
+						}
+						// spawn
+						{
+							torikime::unit::spawn::Notification notification;
+							notification.set_session_id(unit->getSessionId());
+							notification.set_unit_id(unit->getUnitId());
+							auto position = new potato::Vector3();
+							auto& unitPosition = unit->getPosition();
+							position->set_x(unitPosition[0]);
+							position->set_y(unitPosition[1]);
+							position->set_z(unitPosition[2]);
+							notification.set_allocated_position(new potato::Vector3());
+							notification.set_direction(0);
+							auto individuality = new potato::Individuality();
+							individuality->set_type(potato::UNIT_TYPE_PLAYER);
+							notification.set_allocated_individuality(individuality);
+							notification.set_cause(potato::UNIT_SPAWN_CAUSE_ASIS);
+							auto avatar = new potato::Avatar();
+							avatar->set_name(std::string("hoge"));
+							notification.set_allocated_avatar(avatar);
+							auto payload = torikime::unit::spawn::Rpc::serializeNotification(notification);
+							_nerworkServiceProvider.lock()->sendTo(session->getSessionId(), payload);
+						}
+
+						// current move state
+						{
+							auto moveCommand = unit->getLastMoveCommand();
+							if (moveCommand != nullptr)
+							{
+								torikime::unit::move::Notification notification;
+								notification.set_unit_id(unit->getUnitId());
+								notification.set_time(moveCommand->startTime);
+								auto from = new potato::Vector3();
+								from->set_x(moveCommand->from[0]);
+								from->set_y(moveCommand->from[1]);
+								from->set_z(moveCommand->from[2]);
+								auto to = new potato::Vector3();
+								to->set_x(moveCommand->to[0]);
+								to->set_y(moveCommand->to[1]);
+								to->set_z(moveCommand->to[2]);
+								notification.set_allocated_from(from);
+								notification.set_allocated_to(to);
+								notification.set_speed(moveCommand->speed);
+								notification.set_move_id(moveCommand->moveId);
+								_nerworkServiceProvider.lock()->sendTo(session->getSessionId(), torikime::unit::move::Rpc::serializeNotification(notification));
+							}
+
+							auto stopCommand = std::dynamic_pointer_cast<StopCommand>(unit->getLastCommand());
+							if (stopCommand != nullptr)
+							{
+								torikime::unit::stop::Notification notification;
+								notification.set_unit_id(unit->getUnitId());
+								auto lastMoveCommand = stopCommand->lastMoveCommand.lock();
+								auto lastMoveTime = lastMoveCommand != nullptr ? lastMoveCommand->startTime : 0;
+								notification.set_time(lastMoveTime);
+								notification.set_stop_time(stopCommand->stopTime);
+								notification.set_direction(stopCommand->direction);
+								notification.set_move_id(stopCommand->moveId);
+
+								auto payload = torikime::unit::stop::Rpc::serializeNotification(notification);
+								_nerworkServiceProvider.lock()->sendTo(session->getSessionId(), payload);
+							}
+						}
+					}
 				}
 			});
 		_nerworkServiceProvider.lock()->registerRpc(unitSpawnReady);
@@ -532,6 +591,11 @@ public:
 			auto payload = example->serializeNotification(notification);
 			_nerworkServiceProvider.lock()->sendTo(session->getSessionId(), payload);
 			});
+	}
+
+	void onDisconnected(std::shared_ptr<potato::net::session> session)
+	{
+		units.remove_if([session](auto& u) { return u->getSessionId() == session->getSessionId(); });
 	}
 
 	// TODO: move to message service

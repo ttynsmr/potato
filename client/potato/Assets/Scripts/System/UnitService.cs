@@ -18,12 +18,14 @@ public class UnitService : MonoBehaviour
 
     public void Unregister(IUnit unit)
     {
+        unit.OnDespawn();
         units.Remove(unit);
     }
 
     public void UnregisterByUnitId(UnitId unitId)
     {
-        int v = units.RemoveAll((u) => { return u.UnitId.Equals(unitId); });
+        var unit = units.Find((u) => { return u.UnitId.Equals(unitId); });
+        Unregister(unit);
     }
 
     public void OnReceiveMove(Torikime.Unit.Move.Notification notification)

@@ -5,6 +5,11 @@ public struct UnitId
     public UnitId(ulong value) { this.value = value; }
     public static explicit operator UnitId(ulong value) { return new UnitId(value); }
     public ulong RawValue => value;
+
+    public override string ToString()
+    {
+        return value.ToString();
+    }
 }
 
 public interface IUnit
@@ -16,4 +21,5 @@ public interface IUnit
     void Update(float deltaTime);
     void InputMove(MoveCommand moveCommand);
     void InputStop(StopCommand stopCommand);
+    void OnDespawn();
 }

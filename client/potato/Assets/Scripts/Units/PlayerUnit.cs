@@ -24,18 +24,34 @@ public class PlayerUnit : IUnit
     {
         _networkService = networkService;
         UnitId = unitId;
+        Position = position;
     }
 
     public void Start()
     {
         simulatedNow = _networkService.Now;
         Appearance = GameObject.Instantiate(UnitService.TestAvatar);
-        //history.Add(new StopCommand
-        //{
-        //    LastMoveCommand = null,
-        //    StopTime = simulatedNow,
-        //    Direction = 0
-        //});
+        Appearance.transform.position = Position;
+        Appearance.name = $"PlayerUnit({UnitId})";
+        history.Add(new StopCommand
+        {
+            LastMoveCommand = new MoveCommand
+            {
+                LastMoveCommand = null,
+                StartTime = 0,
+                From = Position,
+                To = Position,
+                Direction = 0,
+                Speed = 1,
+            },
+            StopTime = _networkService.Now,
+            Direction = 0
+        });
+    }
+
+    public void OnDespawn()
+    {
+        GameObject.Destroy(Appearance.gameObject);
     }
 
     public void InputMove(MoveCommand moveCommand)
@@ -45,7 +61,14 @@ public class PlayerUnit : IUnit
 
     public void InputStop(StopCommand stopCommand)
     {
-        stopCommand.LastMoveCommand = (MoveCommand)history.Last();
+        if (history.Count > 0)
+        {
+            var lastCommand = history.Last();
+            if (lastCommand is MoveCommand)
+            {
+                stopCommand.LastMoveCommand = (MoveCommand)lastCommand;
+            }
+        }
         inputQueue.Enqueue(stopCommand);
     }
 

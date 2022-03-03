@@ -11,7 +11,7 @@ public class ControllablePlayerUnit : IUnit
     private Potato.Network.NetworkService _networkService;
     private int prevInputX;
     private int prevInputY;
-    private float moveSpeed = 0.01f;
+    private float moveSpeed = 0.005f;
 
     private List<ICommand> history = new List<ICommand>();
 
@@ -32,12 +32,25 @@ public class ControllablePlayerUnit : IUnit
     public void Start()
     {
         Appearance = GameObject.Instantiate(UnitService.TestAvatar);
-        history.Add( new StopCommand
+        Appearance.name = $"ControllablePlayerUnit({UnitId})";
+        history.Add(new StopCommand
         {
-            LastMoveCommand = null,
+            LastMoveCommand = new MoveCommand {
+                LastMoveCommand = null,
+                StartTime = 0,
+                From = Position,
+                To = Position,
+                Direction = 0,
+                Speed = 1,
+            },
             StopTime = _networkService.Now,
             Direction = 0
         });
+    }
+
+    public void OnDespawn()
+    {
+        GameObject.Destroy(Appearance.gameObject);
     }
 
     // Update is called once per frame
@@ -107,7 +120,7 @@ public class ControllablePlayerUnit : IUnit
                     LastMoveCommand = currentMove,
                     StartTime = now,
                     From = Position,
-                    To = (Position + new Vector3(moveDirection.x, moveDirection.y) * 100.0f),
+                    To = (Position + new Vector3(moveDirection.x, moveDirection.y) * 1000.0f),
                     Speed = moveSpeed
                 };
                 command = moveCommand;
@@ -140,13 +153,14 @@ public class ControllablePlayerUnit : IUnit
         {
             if (lastCommand is StopCommand)
             {
-                return;
+                var stopCommand = (StopCommand)lastCommand;
+                Position = CalcCurrentPosition(stopCommand.LastMoveCommand, stopCommand.StopTime);
             }
-
-            currentMove = (MoveCommand)history.Last();
         }
-
-        Position = CalcCurrentPosition(currentMove, now);
+        else
+        {
+            Position = CalcCurrentPosition(currentMove, now);
+        }
 
         if (Appearance)
         {
