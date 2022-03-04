@@ -1,7 +1,9 @@
-﻿# CMakeList.txt : action-server3 の CMake プロジェクト。ソースを含めて、次を定義します:
+# CMakeList.txt : action-server3 の CMake プロジェクト。ソースを含めて、次を定義します:
 # プロジェクト専用ロジックはこちらです。
 #
 cmake_minimum_required (VERSION 3.8)
+
+set_property(GLOBAL PROPERTY GLOBAL_DEPENDS_DEBUG_MODE 1)
 
 project ("action-server3")
 
@@ -27,50 +29,19 @@ elseif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-long-long -pedantic")
 endif()
 
-# # torikime
-# # ./torikime/torikime.py -o ./proto -i ./rpc/rpc.yaml
-
-# add_custom_target(
-#   rpc
-#   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/rpc/rpc.yaml
-#   )
-
-# add_custom_command(
-#   TARGET rpc
-#   COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/torikime/torikime.py -o ${CMAKE_CURRENT_SOURCE_DIR}/proto -i ${CMAKE_CURRENT_SOURCE_DIR}/rpc/rpc.yaml
-#   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/torikime
-#   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/rpc/rpc.yaml
-#   COMMENT "Preprocessing rpcs"
-#   )
-
-# add_custom_target(
-#   rpc
-#   COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/torikime/torikime.py -o ${CMAKE_CURRENT_SOURCE_DIR}/proto -i ${CMAKE_CURRENT_SOURCE_DIR}/rpc/rpc.yaml
-#   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/torikime
-#   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/rpc/rpc.yaml
-#   COMMENT "Preprocessing rpcs"
-#   BYPRODUCTS ${CMAKE_CURRENT_SOURCE_DIR}/proto/*
-#   )
-
 # eventpp
 ADD_SUBDIRECTORY(externals/eventpp)
 
 # Eigen3
 INCLUDE_DIRECTORIES(externals/eigen)
 
-# add protocol buffer settings
-INCLUDE(FindProtobuf)
-FIND_PACKAGE(Protobuf REQUIRED)
-ADD_SUBDIRECTORY(proto)
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
 
-ADD_SUBDIRECTORY(rpc)
-add_dependencies(proto rpc)
-ADD_SUBDIRECTORY(rpc/generated)
-add_dependencies(rpc_contracts rpc proto)
+# add protocol buffer settings
+ADD_SUBDIRECTORY(proto)
 
-# ADD_SUBDIRECTORY(${CMAKE_CURRENT_SOURCE_DIR}/rpc/generated/cpp)
-# file(GLOB SUB_SOURCES RELATIVE "${CMAKE_SOURCE_DIR}" CONFIGURE_DEPENDS "generated/rpc/cpp/*")
+ADD_SUBDIRECTORY(rpc)
+ADD_SUBDIRECTORY(rpc/generated)
 
 list(APPEND ALL_SOURCES ${SUB_SOURCES} ${GEN_SOURCES})
 list(APPEND ALL_SOURCES "action-server3.cpp")
@@ -80,11 +51,12 @@ message("ALL_SOURCES: ${ALL_SOURCES}")
 # ソースをこのプロジェクトの実行可能ファイルに追加します。
 add_executable (action-server3  ${ALL_SOURCES} "src/Payload.h" "src/Payload.cpp" "src/rpc.h" "src/rpc.cpp" "src/session.h" "src/session.cpp" "src/units/unit.cpp" "src/units/unit.h")
 
-#target_compile_features(${TARGET_NAME} PRIVATE cxx_std_17)
-
 find_package (Threads REQUIRED)
 
-target_link_libraries(action-server3 pthread eventpp proto ${PROTOBUF_LIBRARY} rpc_contracts)
+INCLUDE(FindProtobuf)
+FIND_PACKAGE(Protobuf REQUIRED)
+
+target_link_libraries(action-server3 pthread eventpp ${PROTOBUF_LIBRARY} proto rpc_contracts)
 
 set( BOOST_ROOT "/usr/lib/x86_64-linux-gnu/")
 
