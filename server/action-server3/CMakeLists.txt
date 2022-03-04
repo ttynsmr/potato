@@ -55,8 +55,8 @@ endif()
 # eventpp
 ADD_SUBDIRECTORY(externals/eventpp)
 
-# gml
-INCLUDE_DIRECTORIES(externals/gml/include)
+# Eigen3
+INCLUDE_DIRECTORIES(externals/eigen)
 
 # add protocol buffer settings
 INCLUDE(FindProtobuf)

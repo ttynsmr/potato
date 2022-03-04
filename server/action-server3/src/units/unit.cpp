@@ -1,6 +1,6 @@
 #include "unit.h"
-#include <gml/gml.hpp>
 #include <chrono>
+#include <iostream>
 
 Unit::Unit(UnitId unitId, SessionId sessionId) : unitId(unitId), sessionId(sessionId) {}
 
@@ -42,11 +42,11 @@ void Unit::inputCommand(std::shared_ptr<ICommand> command)
 void Unit::update(int64_t now)
 {
 	auto updatePosition = [this](std::shared_ptr<MoveCommand> currentMove, int64_t now) {
-		auto distance = gml::length(currentMove->to - currentMove->from);
-		auto progress = (now - currentMove->startTime) / (distance / currentMove->speed);
+		auto distance = (currentMove->to - currentMove->from).norm();
+		auto progress = std::min(1.0f, (now - currentMove->startTime) / (distance / currentMove->speed));
 		//Debug.Log($"distance:{distance}, progress:{progress}, estimate time:{(distance / currentMove.Speed)}");
-		position = gml::mix(currentMove->from, currentMove->to, progress);
-		std::cout << "unit[" << unitId << "] time: " << now << " position[" << currentMove->moveId << "]: x:" << position[0] << " y:" << position[1] << " z:" << position[2] << "\n";
+		position = (currentMove->to - currentMove->from) * progress + currentMove->from;
+		std::cout << "unit[" << unitId << "] time: " << now << " position[" << currentMove->moveId << "]: x:" << position.x() << " y:" << position.y() << " z:" << position.z() << "\n";
 	};
 
 	while (simulatedNow < now)
