@@ -1,0 +1,9 @@
+*.cs
+*.meta
+
+!Message.cs
+!Message.cs.meta
+
+!Proto.asmdef
+!Proto.asmdef.meta
+
