@@ -44,13 +44,16 @@ jobs:
           pip install pipenv --upgrade-strategy=only-if-needed
           pipenv install
           pipenv install pyyaml jinja2 inflection
-          pipenv run python torikime.py -o "../proto/generated" -s "../../../client/potato/Assets/Scripts/Rpc/Generated" -i "../rpc"
+          pipenv run python torikime.py -v -o "../proto/generated" -s "../../../client/potato/Assets/Scripts/Rpc/Generated" -i "../rpc"
           popd
           # ./generate_csharp_proto.sh
           find ./proto -name "*.proto"
           protoc --proto_path=./proto --csharp_out=../../client/potato/Assets/Scripts/Proto ./proto/*.proto
+          mkdir -p /tmp/proto/test
+          protoc --proto_path=./proto --csharp_out=/tmp/proto/test ./proto/*.proto
           popd
           find client/potato/Assets/Scripts
+          find /tmp/proto/test
 
       - name: list output
         run: |
