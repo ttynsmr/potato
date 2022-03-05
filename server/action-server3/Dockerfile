@@ -1,17 +1,23 @@
-FROM ubuntu:latest
+FROM ubuntu:latest AS builder
 
 ENV TZ=Asia/Tokyo
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-RUN apt-get update && apt-get install -yq \
+COPY apt.souces.list /etc/apt/sources.list
+
+RUN apt update && apt install -yq \
     cmake \
     clang \
+    ninja-build \
     libboost-all-dev \
     protobuf-compiler \
     libprotobuf-dev \
+    python3 \
     python3-pip \
-    && apt-get clean \
+    && apt clean \
     && rm -rf /var/lib/apt/lists/*
 
-RUN python -m pip install --upgrade pip \
-    pip install pipenv --upgrade-strategy=only-if-needed
+RUN python3 -m pip install --upgrade pip \
+    pip install pipenv --upgrade-strategy=only-if-needed \
+
+    # FROM builder AS action_server3
