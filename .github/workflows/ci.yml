@@ -40,7 +40,6 @@ jobs:
           cd server/action-server3
           mkdir build
           cmake -H. -Bbuild -GNinja
-          cmake --build build/ --target all || true
           cmake --build build/ --target all
       - name: run if fail_step failed
         if: failure() && steps.cmake.outcome == 'failure'
