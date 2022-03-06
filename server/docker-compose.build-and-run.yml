@@ -1,13 +1,13 @@
-version: '3'
+version: '3.4'
 services:
   action-server3:
     build:
       context: ./action-server3
       dockerfile: Dockerfile
-    volumes:
-      - type: bind
-        source: ./action-server3
-        target: /opt/app/action-server3
+      target: action_server3_application
+    # volumes:
+    #   - type: bind
+    #     source: ./action-server3
+    #     target: /opt/app/action-server3
     ports:
       - "28888:28888"
-    entrypoint: "/bin/bash -c 'cd /opt/app/action-server3 && pushd torikime && python3 -m pip install --upgrade pip && pip install pipenv --upgrade-strategy=only-if-needed && pipenv install && pipenv install pyyaml jinja2 inflection && popd && mkdir -p build.docker && cmake -H. -Bbuild.docker -GNinja && cmake --build build.docker/ --target all || cmake --build build.docker/ --target all && ./build.docker/action-server3 28888'"

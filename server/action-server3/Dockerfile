@@ -22,4 +22,13 @@ RUN python3 -m pip install --upgrade pip \
 
 FROM builder AS action_server3_build
 COPY . /opt/app/action-server3
-RUN "/bin/bash -c 'cd /opt/app/action-server3 && pushd torikime && python3 -m pip install --upgrade pip && pip install pipenv --upgrade-strategy=only-if-needed && pipenv install && pipenv install pyyaml jinja2 inflection && popd && mkdir -p build.docker && cmake -H. -Bbuild.docker -GNinja && cmake --build build.docker/ --target all || cmake --build build.docker/ --target all'"
+RUN cd /opt/app/action-server3 \
+    && cd torikime && pipenv install && pipenv install pyyaml jinja2 inflection && cd ..
+RUN cd /opt/app/action-server3 \
+    && mkdir -p build.docker \
+    && cmake -H. -Bbuild.docker -GNinja \
+    && cmake --build build.docker/ --target all || cmake --build build.docker/ --target all
+
+FROM action_server3_build AS action_server3_application
+COPY --from=action_server3_build /opt/app/action-server3/build.docker/action-server3 ./
+CMD ["./action-server3", "28888"]
