@@ -21,4 +21,5 @@ RUN python3 -m pip install --upgrade pip \
     pip install pipenv --upgrade-strategy=only-if-needed
 
 FROM builder AS action_server3_build
+COPY . /opt/app/action-server3
 RUN "/bin/bash -c 'cd /opt/app/action-server3 && pushd torikime && python3 -m pip install --upgrade pip && pip install pipenv --upgrade-strategy=only-if-needed && pipenv install && pipenv install pyyaml jinja2 inflection && popd && mkdir -p build.docker && cmake -H. -Bbuild.docker -GNinja && cmake --build build.docker/ --target all || cmake --build build.docker/ --target all'"
