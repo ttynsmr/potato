@@ -29,6 +29,10 @@ RUN cd /opt/app/action-server3 \
     && cmake -H. -Bbuild.docker -GNinja \
     && cmake --build build.docker/ --target all || cmake --build build.docker/ --target all
 
-FROM action_server3_build AS action_server3_application
+FROM ubuntu:latest AS action_server3_application
 COPY --from=action_server3_build /opt/app/action-server3/build.docker/action-server3 ./
+RUN apt update && apt search libprotobuf&& apt install -yq \
+    libprotobuf17 \
+    && apt clean \
+    && rm -rf /var/lib/apt/lists/*
 CMD ["./action-server3", "28888"]
