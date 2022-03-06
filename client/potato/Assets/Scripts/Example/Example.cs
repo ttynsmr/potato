@@ -21,6 +21,9 @@ namespace Potato
 
         public Camera mainCamera;
 
+        public string serverHost = "127.0.0.1";
+        public string serverPort = "28888";
+
         private Dictionary<int, GameObject> trails = new Dictionary<int, GameObject>();
 
         private ConcurrentQueue<Action> callOnMainThread = new ConcurrentQueue<Action>();
@@ -32,7 +35,7 @@ namespace Potato
             unitService = FindObjectOfType<UnitService>();
 
             networkService = FindObjectOfType<Potato.Network.NetworkService>();
-            var session = networkService.Connect("127.0.0.1", 28888);
+            var session = networkService.Connect(serverHost, int.Parse(serverPort));
 
             {
                 var sendMessage = networkService.Session.GetRpc<Torikime.Chat.SendMessage.Rpc>();
