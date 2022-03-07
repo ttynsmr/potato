@@ -26,9 +26,6 @@
 #include "proto/chat_send_message.pb.h"
 #include "proto/diagnosis_sever_sessions.pb.h"
 #include "proto/diagnosis_ping_pong.pb.h"
-#include "proto/example_update_mouse_position.pb.h"
-#include "proto/example_spawn.pb.h"
-#include "proto/example_despawn.pb.h"
 #include "proto/unit_spawn_ready.pb.h"
 #include "proto/unit_spawn.pb.h"
 #include "proto/unit_despawn.pb.h"
@@ -39,9 +36,6 @@
 #include "rpc/generated/cpp/chat_send_message.h"
 #include "rpc/generated/cpp/diagnosis_sever_sessions.h"
 #include "rpc/generated/cpp/diagnosis_ping_pong.h"
-#include "rpc/generated/cpp/example_update_mouse_position.h"
-#include "rpc/generated/cpp/example_spawn.h"
-#include "rpc/generated/cpp/example_despawn.h"
 #include "rpc/generated/cpp/unit_spawn_ready.h"
 #include "rpc/generated/cpp/unit_spawn.h"
 #include "rpc/generated/cpp/unit_despawn.h"
@@ -235,13 +229,6 @@ private:
 
 							{
 								auto session2 = session;
-								auto example = std::make_shared<torikime::example::despawn::Rpc>(session2);
-								torikime::example::despawn::Notification notification;
-								notification.set_session_id(_sessionId);
-								sendBroadcast(_sessionId, example->serializeNotification(notification));
-							}
-							{
-								auto session2 = session;
 								auto unitDespawn = std::make_shared<torikime::unit::despawn::Rpc>(session2);
 								torikime::unit::despawn::Notification notification;
 								notification.set_session_id(_sessionId);
@@ -353,22 +340,6 @@ public:
 				//std::cout << "send: pong" << session->getSessionId() << "\n";
 			});
 		_nerworkServiceProvider.lock()->registerRpc(pingPong);
-
-		auto example = std::make_shared<torikime::example::update_mouse_position::Rpc>(session);
-		std::weak_ptr<torikime::example::update_mouse_position::Rpc> weak_example = example;
-		example->subscribeRequest([this, weak_example, session](const torikime::example::update_mouse_position::RequestParcel& request, std::shared_ptr<torikime::example::update_mouse_position::Rpc::Responser>& responser)
-			{
-				auto position = request.request().position();
-				torikime::example::update_mouse_position::Response response;
-				responser->send(true, std::move(response));
-
-				torikime::example::update_mouse_position::Notification notification;
-				notification.set_session_id(session->getSessionId());
-				notification.set_allocated_position(&position);
-				_nerworkServiceProvider.lock()->sendBroadcast(session->getSessionId(), weak_example.lock()->serializeNotification(notification));
-				notification.release_position();
-			});
-		_nerworkServiceProvider.lock()->registerRpc(example);
 
 		auto unitSpawnReady = std::make_shared<torikime::unit::spawn_ready::Rpc>(session);
 		unitSpawnReady->subscribeRequest([this, session](const auto& request, auto& responser)
@@ -570,27 +541,6 @@ public:
 
 	void onSessionStarted(std::shared_ptr<potato::net::session> session)
 	{
-		auto example = std::make_shared<torikime::example::spawn::Rpc>(session);
-		torikime::example::spawn::Notification notification;
-		notification.set_session_id(session->getSessionId());
-		auto position = new potato::Vector3();
-		position->set_x(0);
-		position->set_y(0);
-		position->set_z(0);
-		notification.set_allocated_position(new potato::Vector3());
-		_nerworkServiceProvider.lock()->sendBroadcast(session->getSessionId(), example->serializeNotification(notification));
-
-		_nerworkServiceProvider.lock()->visitSessions([this, example, session](auto other) {
-			torikime::example::spawn::Notification notification;
-			notification.set_session_id(other->getSessionId());
-			auto position = new potato::Vector3();
-			position->set_x(0);
-			position->set_y(0);
-			position->set_z(0);
-			notification.set_allocated_position(new potato::Vector3());
-			auto payload = example->serializeNotification(notification);
-			_nerworkServiceProvider.lock()->sendTo(session->getSessionId(), payload);
-			});
 	}
 
 	void onDisconnected(std::shared_ptr<potato::net::session> session)

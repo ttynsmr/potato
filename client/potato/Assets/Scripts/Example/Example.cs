@@ -54,55 +54,6 @@ namespace Potato
             }
 
             {
-                var updateMousePosition = networkService.Session.GetRpc<Torikime.Example.UpdateMousePosition.Rpc>();
-                updateMousePosition.OnNotification += (notification) =>
-                {
-                    if (!trails.ContainsKey(notification.SessionId))
-                    {
-                        return;
-                    }
-
-                    var trail = trails[notification.SessionId];
-                    if (trail == null)
-                    {
-                        return;
-                    }
-                    trail.transform.position = notification.Position.ToVector3();
-                };
-
-                var spawn = networkService.Session.GetRpc<Torikime.Example.Spawn.Rpc>();
-                spawn.OnNotification += (notification) =>
-                {
-                    Debug.Log($"Spawn {notification.SessionId}");
-                    trails.Add(notification.SessionId, Instantiate(trailPrefab));
-                    trails[notification.SessionId].transform.position = notification.Position.ToVector3();
-                    trails[notification.SessionId].name = "Trail " + notification.SessionId;
-
-                    // if (notification.SessionId == networkService.Session.SessionId)
-                    // {
-                    //     Destroy(myTrail.gameObject);
-                    //     myTrail = trails[notification.SessionId];
-                    // }
-                };
-
-                var despawn = networkService.Session.GetRpc<Torikime.Example.Despawn.Rpc>();
-                despawn.OnNotification += (notification) =>
-                {
-                    if (!trails.ContainsKey(notification.SessionId))
-                    {
-                        return;
-                    }
-
-                    var trail = trails[notification.SessionId];
-                    if (trail == null)
-                    {
-                        return;
-                    }
-
-                    trails.Remove(notification.SessionId);
-                    Destroy(trail);
-                };
-
                 var unitSpawn = networkService.Session.GetRpc<Torikime.Unit.Spawn.Rpc>();
                 unitSpawn.OnNotification += (notification) =>
                 {
@@ -198,21 +149,6 @@ namespace Potato
             screenPosision.z = 1;
             myTrail.transform.position = mainCamera.ScreenToWorldPoint(screenPosision);
 
-            // {
-            //     var rpc = networkService.Session.GetRpc<Torikime.Chat.SendMessage.Rpc>();
-            //     // Debug.Log("Request sent");
-            //     var request = new Torikime.Chat.SendMessage.Request();
-            //     request.Message = "Hello world2";
-            //     StartCoroutine(rpc.RequestCoroutine(request, (response) =>
-            //     {
-            //         // Debug.Log("Torikime.Chat.SendMessage.Rpc: " + response.MessageId);
-            //         // rpc.RequestAsync(new Torikime.Chat.SendMessage.Request()).ContinueWith((task) =>
-            //         // {
-            //         //     Debug.Log(task.Result);
-            //         // }).Wait();
-            //     }));
-            // }
-
             {
                 var request = new Torikime.Diagnosis.SeverSessions.Request();
                 var rpc = networkService.Session.GetRpc<Torikime.Diagnosis.SeverSessions.Rpc>();
@@ -220,14 +156,6 @@ namespace Potato
                     {
                         sessionCountText.text = "Current session count is " + response.SessionCount;
                     });
-            }
-
-            {
-                var rpc = networkService.Session.GetRpc<Torikime.Example.UpdateMousePosition.Rpc>();
-                // Debug.Log("Request sent");
-                var request = new Torikime.Example.UpdateMousePosition.Request();
-                request.Position = myTrail.transform.position.ToVector3();
-                StartCoroutine(rpc.RequestCoroutine(request, (response) => { }));
             }
         }
 
