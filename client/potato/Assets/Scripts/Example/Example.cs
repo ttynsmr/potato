@@ -14,10 +14,12 @@ namespace Potato
 
         public GameObject trailPrefab;
 
-        private GameObject myTrail;
-
         public Text sessionCountText;
         public Text pingText;
+
+        public GameObject panel;
+        public InputField hostInputField;
+        public Button connectButton;
 
         public Camera mainCamera;
 
@@ -30,9 +32,15 @@ namespace Potato
 
         private IEnumerator Start()
         {
-            myTrail = Instantiate(trailPrefab);
-
             unitService = FindObjectOfType<UnitService>();
+
+            connectButton.onClick.AddListener(() => {
+                panel.SetActive(false);
+                connectButton.gameObject.SetActive(false);
+                serverHost = hostInputField.text;
+            });
+
+            yield return new WaitWhile(() => panel.activeSelf);
 
             networkService = FindObjectOfType<Potato.Network.NetworkService>();
             var session = networkService.Connect(serverHost, int.Parse(serverPort));
@@ -145,9 +153,10 @@ namespace Potato
 
         private void LateUpdate()
         {
-            var screenPosision = Input.mousePosition;
-            screenPosision.z = 1;
-            myTrail.transform.position = mainCamera.ScreenToWorldPoint(screenPosision);
+            if (networkService == null)
+            {
+                return;
+            }
 
             {
                 var request = new Torikime.Diagnosis.SeverSessions.Request();
