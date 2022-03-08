@@ -1,5 +1,10 @@
+#pragma once
+
 #include <boost/asio.hpp>
 #include <queue>
+#include <boost/asio.hpp>
+
+#include "session_types.h"
 
 namespace potato::net::protocol
 {
@@ -9,8 +14,6 @@ namespace potato::net::protocol
 
 namespace potato::net
 {
-	using SessionId = std::int32_t;
-
 	class session
 		: public std::enable_shared_from_this<session>
 	{
@@ -39,8 +42,6 @@ namespace potato::net
 		void readHeader();
 		void readPercel(const protocol::PayloadHeader& header);
 		void do_read();
-
-		void do_write(std::size_t length);
 
 		boost::asio::ip::tcp::socket _socket;
 		SessionId _sessionId;
