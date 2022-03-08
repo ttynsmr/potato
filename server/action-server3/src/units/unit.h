@@ -5,6 +5,8 @@
 #include <memory>
 #include <Eigen/Core>
 
+#include "unit_types.h"
+
 class ICommand {
 public:
 	ICommand() {}
@@ -35,7 +37,6 @@ public:
 class Unit
 {
 public:
-	using UnitId = uint64_t;
 	using SessionId = int64_t;
 	Unit(UnitId unitId, SessionId sessionId);
 
@@ -44,6 +45,7 @@ public:
 
 	std::shared_ptr<ICommand> getLastCommand();
 	std::shared_ptr<MoveCommand> getLastMoveCommand();
+	const std::shared_ptr<MoveCommand> getLastMoveCommand() const;
 
 	UnitId getUnitId() const
 	{

@@ -1,5 +1,7 @@
 #include "game_service_provider.h"
 
+#include <memory>
+
 #include "session/session.h"
 #include "services/network_service_provider.h"
 
@@ -15,6 +17,7 @@
 
 #include "rpc.h"
 #include "units/unit.h"
+#include "units/unit_registory.h"
 
 #include "generated/cpp/chat_send_message.h"
 #include "generated/cpp/diagnosis_sever_sessions.h"
@@ -25,8 +28,26 @@
 #include "generated/cpp/unit_move.h"
 #include "generated/cpp/unit_stop.h"
 
-GameServiceProvider::GameServiceProvider() {}
-GameServiceProvider::GameServiceProvider(std::shared_ptr<Service> service) : _service(service) {}
+#define forward_declaration(name) \
+namespace name \
+{ \
+	class Rpc; \
+	class Responser; \
+	class RequestParcel; \
+	class Responser; \
+	class Notification; \
+} \
+//
+
+forward_declaration(torikime::chat::send_message)
+forward_declaration(torikime::diagnosis::sever_sessions)
+forward_declaration(torikime::diagnosis::ping_pong)
+forward_declaration(torikime::unit::spawn_ready)
+forward_declaration(torikime::unit::spawn)
+forward_declaration(torikime::unit::despawn)
+
+GameServiceProvider::GameServiceProvider(std::shared_ptr<Service> service)
+	: _service(service), _unitRegistory(std::shared_ptr<potato::UnitRegistory>()) {}
 
 bool GameServiceProvider::isRunning()
 {
@@ -87,8 +108,7 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 	auto unitSpawnReady = std::make_shared<torikime::unit::spawn_ready::Rpc>(session);
 	unitSpawnReady->subscribeRequest([this, session](const auto& request, auto& responser)
 		{
-			auto newUnit = std::make_shared<Unit>(session->getSessionId(), session->getSessionId());
-			units.emplace_back(newUnit);
+			auto newUnit = _unitRegistory->createUnit(session->getSessionId());
 
 			// response
 			{
@@ -132,7 +152,7 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 				notification.set_allocated_avatar(avatar);
 				_nerworkServiceProvider.lock()->sendBroadcast(session->getSessionId(), torikime::unit::spawn::Rpc::serializeNotification(notification));
 
-				for (auto unit : units)
+				for (const auto unit : _unitRegistory->getUnits())
 				{
 					if (unit->getUnitId() == newUnit->getUnitId())
 					{
@@ -214,6 +234,7 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 				responser->send(true, std::move(response));
 			}
 
+			const auto& units = _unitRegistory->getUnits();
 			auto unit = std::find_if(units.begin(), units.end(), [requestParcel](auto& u) {
 				return requestParcel.request().unit_id() == u->getUnitId();
 				});
@@ -257,6 +278,7 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 				responser->send(true, std::move(response));
 			}
 
+			const auto& units = _unitRegistory->getUnits();
 			auto unit = std::find_if(units.begin(), units.end(), [requestParcel](auto& u) {
 				return requestParcel.request().unit_id() == u->getUnitId();
 				});
@@ -288,7 +310,7 @@ void GameServiceProvider::onSessionStarted(std::shared_ptr<potato::net::session>
 
 void GameServiceProvider::onDisconnected(std::shared_ptr<potato::net::session> session)
 {
-	units.remove_if([session](auto& u) { return u->getSessionId() == session->getSessionId(); });
+	_unitRegistory->unregisterUnitBySessionId(session->getSessionId());
 }
 
 // TODO: move to message service
@@ -311,7 +333,7 @@ void GameServiceProvider::main()
 
 		{
 			const auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-			for (auto& unit : units)
+			for (auto& unit : _unitRegistory->getUnits())
 			{
 				unit->update(now);
 			}
