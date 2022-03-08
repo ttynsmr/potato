@@ -5,6 +5,9 @@
 #include <memory>
 #include <Eigen/Core>
 
+#include "unit_types.h"
+#include "area/area_types.h"
+
 class ICommand {
 public:
 	ICommand() {}
@@ -35,7 +38,6 @@ public:
 class Unit
 {
 public:
-	using UnitId = uint64_t;
 	using SessionId = int64_t;
 	Unit(UnitId unitId, SessionId sessionId);
 
@@ -44,6 +46,7 @@ public:
 
 	std::shared_ptr<ICommand> getLastCommand();
 	std::shared_ptr<MoveCommand> getLastMoveCommand();
+	const std::shared_ptr<MoveCommand> getLastMoveCommand() const;
 
 	UnitId getUnitId() const
 	{
@@ -53,6 +56,16 @@ public:
 	SessionId getSessionId() const
 	{
 		return sessionId;
+	}
+
+	AreaId getAreaId() const
+	{
+		return _areaId;
+	}
+
+	void setAreaId(AreaId areaId)
+	{
+		_areaId = areaId;
 	}
 
 	const Eigen::Vector3f& getPosition() const
@@ -68,6 +81,7 @@ public:
 private:
 	UnitId unitId = 0;
 	SessionId sessionId = 0;
+	AreaId _areaId = 0;
 	int64_t simulatedNow = 0;
 	Eigen::Vector3f position = {};
 	std::shared_ptr<MoveCommand> currentMove;

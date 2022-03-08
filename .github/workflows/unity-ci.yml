@@ -3,8 +3,18 @@ name: 📺Game CI
 on:
   push:
     branches: [main]
+    paths:
+      - ".github/workflows/**.yml"
+      - "client/**"
+      - "server/action-server3/torikime/**"
+      - "server/action-server3/rpc/**"
   pull_request:
     branches: [main]
+    paths:
+      - ".github/workflows/**.yml"
+      - "client/**"
+      - "server/action-server3/torikime/**"
+      - "server/action-server3/rpc/**"
 
 jobs:
   build:

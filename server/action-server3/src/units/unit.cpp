@@ -23,6 +23,11 @@ std::shared_ptr<MoveCommand> Unit::getLastMoveCommand()
 	}
 }
 
+const std::shared_ptr<MoveCommand> Unit::getLastMoveCommand() const
+{
+	return getLastMoveCommand();
+}
+
 void Unit::inputCommand(std::shared_ptr<ICommand> command)
 {
 	auto stopCommand = std::dynamic_pointer_cast<StopCommand>(command);
