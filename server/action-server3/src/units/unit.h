@@ -35,7 +35,7 @@ public:
 class Unit
 {
 public:
-	using UnitId = int64_t;
+	using UnitId = uint64_t;
 	using SessionId = int64_t;
 	Unit(UnitId unitId, SessionId sessionId);
 

@@ -17,6 +17,22 @@ namespace potato::net
 
 namespace {{ namespace }}::{{ contract }}::{{ name }}
 {
+{%- if "request" in rpc %}
+	class Responser final
+	{
+	public:
+		Responser(std::shared_ptr<potato::net::session>& session, std::uint32_t requestId) : _session(session), _requestId(requestId) {}
+		~Responser();
+
+		void send(bool success, {{ namespace }}::{{ contract }}::{{ name }}::Response&& response);
+
+	private:
+		std::shared_ptr<potato::net::session> _session;
+		std::uint32_t _requestId = 0;
+		bool respond = false;
+	};
+{% endif %}
+
 	class Rpc final : public RpcInterface
 	{
 	public:
@@ -27,20 +43,6 @@ namespace {{ namespace }}::{{ contract }}::{{ name }}
 		Rpc(std::shared_ptr<potato::net::session>& session);
 
 {%- if "request" in rpc %}
-		class Responser final
-		{
-		public:
-			Responser(std::shared_ptr<potato::net::session>& session, std::uint32_t requestId) : _session(session), _requestId(requestId) {}
-			~Responser();
-
-			void send(bool success, {{ namespace }}::{{ contract }}::{{ name }}::Response&& response);
-
-		private:
-			std::shared_ptr<potato::net::session> _session;
-			std::uint32_t _requestId = 0;
-			bool respond = false;
-		};
-
 		using RequestDelegate = std::function<void(const {{ namespace }}::{{ contract }}::{{ name }}::RequestParcel& request, std::shared_ptr<Responser>& responser)>;
 		void subscribeRequest(RequestDelegate callback);
 {% endif %}
