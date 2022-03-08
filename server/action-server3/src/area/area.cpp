@@ -4,11 +4,14 @@
 
 namespace potato
 {
-	Area::Area() {}
+	Area::Area(AreaId areaId)
+		: _areaId(areaId) {}
+
 	Area::~Area() {}
 
 	void Area::enter(std::shared_ptr<Unit> unit)
 	{
+		unit->setAreaId(getAreaId());
 		_units.push_back(unit);
 	}
 

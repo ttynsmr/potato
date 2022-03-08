@@ -130,15 +130,6 @@ void NetworkServiceProvider::do_accept()
 					_sessions.erase(_sessionId);
 					std::cout << "session: " << _sessionId << " disconnected. current session count is " << _sessions.size() << "\n";
 
-					{
-						auto session2 = session;
-						auto unitDespawn = std::make_shared<torikime::unit::despawn::Rpc>(session2);
-						torikime::unit::despawn::Notification notification;
-						notification.set_session_id(_sessionId);
-						notification.set_unit_id(_sessionId);
-						sendBroadcast(_sessionId, torikime::unit::despawn::Rpc::serializeNotification(notification));
-					}
-
 					_disconnectedDelegate(session);
 				});
 

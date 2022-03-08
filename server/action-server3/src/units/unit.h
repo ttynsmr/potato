@@ -6,6 +6,7 @@
 #include <Eigen/Core>
 
 #include "unit_types.h"
+#include "area/area_types.h"
 
 class ICommand {
 public:
@@ -57,6 +58,16 @@ public:
 		return sessionId;
 	}
 
+	AreaId getAreaId() const
+	{
+		return _areaId;
+	}
+
+	void setAreaId(AreaId areaId)
+	{
+		_areaId = areaId;
+	}
+
 	const Eigen::Vector3f& getPosition() const
 	{
 		return position;
@@ -70,6 +81,7 @@ public:
 private:
 	UnitId unitId = 0;
 	SessionId sessionId = 0;
+	AreaId _areaId = 0;
 	int64_t simulatedNow = 0;
 	Eigen::Vector3f position = {};
 	std::shared_ptr<MoveCommand> currentMove;

@@ -32,6 +32,16 @@ namespace potato
 		units.remove_if([sessionId](auto& u) { return u->getSessionId() == sessionId; });
 	}
 
+	const std::shared_ptr<Unit> UnitRegistory::findUnitBySessionId(net::SessionId sessionId) const
+	{
+		auto unitIt = std::find_if(units.begin(), units.end(), [sessionId](auto& unit) { return unit->getSessionId() == sessionId; });
+		if (unitIt == units.end())
+		{
+			return nullptr;
+		}
+		return *unitIt;
+	}
+
 	UnitId UnitRegistory::generateUnitId()
 	{
 		return ++currentUnitId;

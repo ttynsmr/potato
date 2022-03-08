@@ -114,7 +114,19 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 
 			// response
 			{
-				auto area_id = request.request().area_id();
+				std::shared_ptr<potato::Area> area;
+				auto areaId = static_cast<AreaId>(request.request().area_id());
+				auto areaIt = std::find_if(_areas.begin(), _areas.end(), [areaId](auto& area) { return area->getAreaId() == areaId; });
+				if (areaIt == _areas.end())
+				{
+					area = _areas.emplace_back(std::make_shared<potato::Area>(areaId));
+				}
+				else
+				{
+					area = *areaIt;
+				}
+				area->enter(newUnit);
+
 				torikime::unit::spawn_ready::Response response;
 				response.set_session_id(session->getSessionId());
 				response.set_unit_id(session->getSessionId()); // TODO: generate unit id at unit service
@@ -312,7 +324,20 @@ void GameServiceProvider::onSessionStarted(std::shared_ptr<potato::net::session>
 
 void GameServiceProvider::onDisconnected(std::shared_ptr<potato::net::session> session)
 {
-	_unitRegistory->unregisterUnitBySessionId(session->getSessionId());
+	auto unit = _unitRegistory->findUnitBySessionId(session->getSessionId());
+	auto unitDespawn = std::make_shared<torikime::unit::despawn::Rpc>(session);
+	torikime::unit::despawn::Notification notification;
+	notification.set_session_id(session->getSessionId());
+	notification.set_unit_id(unit->getUnitId());
+	_nerworkServiceProvider.lock()->sendBroadcast(session->getSessionId(), torikime::unit::despawn::Rpc::serializeNotification(notification));
+
+	auto areaId = unit->getAreaId();
+	auto areaIt = std::find_if(_areas.begin(), _areas.end(), [areaId](auto& area) { return area->getAreaId() == areaId; });
+	if (areaIt != _areas.end())
+	{
+		(*areaIt)->leave(unit);
+	}
+	_unitRegistory->unregisterUnit(unit);
 }
 
 // TODO: move to message service

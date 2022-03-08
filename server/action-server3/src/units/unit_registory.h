@@ -21,6 +21,8 @@ namespace potato
 		void unregisterUnitByUnitId(UnitId unitId);
 		void unregisterUnitBySessionId(net::SessionId sessionId);
 
+		const std::shared_ptr<Unit> findUnitBySessionId(net::SessionId sessionId) const;
+
 		const std::list<std::shared_ptr<Unit>> getUnits() const { return units; }
 
 	private:
