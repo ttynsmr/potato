@@ -15,7 +15,7 @@ jobs:
           project_id: potato-343314
       - name: Configure docker for artifact registry
         run: |
-          gcloud auth configure-docker asia-docker.pkg.dev
+          gcloud auth configure-docker asia-northeast1-docker
       - name: Build
         run: |
           docker build -t asia-northeast1-docker.pkg.dev/potato-343314/potato/server_action-server3 ./server/action-server3/
