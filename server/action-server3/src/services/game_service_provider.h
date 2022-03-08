@@ -8,6 +8,7 @@
 namespace potato
 {
 	class UnitRegistory;
+	class Area;
 
 	namespace net
 	{
@@ -42,8 +43,10 @@ public:
 	void stop() override;
 
 private:
+	GameServiceProvider() = default;
 	std::shared_ptr<Service> _service;
 	std::shared_ptr<potato::UnitRegistory> _unitRegistory;
+	std::list<std::shared_ptr<potato::Area>> _areas;
 	int64_t messageId = 0;
 	std::weak_ptr<NetworkServiceProvider> _nerworkServiceProvider;
 	std::atomic<bool> _running = true;

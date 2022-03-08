@@ -19,6 +19,8 @@
 #include "units/unit.h"
 #include "units/unit_registory.h"
 
+#include "area/area.h"
+
 #include "generated/cpp/chat_send_message.h"
 #include "generated/cpp/diagnosis_sever_sessions.h"
 #include "generated/cpp/diagnosis_ping_pong.h"
@@ -47,7 +49,7 @@ forward_declaration(torikime::unit::spawn)
 forward_declaration(torikime::unit::despawn)
 
 GameServiceProvider::GameServiceProvider(std::shared_ptr<Service> service)
-	: _service(service), _unitRegistory(std::shared_ptr<potato::UnitRegistory>()) {}
+	: _service(service), _unitRegistory(std::make_shared<potato::UnitRegistory>()) {}
 
 bool GameServiceProvider::isRunning()
 {
