@@ -3,7 +3,7 @@ FROM ubuntu:latest AS builder
 ENV TZ=Asia/Tokyo
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-COPY apt.souces.list /etc/apt/sources.list
+# COPY apt.souces.list /etc/apt/sources.list
 
 RUN apt update && apt install -yq \
     cmake \
