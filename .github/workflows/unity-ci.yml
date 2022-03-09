@@ -35,7 +35,7 @@ jobs:
       - uses: actions/cache@v2
         with:
           path: client/potato/Library
-          key: Library-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+          key: Library-${{ hashFiles('client/potato/Assets/**', 'client/potato/Packages/**', 'client/potato/ProjectSettings/**') }}
           restore-keys: |
             Library-
 
