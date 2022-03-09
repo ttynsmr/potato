@@ -5,7 +5,7 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 # COPY apt.souces.list /etc/apt/sources.list
 
-RUN apt update && apt install -yq \
+RUN apt-get update && apt-get install -yq \
     cmake \
     clang \
     ninja-build \
@@ -14,7 +14,7 @@ RUN apt update && apt install -yq \
     libprotobuf-dev \
     python3 \
     python3-pip \
-    && apt clean \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 RUN python3 -m pip install --upgrade pip \
@@ -31,7 +31,7 @@ RUN cd /opt/app/action-server3 \
 
 FROM ubuntu:latest AS action_server3_application
 COPY --from=action_server3_build /opt/app/action-server3/build.docker/action-server3 ./
-RUN apt update && apt search libprotobuf&& apt install -yq \
+RUN apt-get update && apt-get install -yq \
     libprotobuf17 \
     && apt clean \
     && rm -rf /var/lib/apt/lists/*
