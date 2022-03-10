@@ -90,8 +90,9 @@ jobs:
           projectPath: client/potato
           allowDirtyBuild: true
 
-      # # Output
-      # - uses: actions/upload-artifact@v2
-      #   with:
-      #     name: Build
-      #     path: client/potato/build
+      # Output
+      - uses: actions/upload-artifact@v2
+        if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+        with:
+          name: Build
+          path: client/potato/build
