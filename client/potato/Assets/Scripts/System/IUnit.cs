@@ -1,4 +1,3 @@
-
 public struct UnitId
 {
     private readonly ulong value;
@@ -16,6 +15,7 @@ public interface IUnit
 {
     UnitId UnitId { get; }
     UnitService UnitService { get; set; }
+    Potato.UnitDirection Direction { get; set; }
 
     void Start();
     void Update(float deltaTime);

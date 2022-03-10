@@ -27,6 +27,13 @@ enum UnitSpawnCause {
   UNIT_SPAWN_CAUSE_RETIRE = 5;
 }
 
+enum UnitDirection {
+  UNIT_DIRECTION_DOWN = 0;
+  UNIT_DIRECTION_UP = 1;
+  UNIT_DIRECTION_LEFT = 2;
+  UNIT_DIRECTION_RIGHT = 3;
+}
+
 message Individuality { UnitType type = 1; }
 
 message Avatar { string name = 1; }

@@ -5,6 +5,8 @@
 #include <memory>
 #include <Eigen/Core>
 
+#include "proto/message.pb.h"
+
 #include "unit_types.h"
 #include "area/area_types.h"
 
@@ -22,7 +24,7 @@ public:
 	Eigen::Vector3f from;
 	Eigen::Vector3f to;
 	float speed;
-	float direction;
+	potato::UnitDirection direction;
 	uint64_t moveId;
 };
 
@@ -31,7 +33,7 @@ class StopCommand : public ICommand
 public:
 	std::weak_ptr<MoveCommand> lastMoveCommand;
 	long stopTime;
-	float direction;
+	potato::UnitDirection direction;
 	uint64_t moveId;
 };
 
@@ -87,5 +89,6 @@ private:
 	std::shared_ptr<MoveCommand> currentMove;
 	std::queue< std::shared_ptr<ICommand>> inputQueue;
 	std::list<std::shared_ptr<ICommand>> history;
+	potato::UnitDirection _direction = potato::UNIT_DIRECTION_DOWN;
 	bool _isMoving = false;
 };
