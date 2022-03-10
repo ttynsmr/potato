@@ -12,54 +12,6 @@ on:
       - "server/**"
 
 jobs:
-  build-action-server:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: recursive
-          token: ${{ secrets.ACCESS_TOKEN }}
-      - uses: seanmiddleditch/gha-setup-ninja@master
-      - uses: actions/setup-python@v3
-        with:
-          python-version: "3.10.2"
-          architecture: "x64"
-      # install dependencies
-      - name: apt update
-        run: sudo apt-get update
-      - name: Various installations
-        run: sudo apt-get install -yq tree
-      - name: boost
-        run: sudo apt-get install -yq libboost-all-dev
-      - name: protocol buffers
-        run: sudo apt-get install -yq protobuf-compiler libprotobuf-dev
-      # build project
-      - name: cmake
-        id: cmake
-        run: |
-          pushd server/action-server3/torikime
-          python -m pip install --upgrade pip
-          pip install pipenv --upgrade-strategy=only-if-needed
-          pipenv install
-          pipenv install pyyaml jinja2 inflection
-          # python torikime.py --help
-          popd
-          cd server/action-server3
-          mkdir build
-          cmake -H. -Bbuild -GNinja
-          cmake --build build/ --target all || true
-          cmake --build build/ --target all
-      - name: run if fail_step failed
-        if: failure() && steps.cmake.outcome == 'failure'
-        run: |
-          echo "${{ steps.cmake.outcome }}"
-          tree server
-          tree client/potato/Assets/Scripts
-      # after build
-      - name: list output
-        run: |
-          tree server
-          tree client/potato/Assets/Scripts
   docker-build:
     runs-on: ubuntu-latest
     steps:
