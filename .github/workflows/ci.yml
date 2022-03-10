@@ -69,9 +69,11 @@ jobs:
           token: ${{ secrets.ACCESS_TOKEN }}
       - name: Build
         run: |
-          pushd server/action-server3
-          docker build -t potato-dev .
-          popd
+          docker build -t asia-northeast1-docker.pkg.dev/potato-343314/potato/server_action-server3:${{ github.ref_name }} ./server/action-server3/
+      - name: Push
+        if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+        run: |
+          docker push asia-northeast1-docker.pkg.dev/potato-343314/potato/server_action-server3:${{ github.ref_name }}
   torikime-test:
     runs-on: ubuntu-latest
     steps:
