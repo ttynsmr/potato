@@ -7,7 +7,7 @@ using Vector3 = UnityEngine.Vector3;
 
 public class PlayerUnit : IUnit
 {
-    public GameObject Appearance { get; set; }
+    public UnitView Appearance { get; set; }
 
     private Potato.Network.NetworkService _networkService;
     private Queue<ICommand> inputQueue = new Queue<ICommand>();
@@ -19,18 +19,20 @@ public class PlayerUnit : IUnit
 
     public UnitId UnitId { get; private set; }
     public UnitService UnitService { get; set; }
+    public Potato.UnitDirection Direction { get; set; }
 
-    public PlayerUnit(Potato.Network.NetworkService networkService, UnitId unitId, Vector3 position, float direction, Potato.Avatar avatar)
+    public PlayerUnit(Potato.Network.NetworkService networkService, UnitId unitId, Vector3 position, Potato.UnitDirection direction, Potato.Avatar avatar)
     {
         _networkService = networkService;
         UnitId = unitId;
         Position = position;
+        Direction = direction;
     }
 
     public void Start()
     {
         simulatedNow = _networkService.Now;
-        Appearance = GameObject.Instantiate(UnitService.TestAvatar);
+        Appearance = GameObject.Instantiate(UnitService.TestAvatar).GetComponent<UnitView>();
         Appearance.transform.position = Position;
         Appearance.name = $"PlayerUnit({UnitId})";
         history.Add(new StopCommand
@@ -132,10 +134,12 @@ public class PlayerUnit : IUnit
                         moveCommand.LastMoveCommand = currentMove;
                         history.Add(moveCommand);
                         currentMove = moveCommand;
+                        Direction = moveCommand.Direction;
                         break;
                     case StopCommand stopCommand:
                         simulatedNow = stopCommand.StopTime;
                         stopCommand.LastMoveCommand = currentMove;
+                        Direction = stopCommand.Direction;
                         history.Add(stopCommand);
                         currentMove = null;
                         break;
@@ -190,6 +194,8 @@ public class PlayerUnit : IUnit
         if (Appearance)
         {
             Appearance.transform.position = Position;
+            Appearance.Direction = Direction;
+            Appearance.Moving = !(history.Last() is StopCommand);
         }
     }
 }

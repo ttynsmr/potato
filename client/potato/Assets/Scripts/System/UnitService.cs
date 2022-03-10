@@ -44,7 +44,7 @@ public class UnitService : MonoBehaviour
             From = notification.From.ToVector3(),
             To = notification.To.ToVector3(),
             Speed = notification.Speed,
-            Direction = 0,
+            Direction = notification.Direction,
         };
         unit.InputMove(moveCommand);
     }
@@ -62,6 +62,7 @@ public class UnitService : MonoBehaviour
         StopCommand stopCommand = new StopCommand
         {
             StopTime = notification.StopTime,
+            Direction = notification.Direction,
         };
         unit.InputStop(stopCommand);
     }

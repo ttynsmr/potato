@@ -135,7 +135,7 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 				position->set_y(0);
 				position->set_z(0);
 				response.set_allocated_position(new potato::Vector3());
-				response.set_direction(0);
+				response.set_direction(potato::UNIT_DIRECTION_DOWN);
 				auto individuality = new potato::Individuality();
 				individuality->set_type(potato::UNIT_TYPE_PLAYER);
 				response.set_allocated_individuality(individuality);
@@ -156,7 +156,7 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 				position->set_y(0);
 				position->set_z(0);
 				notification.set_allocated_position(new potato::Vector3());
-				notification.set_direction(0);
+				notification.set_direction(potato::UNIT_DIRECTION_DOWN);
 				auto individuality = new potato::Individuality();
 				individuality->set_type(potato::UNIT_TYPE_PLAYER);
 				notification.set_allocated_individuality(individuality);
@@ -183,7 +183,7 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 						position->set_y(unitPosition[1]);
 						position->set_z(unitPosition[2]);
 						notification.set_allocated_position(new potato::Vector3());
-						notification.set_direction(0);
+						notification.set_direction(potato::UNIT_DIRECTION_DOWN);
 						auto individuality = new potato::Individuality();
 						individuality->set_type(potato::UNIT_TYPE_PLAYER);
 						notification.set_allocated_individuality(individuality);
@@ -214,6 +214,7 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 							notification.set_allocated_from(from);
 							notification.set_allocated_to(to);
 							notification.set_speed(moveCommand->speed);
+							notification.set_direction(moveCommand->direction);
 							notification.set_move_id(moveCommand->moveId);
 							_nerworkServiceProvider.lock()->sendTo(session->getSessionId(), torikime::unit::move::Rpc::serializeNotification(notification));
 						}
@@ -261,7 +262,7 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 				moveCommand->from = { from.x(), from.y(), from.z() };
 				moveCommand->to = { to.x(), to.y(), to.z() };
 				moveCommand->speed = requestParcel.request().speed();
-				moveCommand->direction = 0;
+				moveCommand->direction = requestParcel.request().direction();
 				moveCommand->moveId = requestParcel.request().move_id();
 				(*unit)->inputCommand(moveCommand);
 			}
@@ -275,6 +276,7 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 				notification.set_allocated_from(&from);
 				notification.set_allocated_to(&to);
 				notification.set_speed(requestParcel.request().speed());
+				notification.set_direction(requestParcel.request().direction());
 				notification.set_move_id(requestParcel.request().move_id());
 				_nerworkServiceProvider.lock()->sendBroadcast(session->getSessionId(), torikime::unit::move::Rpc::serializeNotification(notification));
 				notification.release_to();
@@ -300,7 +302,7 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 			{
 				auto stopCommand = std::make_shared<StopCommand>();
 				stopCommand->stopTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-				stopCommand->direction = 0;
+				stopCommand->direction = requestParcel.request().direction();
 				stopCommand->moveId = requestParcel.request().move_id();
 				(*unit)->inputCommand(stopCommand);
 			}

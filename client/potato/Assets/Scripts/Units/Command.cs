@@ -9,7 +9,7 @@ public class MoveCommand : ICommand
     public Vector3 From;
     public Vector3 To;
     public float Speed;
-    public float Direction;
+    public Potato.UnitDirection Direction;
 
     public override string ToString()
     {
@@ -22,7 +22,7 @@ public class StopCommand : ICommand
 {
     public MoveCommand LastMoveCommand;
     public long StopTime;
-    public float Direction;
+    public Potato.UnitDirection Direction;
 
     public override string ToString()
     {

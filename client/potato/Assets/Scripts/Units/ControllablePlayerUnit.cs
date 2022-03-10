@@ -1,17 +1,16 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Torikime.Unit.Move;
 using UnityEngine;
 
 public class ControllablePlayerUnit : IUnit
 {
-    public GameObject Appearance { get; set; }
+    public UnitView Appearance { get; set; }
 
     private Potato.Network.NetworkService _networkService;
     private int prevInputX;
     private int prevInputY;
-    private float moveSpeed = 0.005f;
+    private float moveSpeed = 0.0025f;
 
     private List<ICommand> history = new List<ICommand>();
 
@@ -22,16 +21,18 @@ public class ControllablePlayerUnit : IUnit
 
     public UnitId UnitId { get; private set; }
     public UnitService UnitService { get; set; }
+    public Potato.UnitDirection Direction { get; set; }
 
-    public ControllablePlayerUnit(Potato.Network.NetworkService networkService, UnitId unitId, Vector3 position, float direction, Potato.Avatar avatar)
+    public ControllablePlayerUnit(Potato.Network.NetworkService networkService, UnitId unitId, Vector3 position, Potato.UnitDirection direction, Potato.Avatar avatar)
     {
         _networkService = networkService;
         UnitId = unitId;
+        Direction = direction;
     }
 
     public void Start()
     {
-        Appearance = GameObject.Instantiate(UnitService.TestAvatar);
+        Appearance = GameObject.Instantiate(UnitService.TestAvatar).GetComponent<UnitView>();
         Appearance.name = $"ControllablePlayerUnit({UnitId})";
         history.Add(new StopCommand
         {
@@ -103,7 +104,7 @@ public class ControllablePlayerUnit : IUnit
                     UnitId = UnitId.RawValue,
                     Time = currentMoveCommand.StartTime,
                     StopTime = now,
-                    Direction = 0,
+                    Direction = Direction,
                     MoveId = ++moveId,
                 }, (response) => {
                     Debug.Log($"Request Stop {response.Ok}");
@@ -114,6 +115,15 @@ public class ControllablePlayerUnit : IUnit
             }
             else
             {
+                if (moveY == 0)
+                {
+                    Direction = moveX > 0 ? Potato.UnitDirection.Right : Potato.UnitDirection.Left;
+                }
+                else
+                {
+                    Direction = moveY < 0 ? Potato.UnitDirection.Down : Potato.UnitDirection.Up;
+                }
+
                 // change move
                 MoveCommand moveCommand = new MoveCommand
                 {
@@ -121,6 +131,7 @@ public class ControllablePlayerUnit : IUnit
                     StartTime = now,
                     From = Position,
                     To = (Position + new Vector3(moveDirection.x, moveDirection.y) * 1000.0f),
+                    Direction = Direction,
                     Speed = moveSpeed
                 };
                 command = moveCommand;
@@ -133,10 +144,12 @@ public class ControllablePlayerUnit : IUnit
                     From = moveCommand.From.ToVector3(),
                     To = moveCommand.To.ToVector3(),
                     Speed = moveCommand.Speed,
+                    Direction = moveCommand.Direction,
                     MoveId = ++moveId,
-                }, (response) => {
+                }, (response) =>
+                {
                     Debug.Log($"Request Move {response.Ok}");
-                }); ;
+                });
                 Debug.Log($"Request Move [{moveId}]");
             }
 
@@ -165,6 +178,8 @@ public class ControllablePlayerUnit : IUnit
         if (Appearance)
         {
             Appearance.transform.position = Position;
+            Appearance.Direction = Direction;
+            Appearance.Moving = !(lastCommand is StopCommand);
         }
     }
 

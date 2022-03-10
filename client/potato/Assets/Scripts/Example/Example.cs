@@ -32,15 +32,17 @@ namespace Potato
 
         private IEnumerator Start()
         {
+            UnityEngine.SceneManagement.SceneManager.LoadScene("Assets/Examples/Map1/Map1.unity", UnityEngine.SceneManagement.LoadSceneMode.Additive);
+
             unitService = FindObjectOfType<UnitService>();
 
             connectButton.onClick.AddListener(() => {
-                panel.SetActive(false);
+                hostInputField.gameObject.SetActive(false);
                 connectButton.gameObject.SetActive(false);
                 serverHost = hostInputField.text;
             });
 
-            yield return new WaitWhile(() => panel.activeSelf);
+            yield return new WaitWhile(() => connectButton.gameObject.activeSelf);
 
             networkService = FindObjectOfType<Potato.Network.NetworkService>();
             var session = networkService.Connect(serverHost, int.Parse(serverPort));
@@ -85,6 +87,9 @@ namespace Potato
             networkService.StartReceive();
             StartCoroutine(DoPingPong());
 
+            yield return new WaitUntil(() => timeSyncronized);
+            panel.SetActive(false);
+
             {
                 var rpc = networkService.Session.GetRpc<Torikime.Unit.SpawnReady.Rpc>();
                 yield return rpc.RequestCoroutine(new Torikime.Unit.SpawnReady.Request { AreaId = 0 }, (response) => {
@@ -94,6 +99,7 @@ namespace Potato
             }
         }
 
+        private bool timeSyncronized = false;
         public long __now;
         public long __serverTime;
         public long __diffTime;
@@ -139,6 +145,7 @@ namespace Potato
                         __subjectiveLatency = (long)(DateTime.UtcNow - UnixEpoch).TotalMilliseconds - request.SendTime;
                         pingText.text = str + $"subjective latency: {__subjectiveLatency}\n";
                         networkService.ServerTimeDifference = __diffTime;
+                        timeSyncronized = true;
                     });
                 });
 
