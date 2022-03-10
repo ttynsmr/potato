@@ -95,4 +95,4 @@ jobs:
         if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
         with:
           name: Build
-          path: client/potato/build
+          path: build
