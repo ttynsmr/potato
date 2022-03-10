@@ -67,10 +67,21 @@ jobs:
         with:
           submodules: recursive
           token: ${{ secrets.ACCESS_TOKEN }}
+      # build check only
       - name: Build
         if: ${{ github.event_name == 'pull_request' }}
         run: |
           docker build -t build-for-check ./server/action-server3/
+      # build for push image
+      - uses: google-github-actions/setup-gcloud@v0
+        if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+        with:
+          service_account_key: ${{ secrets.GCLOUD_AUTH }}
+          project_id: potato-343314
+      - name: Configure docker for artifact registry
+        if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+        run: |
+          gcloud auth configure-docker asia-northeast1-docker.pkg.dev
       - name: Build and Push
         if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
         run: |
