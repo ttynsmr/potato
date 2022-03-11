@@ -1,4 +1,4 @@
-name: build and run test build
+name: 🚧Build server and run test
 on:
   push:
     branches: [main]
@@ -20,7 +20,7 @@ jobs:
           submodules: recursive
           token: ${{ secrets.ACCESS_TOKEN }}
       # build check only
-      - name: Build
+      - name: 🛠Build
         if: ${{ github.event_name == 'pull_request' }}
         run: |
           docker build -t build-for-check ./server/action-server3/
@@ -30,11 +30,11 @@ jobs:
         with:
           service_account_key: ${{ secrets.GCLOUD_AUTH }}
           project_id: potato-343314
-      - name: Configure docker for artifact registry
+      - name: ⚙️Configure docker for artifact registry
         if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
         run: |
           gcloud auth configure-docker asia-northeast1-docker.pkg.dev
-      - name: Build and Push
+      - name: 🐳Build and Push
         if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
         run: |
           docker build -t asia-northeast1-docker.pkg.dev/potato-343314/potato/server_action-server3:${{ github.ref_name }} ./server/action-server3/
@@ -48,10 +48,12 @@ jobs:
           python-version: "3.10.2"
           architecture: "x64"
       # prepare
-      - name: test torikime
+      - name: ✅test torikime
         run: |
-          cd server/action-server3/torikime
+          pushd server/action-server3/torikime
           python -m pip install --upgrade pip
           pip install pipenv --upgrade-strategy=only-if-needed
           pipenv install
-          # python torikime.py --help
+          pipenv install pyyaml jinja2 inflection
+          pipenv run python torikime.py --help
+          popd
