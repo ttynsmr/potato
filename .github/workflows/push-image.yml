@@ -1,4 +1,4 @@
-name: Build and push action-server image
+name: ⚡Build and push action-server image
 on:
   workflow_dispatch: {}
 jobs:
