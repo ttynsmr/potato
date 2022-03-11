@@ -9,6 +9,7 @@ contracts:
     ping_pong:
       request:
         send_time: int64
+        last_latency: int32
       response:
         send_time: int64
         receive_time: int64
