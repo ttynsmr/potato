@@ -160,6 +160,7 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 				torikime::unit::spawn::Notification notification;
 				notification.set_session_id(session->getSessionId());
 				notification.set_unit_id(newUnit->getUnitId());
+				notification.set_area_id(newUnit->getAreaId());
 				auto position = new potato::Vector3();
 				position->set_x(0);
 				position->set_y(0);
@@ -186,6 +187,7 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 						torikime::unit::spawn::Notification notification;
 						notification.set_session_id(unit->getSessionId());
 						notification.set_unit_id(unit->getUnitId());
+						notification.set_area_id(unit->getAreaId());
 						auto position = new potato::Vector3();
 						auto& unitPosition = unit->getPosition();
 						position->set_x(unitPosition[0]);
