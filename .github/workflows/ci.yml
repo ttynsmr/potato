@@ -50,9 +50,10 @@ jobs:
       # prepare
       - name: ✅test torikime
         run: |
-          cd server/action-server3/torikime
+          pushd server/action-server3/torikime
           python -m pip install --upgrade pip
           pip install pipenv --upgrade-strategy=only-if-needed
           pipenv install
           pipenv install pyyaml jinja2 inflection
           python torikime.py --help
+          popd
