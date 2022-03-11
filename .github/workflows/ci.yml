@@ -25,11 +25,13 @@ jobs:
         run: |
           docker build -t build-for-check ./server/action-server3/
       # build for push image
+      - name: 🔒Auth
+        id: "auth"
+        uses: "google-github-actions/auth@v0"
+        with:
+          credentials_json: "${{ secrets.GCP_CREDENTIALS }}"
       - uses: google-github-actions/setup-gcloud@v0
         if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
-        with:
-          service_account_key: ${{ secrets.GCLOUD_AUTH }}
-          project_id: potato-343314
       - name: ⚙️Configure docker for artifact registry
         if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
         run: |
