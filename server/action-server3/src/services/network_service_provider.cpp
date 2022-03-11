@@ -7,6 +7,8 @@
 //#include <boost/asio/ip/network_v4.hpp>
 //#include <boost/asio/post.hpp>
 
+#include <fmt/core.h>
+
 #include "session/session.h"
 
 #include "rpc.h"
@@ -27,7 +29,7 @@ bool NetworkServiceProvider::isRunning()
 void NetworkServiceProvider::start()
 {
 	_thread = std::thread([this]() {
-		std::cout << "action server bootup\n";
+		fmt::print("action server bootup\n");
 		do_accept();
 		_io_context.run();
 		});
@@ -117,7 +119,7 @@ void NetworkServiceProvider::visitSessions(std::function<void(std::shared_ptr<po
 void NetworkServiceProvider::do_accept()
 {
 	_acceptor.async_accept([this](boost::system::error_code ec, boost::asio::ip::tcp::socket socket) {
-		std::cout << "async_accept\n";
+		fmt::print("async_accept\n");
 		boost::asio::ip::tcp::no_delay option(true);
 		socket.set_option(option);
 		if (!ec)
@@ -128,7 +130,7 @@ void NetworkServiceProvider::do_accept()
 					auto r = std::remove_if(_rpcs.begin(), _rpcs.end(), [_sessionId](auto& rpc) { return rpc->getSession()->getSessionId() == _sessionId; });
 					_rpcs.erase(r, _rpcs.end());
 					_sessions.erase(_sessionId);
-					std::cout << "session: " << _sessionId << " disconnected. current session count is " << _sessions.size() << "\n";
+					fmt::print("session: {} disconnected. current session count is {}\n", _sessionId, _sessions.size());
 
 					_disconnectedDelegate(session);
 				});
@@ -150,7 +152,7 @@ void NetworkServiceProvider::do_accept()
 
 			_sessions.emplace(session->getSessionId(), session);
 			session->start();
-			std::cout << "session: " << _sessionId << " accepted. current session count is " << _sessions.size() << "\n";
+			fmt::print("session: {} accepted. current session count is {}\n", _sessionId, _sessions.size());
 
 			_sessionStartedDelegate(session);
 		}

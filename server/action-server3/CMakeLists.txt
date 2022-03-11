@@ -35,6 +35,10 @@ ADD_SUBDIRECTORY(externals/eventpp)
 # Eigen3
 INCLUDE_DIRECTORIES(externals/eigen)
 
+# fmt
+ADD_SUBDIRECTORY(externals/fmt)
+INCLUDE_DIRECTORIES(externals/fmt/include)
+
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
 
 # add protocol buffer settings
@@ -59,7 +63,7 @@ find_package (Threads REQUIRED)
 INCLUDE(FindProtobuf)
 FIND_PACKAGE(Protobuf REQUIRED)
 
-target_link_libraries(action-server3 pthread eventpp ${PROTOBUF_LIBRARY} proto rpc_contracts)
+target_link_libraries(action-server3 pthread eventpp fmt::fmt ${PROTOBUF_LIBRARY} proto rpc_contracts)
 
 set( BOOST_ROOT "/usr/lib/x86_64-linux-gnu/")
 

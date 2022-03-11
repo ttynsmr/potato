@@ -1,6 +1,7 @@
 #include "unit.h"
 #include <chrono>
 #include <iostream>
+#include <fmt/core.h>
 
 Unit::Unit(UnitId unitId, SessionId sessionId) : unitId(unitId), sessionId(sessionId) {}
 
@@ -51,7 +52,7 @@ void Unit::update(int64_t now)
 		auto progress = std::min(1.0f, (now - currentMove->startTime) / (distance / currentMove->speed));
 		//Debug.Log($"distance:{distance}, progress:{progress}, estimate time:{(distance / currentMove.Speed)}");
 		position = (currentMove->to - currentMove->from) * progress + currentMove->from;
-		std::cout << "unit[" << unitId << "] time: " << now << " position[" << currentMove->moveId << "]: x:" << position.x() << " y:" << position.y() << " z:" << position.z() << " direction:" << currentMove->direction << "\n";
+		fmt::print("unit[{}] time: {} position[{}]: x:{} y:{} z:{} direction:{}\n", unitId, now, currentMove->moveId, position.x(), position.y(), position.z(), currentMove->direction);
 	};
 
 	while (simulatedNow < now)

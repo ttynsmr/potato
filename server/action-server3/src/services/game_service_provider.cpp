@@ -1,6 +1,7 @@
 #include "game_service_provider.h"
 
 #include <memory>
+#include <fmt/core.h>
 
 #include "session/session.h"
 #include "services/network_service_provider.h"
@@ -59,7 +60,7 @@ bool GameServiceProvider::isRunning()
 void GameServiceProvider::initialize()
 {
 	_service->getQueue().appendListener(ServiceProviderType::Game, [](const std::string& s, bool b) {
-		std::cout << "received queue " << s << ":" << b << "\n";
+		fmt::print("received queue {}:{}\n", s, b);
 		});
 
 	_nerworkServiceProvider.lock()->setAcceptedDelegate([this](auto _) { onAccepted(_); });
@@ -129,7 +130,7 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 
 				torikime::unit::spawn_ready::Response response;
 				response.set_session_id(session->getSessionId());
-				response.set_unit_id(session->getSessionId()); // TODO: generate unit id at unit service
+				response.set_unit_id(newUnit->getUnitId());
 				auto position = new potato::Vector3();
 				position->set_x(0);
 				position->set_y(0);
@@ -150,7 +151,7 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 				// broadcast spawn to neighbors
 				torikime::unit::spawn::Notification notification;
 				notification.set_session_id(session->getSessionId());
-				notification.set_unit_id(session->getSessionId()); // TODO: generate unit id at unit service
+				notification.set_unit_id(newUnit->getUnitId());
 				auto position = new potato::Vector3();
 				position->set_x(0);
 				position->set_y(0);
@@ -384,9 +385,9 @@ void GameServiceProvider::start()
 	_thread = std::thread([this]() {
 		_nerworkServiceProvider = _service->findServiceProvider<NetworkServiceProvider>();
 		initialize();
-		std::cout << "start game service loop\n";
+		fmt::print("start game service loop\n");
 		main();
-		std::cout << "end game service loop\n";
+		fmt::print("end game service loop\n");
 		});
 }
 
