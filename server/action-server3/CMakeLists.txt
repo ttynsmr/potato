@@ -35,6 +35,9 @@ ADD_SUBDIRECTORY(externals/eventpp)
 # Eigen3
 INCLUDE_DIRECTORIES(externals/eigen)
 
+# fmt
+INCLUDE_DIRECTORIES(externals/fmt)
+
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
 
 # add protocol buffer settings
