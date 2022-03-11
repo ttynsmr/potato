@@ -55,5 +55,5 @@ jobs:
           pip install pipenv --upgrade-strategy=only-if-needed
           pipenv install
           pipenv install pyyaml jinja2 inflection
-          python torikime.py --help
+          pipenv run python torikime.py --help
           popd
