@@ -3,24 +3,26 @@ on:
   workflow_dispatch: {}
 jobs:
   push-action-server-image:
-    name: Build and push action-server image
+    name: ⚡Build and push action-server image
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
         with:
           submodules: recursive
           token: ${{ secrets.ACCESS_TOKEN }}
-      - uses: google-github-actions/setup-gcloud@v0
+      - name: 🔒Auth
+        id: "auth"
+        uses: "google-github-actions/auth@v0"
         with:
-          service_account_key: ${{ secrets.GCLOUD_AUTH }}
-          project_id: potato-343314
-      - name: Configure docker for artifact registry
+          credentials_json: "${{ secrets.GCP_CREDENTIALS }}"
+      - uses: google-github-actions/setup-gcloud@v0
+      - name: ⚙️Configure docker for artifact registry
         run: |
           gcloud auth configure-docker asia-northeast1-docker.pkg.dev
-      - name: Build
+      - name: 🐳Build
         run: |
           docker build -t asia-northeast1-docker.pkg.dev/potato-343314/potato/server_action-server3:${{ github.ref_name }} ./server/action-server3/
 
-      - name: Push
+      - name: 🚀Push
         run: |
           docker push asia-northeast1-docker.pkg.dev/potato-343314/potato/server_action-server3:${{ github.ref_name }}
