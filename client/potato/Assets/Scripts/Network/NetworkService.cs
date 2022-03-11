@@ -30,7 +30,7 @@ namespace Potato
 
             private void Update()
             {
-                session.Update();
+                session?.Update();
             }
 
             private void OnDestroy()

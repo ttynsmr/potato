@@ -3,8 +3,18 @@ name: 📺Game CI
 on:
   push:
     branches: [main]
+    paths:
+      - ".github/workflows/**.yml"
+      - "client/**"
+      - "server/action-server3/torikime/**"
+      - "server/action-server3/rpc/**"
   pull_request:
     branches: [main]
+    paths:
+      - ".github/workflows/**.yml"
+      - "client/**"
+      - "server/action-server3/torikime/**"
+      - "server/action-server3/rpc/**"
 
 jobs:
   build:
@@ -13,9 +23,11 @@ jobs:
     steps:
       # Checkout
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           lfs: true
+          submodules: recursive
+          token: ${{ secrets.ACCESS_TOKEN }}
       - uses: actions/setup-python@v3
         with:
           python-version: "3.10.2"
@@ -25,7 +37,7 @@ jobs:
       - uses: actions/cache@v2
         with:
           path: client/potato/Library
-          key: Library-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+          key: Library-${{ hashFiles('client/potato/Assets/**', 'client/potato/Packages/**', 'client/potato/ProjectSettings/**') }}
           restore-keys: |
             Library-
 
@@ -78,8 +90,9 @@ jobs:
           projectPath: client/potato
           allowDirtyBuild: true
 
-      # # Output
-      # - uses: actions/upload-artifact@v2
-      #   with:
-      #     name: Build
-      #     path: client/potato/build
+      # Output
+      - uses: actions/upload-artifact@v2
+        if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+        with:
+          name: Build
+          path: build

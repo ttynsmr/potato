@@ -23,9 +23,6 @@ namespace Torikime
             rpcs.Add(new Chat.SendStamp.Rpc(session));
             rpcs.Add(new Diagnosis.SeverSessions.Rpc(session));
             rpcs.Add(new Diagnosis.PingPong.Rpc(session));
-            rpcs.Add(new Example.UpdateMousePosition.Rpc(session));
-            rpcs.Add(new Example.Spawn.Rpc(session));
-            rpcs.Add(new Example.Despawn.Rpc(session));
             rpcs.Add(new Unit.SpawnReady.Rpc(session));
             rpcs.Add(new Unit.Spawn.Rpc(session));
             rpcs.Add(new Unit.Despawn.Rpc(session));

@@ -1,4 +1,4 @@
-# CMakeList.txt : action-server3 の CMake プロジェクト。ソースを含めて、次を定義します:
+﻿# CMakeList.txt : action-server3 の CMake プロジェクト。ソースを含めて、次を定義します:
 # プロジェクト専用ロジックはこちらです。
 #
 cmake_minimum_required (VERSION 3.8)
@@ -35,6 +35,10 @@ ADD_SUBDIRECTORY(externals/eventpp)
 # Eigen3
 INCLUDE_DIRECTORIES(externals/eigen)
 
+# fmt
+ADD_SUBDIRECTORY(externals/fmt)
+INCLUDE_DIRECTORIES(externals/fmt/include)
+
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
 
 # add protocol buffer settings
@@ -42,6 +46,9 @@ ADD_SUBDIRECTORY(proto)
 
 ADD_SUBDIRECTORY(rpc)
 ADD_SUBDIRECTORY(rpc/generated)
+INCLUDE_DIRECTORIES(rpc)
+
+INCLUDE_DIRECTORIES(src)
 
 list(APPEND ALL_SOURCES ${SUB_SOURCES} ${GEN_SOURCES})
 list(APPEND ALL_SOURCES "action-server3.cpp")
@@ -49,14 +56,14 @@ list(APPEND ALL_SOURCES "action-server3.cpp")
 message("ALL_SOURCES: ${ALL_SOURCES}")
 
 # ソースをこのプロジェクトの実行可能ファイルに追加します。
-add_executable (action-server3  ${ALL_SOURCES} "src/Payload.h" "src/Payload.cpp" "src/rpc.h" "src/rpc.cpp" "src/session.h" "src/session.cpp" "src/units/unit.cpp" "src/units/unit.h")
+add_executable (action-server3  ${ALL_SOURCES} "src/Payload.h" "src/Payload.cpp" "src/rpc.h" "src/rpc.cpp" "src/session/session.h" "src/session/session.cpp" "src/units/unit.cpp" "src/units/unit.h" "src/units/unit_types.h" "src/units/unit_registory.cpp" "src/units/unit_registory.h" "src/services/service.h" "src/services/network_service_provider.cpp" "src/services/network_service_provider.h" "src/services/service.cpp" "src/services/game_service_provider.cpp" "src/services/game_service_provider.h" "src/core/core.h" "src/services/service_provider.h" "src/session/session_types.h" "src/services/serialize_service_provider.h" "src/services/serialize_service_provider.cpp" "src/area/area.h" "src/area/area.cpp" "src/area/area_types.h")
 
 find_package (Threads REQUIRED)
 
 INCLUDE(FindProtobuf)
 FIND_PACKAGE(Protobuf REQUIRED)
 
-target_link_libraries(action-server3 pthread eventpp ${PROTOBUF_LIBRARY} proto rpc_contracts)
+target_link_libraries(action-server3 pthread eventpp fmt::fmt ${PROTOBUF_LIBRARY} proto rpc_contracts)
 
 set( BOOST_ROOT "/usr/lib/x86_64-linux-gnu/")
 

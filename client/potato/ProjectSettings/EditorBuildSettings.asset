@@ -8,4 +8,10 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Examples/SampleScene.unity
     guid: 2cda990e2423bbf4892e6590ba056729
+  - enabled: 0
+    path: Assets/ExternalAssets/COPY SPRIGHT/2D Character - Astronaut/Demo/DemoScene.unity
+    guid: bb2e0b5f54a5462db6400cd226fbcad1
+  - enabled: 1
+    path: Assets/Examples/Map1/Map1.unity
+    guid: 678a20c1e4bbd194188b3e6ac7c2bdfd
   m_configObjects: {}

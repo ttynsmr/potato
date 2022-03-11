@@ -1,58 +1,44 @@
-name: build and run test build
+name: 🚧Build server and run test
 on:
   push:
     branches: [main]
+    paths:
+      - ".github/workflows/**.yml"
+      - "server/**"
   pull_request:
     branches: [main]
+    paths:
+      - ".github/workflows/**.yml"
+      - "server/**"
 
 jobs:
-  build-action-server:
+  docker-build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
         with:
           submodules: recursive
-      - uses: seanmiddleditch/gha-setup-ninja@master
-      - uses: actions/setup-python@v3
+          token: ${{ secrets.ACCESS_TOKEN }}
+      # build check only
+      - name: 🛠Build
+        if: ${{ github.event_name == 'pull_request' }}
+        run: |
+          docker build -t build-for-check ./server/action-server3/
+      # build for push image
+      - uses: google-github-actions/setup-gcloud@v0
+        if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
         with:
-          python-version: "3.10.2"
-          architecture: "x64"
-      # install dependencies
-      - name: apt update
-        run: sudo apt-get update
-      - name: Various installations
-        run: sudo apt-get install -yq tree
-      - name: boost
-        run: sudo apt-get install -yq libboost-all-dev
-      - name: protocol buffers
-        run: sudo apt-get install -yq protobuf-compiler libprotobuf-dev
-      # build project
-      - name: cmake
-        id: cmake
+          service_account_key: ${{ secrets.GCLOUD_AUTH }}
+          project_id: potato-343314
+      - name: ⚙️Configure docker for artifact registry
+        if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
         run: |
-          pushd server/action-server3/torikime
-          python -m pip install --upgrade pip
-          pip install pipenv --upgrade-strategy=only-if-needed
-          pipenv install
-          pipenv install pyyaml jinja2 inflection
-          # python torikime.py --help
-          popd
-          cd server/action-server3
-          mkdir build
-          cmake -H. -Bbuild -GNinja
-          cmake --build build/ --target all || true
-          cmake --build build/ --target all
-      - name: run if fail_step failed
-        if: failure() && steps.cmake.outcome == 'failure'
+          gcloud auth configure-docker asia-northeast1-docker.pkg.dev
+      - name: 🐳Build and Push
+        if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
         run: |
-          echo "${{ steps.cmake.outcome }}"
-          tree server
-          tree client/potato/Assets/Scripts
-      # after build
-      - name: list output
-        run: |
-          tree server
-          tree client/potato/Assets/Scripts
+          docker build -t asia-northeast1-docker.pkg.dev/potato-343314/potato/server_action-server3:${{ github.ref_name }} ./server/action-server3/
+          docker push asia-northeast1-docker.pkg.dev/potato-343314/potato/server_action-server3:${{ github.ref_name }}
   torikime-test:
     runs-on: ubuntu-latest
     steps:
@@ -62,10 +48,13 @@ jobs:
           python-version: "3.10.2"
           architecture: "x64"
       # prepare
-      - name: test torikime
+      - name: ✅test torikime
         run: |
-          cd server/action-server3/torikime
+          pushd server/action-server3/torikime
           python -m pip install --upgrade pip
           pip install pipenv --upgrade-strategy=only-if-needed
           pipenv install
+          pipenv install pyyaml jinja2 inflection
           pipenv run python torikime.py --help
+          popd
+

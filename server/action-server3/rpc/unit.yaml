@@ -5,12 +5,12 @@ contracts:
       imports:
         - "message.proto"
       request:
-        area_id: int32
+        area_id: uint32
       response:
         session_id: int32
         unit_id: uint64
         position: potato.Vector3
-        direction: float
+        direction: potato.UnitDirection
         individuality: potato.Individuality
         cause: potato.UnitSpawnCause
         avatar: potato.Avatar
@@ -20,8 +20,9 @@ contracts:
       notification:
         session_id: int32
         unit_id: uint64
+        area_id: uint32
         position: potato.Vector3
-        direction: float
+        direction: potato.UnitDirection
         individuality: potato.Individuality
         cause: potato.UnitSpawnCause
         avatar: potato.Avatar
@@ -31,8 +32,9 @@ contracts:
       notification:
         session_id: int32
         unit_id: uint64
+        area_id: uint32
         position: potato.Vector3
-        direction: float
+        direction: potato.UnitDirection
         cause: potato.UnitSpawnCause
     move:
       imports:
@@ -43,6 +45,7 @@ contracts:
         from: potato.Vector3
         to: potato.Vector3
         speed: float
+        direction: potato.UnitDirection
         move_id: uint64
       response:
         ok: bool
@@ -52,6 +55,7 @@ contracts:
         from: potato.Vector3
         to: potato.Vector3
         speed: float
+        direction: potato.UnitDirection
         move_id: uint64
     stop:
       imports:
@@ -60,7 +64,7 @@ contracts:
         unit_id: uint64
         time: int64 # 移動開始時間
         stop_time: int64 # 移動停止時間
-        direction: float
+        direction: potato.UnitDirection
         move_id: uint64
       response:
         ok: bool
@@ -68,5 +72,5 @@ contracts:
         unit_id: uint64
         time: int64 # 移動開始時間
         stop_time: int64 # 移動停止時間
-        direction: float
+        direction: potato.UnitDirection
         move_id: uint64

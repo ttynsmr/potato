@@ -5,3 +5,9 @@
 	path = server/action-server3/externals/eigen
 	url = https://gitlab.com/libeigen/eigen.git
 	branch = 3.4
+[submodule "client/potato/Assets/ExternalAssets"]
+	path = client/potato/Assets/ExternalAssets
+	url = https://github.com/ttynsmr/potato-external-assets.git
+[submodule "server/action-server3/externals/fmt"]
+	path = server/action-server3/externals/fmt
+	url = https://github.com/fmtlib/fmt.git

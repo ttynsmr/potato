@@ -1,0 +1,13 @@
+version: '3.4'
+services:
+  action-server3:
+    build:
+      context: ./action-server3
+      dockerfile: Dockerfile
+      target: action_server3_application
+    # volumes:
+    #   - type: bind
+    #     source: ./action-server3
+    #     target: /opt/app/action-server3
+    ports:
+      - "28888:28888"

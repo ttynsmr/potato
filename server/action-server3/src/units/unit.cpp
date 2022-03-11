@@ -1,6 +1,7 @@
 #include "unit.h"
 #include <chrono>
 #include <iostream>
+#include <fmt/core.h>
 
 Unit::Unit(UnitId unitId, SessionId sessionId) : unitId(unitId), sessionId(sessionId) {}
 
@@ -21,6 +22,11 @@ std::shared_ptr<MoveCommand> Unit::getLastMoveCommand()
 	{
 		return std::dynamic_pointer_cast<MoveCommand>(lastCommand);
 	}
+}
+
+const std::shared_ptr<MoveCommand> Unit::getLastMoveCommand() const
+{
+	return getLastMoveCommand();
 }
 
 void Unit::inputCommand(std::shared_ptr<ICommand> command)
@@ -46,7 +52,7 @@ void Unit::update(int64_t now)
 		auto progress = std::min(1.0f, (now - currentMove->startTime) / (distance / currentMove->speed));
 		//Debug.Log($"distance:{distance}, progress:{progress}, estimate time:{(distance / currentMove.Speed)}");
 		position = (currentMove->to - currentMove->from) * progress + currentMove->from;
-		std::cout << "unit[" << unitId << "] time: " << now << " position[" << currentMove->moveId << "]: x:" << position.x() << " y:" << position.y() << " z:" << position.z() << "\n";
+		fmt::print("unit[{}] time: {} position[{}]: x:{} y:{} z:{} direction:{}\n", unitId, now, currentMove->moveId, position.x(), position.y(), position.z(), currentMove->direction);
 	};
 
 	while (simulatedNow < now)

@@ -1,9 +1,0 @@
-// flatc --cpp -o ./cpp ./hello.fbs
-// flatc --csharp -o ./cs ./hello.fbs
-namespace potato;
-
-table Message {
-  message:string;
-}
-
-root_type Message;
