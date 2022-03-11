@@ -16,21 +16,24 @@ namespace Torikime
     {
         public static List<IRpc> Build(Potato.Network.Session session)
         {
-            rpcs.Add(new Auth.Login.Rpc(session));
-            rpcs.Add(new Channel.Create.Rpc(session));
-            rpcs.Add(new Channel.Search.Rpc(session));
-            rpcs.Add(new Chat.SendMessage.Rpc(session));
-            rpcs.Add(new Chat.SendStamp.Rpc(session));
-            rpcs.Add(new Diagnosis.SeverSessions.Rpc(session));
-            rpcs.Add(new Diagnosis.PingPong.Rpc(session));
-            rpcs.Add(new Unit.SpawnReady.Rpc(session));
-            rpcs.Add(new Unit.Spawn.Rpc(session));
-            rpcs.Add(new Unit.Despawn.Rpc(session));
-            rpcs.Add(new Unit.Move.Rpc(session));
-            rpcs.Add(new Unit.Stop.Rpc(session));
+            var rpcs = new List<IRpc>
+            {
+                new Auth.Login.Rpc(session),
+                new Channel.Create.Rpc(session),
+                new Channel.Search.Rpc(session),
+                new Chat.SendMessage.Rpc(session),
+                new Chat.SendStamp.Rpc(session),
+                new Diagnosis.SeverSessions.Rpc(session),
+                new Diagnosis.PingPong.Rpc(session),
+                new Unit.SpawnReady.Rpc(session),
+                new Unit.Spawn.Rpc(session),
+                new Unit.Despawn.Rpc(session),
+                new Unit.Move.Rpc(session),
+                new Unit.Stop.Rpc(session)
+            };
             return rpcs;
         }
 
-        static List<IRpc> rpcs = new List<IRpc>();
+        //static List<IRpc> rpcs = new List<IRpc>();
     }
 }

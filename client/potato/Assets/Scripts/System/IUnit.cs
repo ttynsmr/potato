@@ -22,4 +22,5 @@ public interface IUnit
     void InputMove(MoveCommand moveCommand);
     void InputStop(StopCommand stopCommand);
     void OnDespawn();
+    void Destroy();
 }

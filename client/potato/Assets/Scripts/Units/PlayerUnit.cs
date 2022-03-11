@@ -198,4 +198,9 @@ public class PlayerUnit : IUnit
             Appearance.Moving = !(history.Last() is StopCommand);
         }
     }
+
+    public void Destroy()
+    {
+        GameObject.Destroy(Appearance.gameObject);
+    }
 }

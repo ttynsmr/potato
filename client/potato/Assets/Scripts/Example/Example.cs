@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -26,16 +27,18 @@ namespace Potato
         public string serverHost = "127.0.0.1";
         public string serverPort = "28888";
 
-        private Dictionary<int, GameObject> trails = new Dictionary<int, GameObject>();
-
-        private ConcurrentQueue<Action> callOnMainThread = new ConcurrentQueue<Action>();
-
         private IEnumerator Start()
         {
-            UnityEngine.SceneManagement.SceneManager.LoadScene("Assets/Examples/Map1/Map1.unity", UnityEngine.SceneManagement.LoadSceneMode.Additive);
-
+            var task = UnityEngine.SceneManagement.SceneManager.LoadSceneAsync("Assets/Examples/Map1/Map1.unity", UnityEngine.SceneManagement.LoadSceneMode.Additive);
             unitService = FindObjectOfType<UnitService>();
 
+            yield return new WaitUntil(() => task.isDone);
+
+            yield return LoginSequence();
+        }
+
+        private IEnumerator LoginSequence()
+        {
             connectButton.onClick.AddListener(() => {
                 hostInputField.gameObject.SetActive(false);
                 connectButton.gameObject.SetActive(false);
@@ -46,6 +49,22 @@ namespace Potato
 
             networkService = FindObjectOfType<Potato.Network.NetworkService>();
             var session = networkService.Connect(serverHost, int.Parse(serverPort));
+            var context = SynchronizationContext.Current;
+            session.OnDisconnected += (_) =>
+            {
+                context.Post(_ =>
+                {
+                    Debug.LogWarning("Session disconnected.");
+
+                    unitService.Reset();
+
+                    hostInputField?.gameObject.SetActive(true);
+                    connectButton?.gameObject.SetActive(true);
+                    panel?.SetActive(true);
+
+                    StartCoroutine(LoginSequence());
+                }, null);
+            };
 
             {
                 var sendMessage = networkService.Session.GetRpc<Torikime.Chat.SendMessage.Rpc>();
@@ -58,9 +77,9 @@ namespace Potato
                 var request = new Torikime.Chat.SendMessage.Request();
                 request.Message = "Hello world";
                 sendMessage.Request(request, (response) =>
-                    {
-                        Debug.Log("Response");
-                    });
+                {
+                    Debug.Log("Response");
+                });
             }
 
             {
@@ -118,6 +137,7 @@ namespace Potato
                 DateTime UnixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, 0);
                 request.SendTime = (long)(DateTime.UtcNow - UnixEpoch).TotalMilliseconds;
                 //Debug.Log("ping sent");
+                var context = SynchronizationContext.Current;
                 yield return pingpong.RequestCoroutine(request, (response) =>
                 {
                     __now = (long)(DateTime.UtcNow - UnixEpoch).TotalMilliseconds;
@@ -140,19 +160,14 @@ namespace Potato
                         $"adj time: {__serverTime}\n" +
                         $"diff time: {__diffTime}\n";
 
-                    callOnMainThread.Enqueue(() => {
+                    context.Post(_ => {
                         //Debug.Log("pong received");
                         __subjectiveLatency = (long)(DateTime.UtcNow - UnixEpoch).TotalMilliseconds - request.SendTime;
                         pingText.text = str + $"subjective latency: {__subjectiveLatency}\n";
                         networkService.ServerTimeDifference = __diffTime;
                         timeSyncronized = true;
-                    });
+                    }, null);
                 });
-
-                while (callOnMainThread.TryDequeue(out var action))
-                {
-                    action();
-                }
 
                 yield return new WaitForSeconds(1);
             }

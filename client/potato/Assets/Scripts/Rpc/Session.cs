@@ -49,52 +49,59 @@ namespace Potato
                 {
                     while (!tokenSource.IsCancellationRequested)
                     {
-                        byte[] headerBuffer = new byte[PayloadHeader.Size];
-                        var readHeaderSize = client.GetStream().Read(headerBuffer, 0, PayloadHeader.Size);
-                        Debug.Assert(readHeaderSize == PayloadHeader.Size);
-                        if (!client.Connected)
+                        try
                         {
-                            tokenSource.Cancel();
-                            break;
-                        }
-
-                        Payload payload = new Payload
-                        {
-                            Header = PayloadHeader.Deserialize(headerBuffer)
-                        };
-                        payload.SetBufferSize(payload.Header.payloadSize);
-                        var readSize = client.GetStream().Read(payload.GetBuffer(), PayloadHeader.Size, payload.Header.payloadSize);
-                        Debug.Assert(readSize == payload.Header.payloadSize);
-                        if (!client.Connected)
-                        {
-                            tokenSource.Cancel();
-                            break;
-                        }
-
-                        var rpc = rpcs.Find(x => x.ContractId == payload.Header.contract_id
-                         && x.RpcId == payload.Header.rpc_id);
-
-                        if (rpc.ContractId == Torikime.Diagnosis.PingPong.Rpc.StaticContractId
-                        && rpc.RpcId == Torikime.Diagnosis.PingPong.Rpc.StaticRpcId)
-                        {
-                            try
+                            byte[] headerBuffer = new byte[PayloadHeader.Size];
+                            var readHeaderSize = client.GetStream().Read(headerBuffer, 0, PayloadHeader.Size);
+                            if (!client.Connected || readHeaderSize == 0)
                             {
-                                rpc.ReceievePayload(payload);
+                                tokenSource.Cancel();
+                                break;
                             }
-                            catch (Exception)
+                            Debug.Assert(readHeaderSize == PayloadHeader.Size);
+
+                            Payload payload = new Payload
                             {
-                                if (!client.Connected)
+                                Header = PayloadHeader.Deserialize(headerBuffer)
+                            };
+                            payload.SetBufferSize(payload.Header.payloadSize);
+                            var readSize = client.GetStream().Read(payload.GetBuffer(), PayloadHeader.Size, payload.Header.payloadSize);
+                            if (!client.Connected || readSize == 0)
+                            {
+                                tokenSource.Cancel();
+                                break;
+                            }
+                            Debug.Assert(readSize == payload.Header.payloadSize);
+
+                            var rpc = rpcs.Find(x => x.ContractId == payload.Header.contract_id
+                             && x.RpcId == payload.Header.rpc_id);
+
+                            if (rpc.ContractId == Torikime.Diagnosis.PingPong.Rpc.StaticContractId
+                            && rpc.RpcId == Torikime.Diagnosis.PingPong.Rpc.StaticRpcId)
+                            {
+                                try
                                 {
-                                    tokenSource.Cancel();
-                                    break;
+                                    rpc.ReceievePayload(payload);
                                 }
+                                catch (Exception)
+                                {
+                                    if (!client.Connected)
+                                    {
+                                        tokenSource.Cancel();
+                                        break;
+                                    }
+                                }
+                                continue;
                             }
-                            continue;
-                        }
 
-                        if (rpc != null)
+                            if (rpc != null)
+                            {
+                                queue.Enqueue(() => { rpc.ReceievePayload(payload); });
+                            }
+                        }
+                        catch (Exception e)
                         {
-                            queue.Enqueue(() => { rpc.ReceievePayload(payload); });
+                            Debug.LogException(e);
                         }
                     }
                 }, tokenSource.Token);
@@ -106,6 +113,7 @@ namespace Potato
 
             private void OnDisconnect()
             {
+                OnDisconnected?.Invoke(this);
             }
 
             public void Update()
@@ -116,9 +124,12 @@ namespace Potato
                 }
             }
 
+            public Action<Session> OnDisconnected { get; set; }
+
             CancellationTokenSource tokenSource = new CancellationTokenSource();
             Task receieverTask;
             private ConcurrentQueue<Action> queue = new ConcurrentQueue<Action>();
+
 
             private List<Torikime.IRpc> rpcs;
 

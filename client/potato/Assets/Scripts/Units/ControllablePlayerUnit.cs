@@ -192,4 +192,11 @@ public class ControllablePlayerUnit : IUnit
     {
         throw new System.NotImplementedException();
     }
+    public void Destroy()
+    {
+        if (Appearance != null)
+        {
+            GameObject.Destroy(Appearance.gameObject);
+        }
+    }
 }

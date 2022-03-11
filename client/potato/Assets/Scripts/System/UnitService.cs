@@ -1,4 +1,5 @@
 using Potato;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -73,5 +74,14 @@ public class UnitService : MonoBehaviour
         {
             unit.Update(Time.deltaTime);
         }
+    }
+
+    internal void Reset()
+    {
+        foreach (var unit in units)
+        {
+            unit.Destroy();
+        }
+        units.Clear();
     }
 }
