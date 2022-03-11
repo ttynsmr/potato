@@ -80,11 +80,19 @@ public:
 		return _isMoving;
 	}
 
+	void setLastLatency(int32_t lastLatency)
+	{
+		_lastLatency = lastLatency;
+	}
+
+	int32_t getLastLatency() const { return _lastLatency; }
+
 private:
 	UnitId unitId = 0;
 	SessionId sessionId = 0;
 	AreaId _areaId = 0;
 	int64_t simulatedNow = 0;
+	int32_t _lastLatency = 0;
 	Eigen::Vector3f position = {};
 	std::shared_ptr<MoveCommand> currentMove;
 	std::queue< std::shared_ptr<ICommand>> inputQueue;

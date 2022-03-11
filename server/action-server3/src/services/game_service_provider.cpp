@@ -97,14 +97,22 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 	_nerworkServiceProvider.lock()->registerRpc(diagnosis);
 
 	auto pingPong = std::make_shared<torikime::diagnosis::ping_pong::Rpc>(session);
-	pingPong->subscribeRequest([session](const torikime::diagnosis::ping_pong::RequestParcel&, std::shared_ptr<torikime::diagnosis::ping_pong::Responser>& responser)
+	pingPong->subscribeRequest([this, pingPong, session](const torikime::diagnosis::ping_pong::RequestParcel& requestParcel, std::shared_ptr<torikime::diagnosis::ping_pong::Responser>& responser)
 		{
-			//std::cout << "receieve: ping" << session->getSessionId() << " request id: " << request.request_id() << "\n";
+			auto& units = _unitRegistory->getUnits();
+			auto unit = std::find_if(units.begin(), units.end(), [this, &units, &pingPong, requestParcel](auto& u) {
+				return pingPong->getSession()->getSessionId() == u->getSessionId();
+				});
+			if (unit != units.end())
+			{
+				(*unit)->setLastLatency(requestParcel.request().last_latency());
+				fmt::print("unit[{}] last latency: {}\n", (*unit)->getUnitId(), (*unit)->getLastLatency());
+			}
+
 			torikime::diagnosis::ping_pong::Response response;
 			response.set_receive_time(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
 			response.set_send_time(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
 			responser->send(true, std::move(response));
-			//std::cout << "send: pong" << session->getSessionId() << "\n";
 		});
 	_nerworkServiceProvider.lock()->registerRpc(pingPong);
 

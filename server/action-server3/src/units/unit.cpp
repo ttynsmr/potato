@@ -50,9 +50,8 @@ void Unit::update(int64_t now)
 	auto updatePosition = [this](std::shared_ptr<MoveCommand> currentMove, int64_t now) {
 		auto distance = (currentMove->to - currentMove->from).norm();
 		auto progress = std::min(1.0f, (now - currentMove->startTime) / (distance / currentMove->speed));
-		//Debug.Log($"distance:{distance}, progress:{progress}, estimate time:{(distance / currentMove.Speed)}");
 		position = (currentMove->to - currentMove->from) * progress + currentMove->from;
-		fmt::print("unit[{}] time: {} position[{}]: x:{} y:{} z:{} direction:{}\n", unitId, now, currentMove->moveId, position.x(), position.y(), position.z(), currentMove->direction);
+		//fmt::print("unit[{}] time: {} position[{}]: x:{} y:{} z:{} direction:{}\n", unitId, now, currentMove->moveId, position.x(), position.y(), position.z(), currentMove->direction);
 	};
 
 	while (simulatedNow < now)
