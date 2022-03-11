@@ -14,11 +14,18 @@ class ICommand {
 public:
 	ICommand() {}
 	virtual ~ICommand() {}
+
+	virtual bool isExpired(int64_t now) const = 0;
 };
 
 class MoveCommand : public ICommand
 {
 public:
+	bool isExpired(int64_t now) const override
+	{
+		return startTime + 10 * 1000 < now;
+	};
+
 	std::weak_ptr<MoveCommand> lastMoveCommand;
 	long startTime;
 	Eigen::Vector3f from;
@@ -31,12 +38,17 @@ public:
 class StopCommand : public ICommand
 {
 public:
+	bool isExpired(int64_t now) const override
+	{
+		return stopTime + 10 * 1000 < now || lastMoveCommand.expired();
+	};
+
 	std::weak_ptr<MoveCommand> lastMoveCommand;
 	long stopTime;
 	potato::UnitDirection direction;
 	uint64_t moveId;
 };
-
+	
 class Unit
 {
 public:

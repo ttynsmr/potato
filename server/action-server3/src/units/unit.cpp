@@ -1,9 +1,29 @@
 #include "unit.h"
 #include <chrono>
 #include <iostream>
+#include <memory>
 #include <fmt/core.h>
 
-Unit::Unit(UnitId unitId, SessionId sessionId) : unitId(unitId), sessionId(sessionId) {}
+Unit::Unit(UnitId unitId, SessionId sessionId)
+	: unitId(unitId), sessionId(sessionId)
+{
+	auto moveCommand = std::make_shared<MoveCommand>();
+	moveCommand->startTime = 0;
+	moveCommand->from = {};
+	moveCommand->to = {};
+	moveCommand->speed = 0;
+	moveCommand->direction = {};
+	moveCommand->moveId = 0;
+
+	auto stopCommand = std::make_shared<StopCommand>();
+	stopCommand->lastMoveCommand = moveCommand;
+	stopCommand->stopTime = 0;
+	stopCommand->direction = {};
+	stopCommand->moveId = 0;
+
+	history.emplace_back(moveCommand);
+	history.emplace_back(stopCommand);
+}
 
 std::shared_ptr<ICommand> Unit::getLastCommand()
 {
@@ -103,5 +123,16 @@ void Unit::update(int64_t now)
 		{
 			simulatedNow = now;
 		}
+	}
+
+	while (!history.empty())
+	{
+		if (!history.front()->isExpired(now))
+		{
+			break;
+		}
+
+		fmt::print("remove old history\n");
+		history.pop_front();
 	}
 }
