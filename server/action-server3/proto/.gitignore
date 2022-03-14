@@ -1,2 +1,3 @@
 *.proto
-!Message.proto
+!message.proto
+!battle.proto
