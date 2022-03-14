@@ -15,6 +15,7 @@
 #include "proto/unit_despawn.pb.h"
 #include "proto/unit_move.pb.h"
 #include "proto/unit_stop.pb.h"
+#include "proto/battle_skill_cast.pb.h"
 
 #include "rpc.h"
 #include "units/unit.h"
@@ -30,6 +31,7 @@
 #include "generated/cpp/unit_despawn.h"
 #include "generated/cpp/unit_move.h"
 #include "generated/cpp/unit_stop.h"
+#include "generated/cpp/battle_skill_cast.h"
 
 #define forward_declaration(name) \
 namespace name \
@@ -106,7 +108,7 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 			if (unit != units.end())
 			{
 				(*unit)->setLastLatency(requestParcel.request().last_latency());
-				fmt::print("unit[{}] last latency: {}\n", (*unit)->getUnitId(), (*unit)->getLastLatency());
+				//fmt::print("unit[{}] last latency: {}\n", (*unit)->getUnitId(), (*unit)->getLastLatency());
 			}
 
 			torikime::diagnosis::ping_pong::Response response;
@@ -329,6 +331,79 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 			}
 		});
 	_nerworkServiceProvider.lock()->registerRpc(unitStop);
+
+	{
+		auto battleSkillCast = std::make_shared<torikime::battle::skill_cast::Rpc>(session);
+		battleSkillCast->subscribeRequest([this, session](const auto& requestParcel, auto& responser)
+			{
+				using namespace torikime::battle::skill_cast;
+
+				uint64_t attackId = ++_attackId;
+				uint32_t skillId = requestParcel.request().skill_id();
+				int64_t triggerTime = requestParcel.request().trigger_time();
+				Response response;
+				response.set_ok(true);
+				response.set_attack_id(attackId);
+				responser->send(true, std::move(response));
+
+				queue.enqueue(0, [this, session, attackId, skillId, triggerTime]() {
+					const auto& units = _unitRegistory->getUnits();
+					//auto unit = std::find_if(units.begin(), units.end(), [](auto& u) {
+					//	return requestParcel.request().unit_id() == u->getUnitId();
+					//	});
+					//if (unit != units.end())
+					//{
+					//	//auto stopCommand = std::make_shared<StopCommand>();
+					//	//stopCommand->stopTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+					//	//stopCommand->direction = requestParcel.request().direction();
+					//	//stopCommand->moveId = requestParcel.request().move_id();
+					//	//(*unit)->inputCommand(stopCommand);
+					//}
+
+					{
+						auto casterUnit = _unitRegistory->findUnitBySessionId(session->getSessionId());
+						fmt::print("attack reveived caster:{} trigger_time:{} skill_id:{} attack_id:{}\n", casterUnit->getUnitId(), triggerTime, skillId, attackId);
+
+						Notification notification;
+						notification.set_caster_unit_id(casterUnit->getUnitId());
+						notification.set_trigger_time(triggerTime);
+						notification.set_skill_id(skillId);
+						notification.set_attack_id(attackId);
+						{
+							auto casterUnitPositionAtTheTime = casterUnit->getTrackbackPosition(triggerTime);
+							for (auto unit : units)
+							{
+								if (unit->getUnitId() == casterUnit->getUnitId()
+									|| unit->getAreaId() != casterUnit->getAreaId())
+								{
+									continue;
+								}
+
+								auto receiverUnitPositionAtTheTime = unit->getTrackbackPosition(triggerTime);
+								auto range = 20.0f;
+								if ((receiverUnitPositionAtTheTime - casterUnitPositionAtTheTime).squaredNorm() > range * range)
+								{
+									fmt::print("too far {} > {}\n", (receiverUnitPositionAtTheTime - casterUnitPositionAtTheTime).norm(), range);
+									continue;
+								}
+
+								fmt::print("cast skill hit {} to {}\n", casterUnit->getUnitId(), unit->getUnitId());
+								auto result = notification.add_results();
+								result->set_receiver_unit_id(unit->getUnitId());
+								result->set_damage(100);
+								result->set_heal(0);
+								result->set_miss(false);
+								result->set_dodged(false);
+							}
+						}
+						// TODO: change to sendAreacast
+						_nerworkServiceProvider.lock()->sendBroadcast(0, Rpc::serializeNotification(notification));
+					}
+
+					});
+			});
+		_nerworkServiceProvider.lock()->registerRpc(battleSkillCast);
+	}
 }
 
 void GameServiceProvider::onSessionStarted(std::shared_ptr<potato::net::session>)
@@ -367,17 +442,17 @@ void GameServiceProvider::sendSystemMessage(const std::string& message)
 void GameServiceProvider::main()
 {
 	auto prev = std::chrono::high_resolution_clock::now();
+	queue.appendListener(0, [](std::function<void()> f) { f(); });
 	while (_running)
 	{
-		_service->getQueue().process();
-
+		const auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+		for (auto& unit : _unitRegistory->getUnits())
 		{
-			const auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-			for (auto& unit : _unitRegistory->getUnits())
-			{
-				unit->update(now);
-			}
+			unit->update(now);
 		}
+
+		queue.process();
+		_service->getQueue().process();
 
 		sendSystemMessage("hey");
 

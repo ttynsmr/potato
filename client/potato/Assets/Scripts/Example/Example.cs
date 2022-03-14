@@ -103,6 +103,11 @@ namespace Potato
                 unitStop.OnNotification += unitService.OnReceiveStop;
             }
 
+            {
+                var battleSkillCast = networkService.Session.GetRpc<Torikime.Battle.SkillCast.Rpc>();
+                battleSkillCast.OnNotification += unitService.OnReceiveSkillCast;
+            }
+
             networkService.StartReceive();
             StartCoroutine(DoPingPong());
 

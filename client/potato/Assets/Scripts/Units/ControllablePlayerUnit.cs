@@ -12,6 +12,8 @@ public class ControllablePlayerUnit : IUnit
     private int prevInputY;
     private float moveSpeed = 0.0025f;
 
+    private bool prevAttackButton = false;
+
     private List<ICommand> history = new List<ICommand>();
 
     private MoveCommand currentMove;
@@ -157,6 +159,24 @@ public class ControllablePlayerUnit : IUnit
         }
         prevInputX = moveX;
         prevInputY = moveY;
+
+        if (!prevAttackButton && Input.GetKey(KeyCode.Return))
+        {
+            prevAttackButton = true;
+            var skillCast = _networkService.Session.GetRpc<Torikime.Battle.SkillCast.Rpc>();
+            skillCast.Request(new Torikime.Battle.SkillCast.Request {
+                SkillId = 0,
+                TargetUnitId = 0,
+                TriggerTime = now,
+            }, (response)=>
+            {
+                Debug.Log($"Request SkillCast {response.Ok} {response.AttackId}");
+            });
+        }
+        else if(prevAttackButton && !Input.GetKey(KeyCode.Return))
+        {
+            prevAttackButton = false;
+        }
     }
 
     private void ProcessCommand(long now)

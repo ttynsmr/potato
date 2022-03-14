@@ -16,6 +16,8 @@ public:
 	virtual ~ICommand() {}
 
 	virtual bool isExpired(int64_t now) const = 0;
+
+	virtual long getActionTime() const = 0;
 };
 
 class MoveCommand : public ICommand
@@ -25,6 +27,11 @@ public:
 	{
 		return startTime + 10 * 1000 < now;
 	};
+
+	virtual long getActionTime() const override
+	{
+		return startTime;
+	}
 
 	std::weak_ptr<MoveCommand> lastMoveCommand;
 	long startTime;
@@ -42,6 +49,11 @@ public:
 	{
 		return stopTime + 10 * 1000 < now || lastMoveCommand.expired();
 	};
+
+	virtual long getActionTime() const override
+	{
+		return stopTime;
+	}
 
 	std::weak_ptr<MoveCommand> lastMoveCommand;
 	long stopTime;
@@ -98,6 +110,10 @@ public:
 	}
 
 	int32_t getLastLatency() const { return _lastLatency; }
+
+	Eigen::Vector3f getTrackbackPosition(int64_t now) const;
+
+	Eigen::Vector3f getCurrentPosition(int64_t now) const;
 
 private:
 	UnitId unitId = 0;
