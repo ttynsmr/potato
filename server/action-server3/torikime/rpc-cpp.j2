@@ -3,8 +3,14 @@
 
 #include "../../../src/session/session.h"
 #include "../../../src/Payload.h"
-#include "proto/{{ contract }}_{{ name }}.pb.h"
 #include "{{ contract }}_{{ name }}.h"
+
+#include "proto/{{ contract }}_{{ name }}.pb.h"
+{% if "imports" in rpc -%}
+{%- for import in imports %}
+#include "proto/{{ import }}.pb.h"
+{%- endfor %}
+{% endif %}
 
 namespace {{ namespace }}::{{ contract }}::{{ name }}
 {

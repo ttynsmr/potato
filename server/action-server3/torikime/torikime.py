@@ -122,6 +122,29 @@ def camelize(input):
     return inflection.camelize(input)
 
 
+def params_to(inpit_params):
+    parameters = {}
+    # print(inpit_params)
+    for k, v in inpit_params.items():
+        # print(
+        #     k,
+        #     v,
+        #     "type" in inpit_params[k],
+        # )
+        parameters[k] = {}
+        if "type" in inpit_params[k]:
+            if inpit_params[k]["container"] == "array":
+                parameters[k]["container"] = "array"
+                parameters[k]["type"] = inpit_params[k]["type"]
+            else:
+                parameters[k]["container"] = "value"
+                parameters[k]["type"] = v
+        else:
+            parameters[k]["container"] = "value"
+            parameters[k]["type"] = v
+    return parameters
+
+
 def main():
     parser = argparse.ArgumentParser(description="torikime")
     parser.add_argument("--namespace", type=str, default="torikime")
@@ -165,15 +188,30 @@ def main():
                     # print(rpc)
                     # print(contracts[contract][rpc])
 
+                    rpc_def = {}
+                    if "request" in contracts[contract][rpc]:
+                        rpc_def["request"] = params_to(
+                            contracts[contract][rpc]["request"]
+                        )
+                    if "response" in contracts[contract][rpc]:
+                        rpc_def["response"] = params_to(
+                            contracts[contract][rpc]["response"]
+                        )
+                    if "notification" in contracts[contract][rpc]:
+                        rpc_def["notification"] = params_to(
+                            contracts[contract][rpc]["notification"]
+                        )
+
                     params = {
-                        # "imports": contracts[contract][rpc]['imports'],
                         "namespace": args.namespace,
                         "contract_id": contract_idx,
                         "rpc_id": rpc_idx,
                         "contract": contract,
                         "name": rpc,
                         "rpc": contracts[contract][rpc],
+                        "rpc_def": rpc_def,
                     }
+
                     if "imports" in contracts[contract][rpc]:
                         params["imports"] = contracts[contract][rpc]["imports"]
 
