@@ -3,7 +3,7 @@ contracts:
   unit:
     spawn_ready:
       imports:
-        - "message.proto"
+        - "message"
       request:
         area_id: uint32
       response:
@@ -16,7 +16,7 @@ contracts:
         avatar: potato.Avatar
     spawn:
       imports:
-        - "message.proto"
+        - "message"
       notification:
         session_id: int32
         unit_id: uint64
@@ -28,7 +28,7 @@ contracts:
         avatar: potato.Avatar
     despawn:
       imports:
-        - "message.proto"
+        - "message"
       notification:
         session_id: int32
         unit_id: uint64
@@ -38,7 +38,7 @@ contracts:
         cause: potato.UnitSpawnCause
     move:
       imports:
-        - "message.proto"
+        - "message"
       request:
         unit_id: uint64
         time: int64 # 移動開始時間
@@ -59,7 +59,7 @@ contracts:
         move_id: uint64
     stop:
       imports:
-        - "message.proto"
+        - "message"
       request:
         unit_id: uint64
         time: int64 # 移動開始時間
