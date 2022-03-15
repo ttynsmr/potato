@@ -27,6 +27,8 @@ namespace Potato
         public string serverHost = "127.0.0.1";
         public string serverPort = "28888";
 
+        private Queue<Torikime.Diagnosis.Gizmo.Notification> gizmoQueue = new Queue<Torikime.Diagnosis.Gizmo.Notification>();
+
         private IEnumerator Start()
         {
             var task = UnityEngine.SceneManagement.SceneManager.LoadSceneAsync("Assets/Examples/Map1/Map1.unity", UnityEngine.SceneManagement.LoadSceneMode.Additive);
@@ -101,6 +103,14 @@ namespace Potato
 
                 var unitStop = networkService.Session.GetRpc<Torikime.Unit.Stop.Rpc>();
                 unitStop.OnNotification += unitService.OnReceiveStop;
+
+                var unitKnockback = networkService.Session.GetRpc<Torikime.Unit.Knockback.Rpc>();
+                unitKnockback.OnNotification += unitService.OnReceiveKnockback;
+            }
+
+            {
+                var gizmo = networkService.Session.GetRpc<Torikime.Diagnosis.Gizmo.Rpc>();
+                gizmo.OnNotification += (notification) => { gizmoQueue.Enqueue(notification); };
             }
 
             {
@@ -198,6 +208,16 @@ namespace Potato
         private void OnDestroy()
         {
             networkService.Session.Disconnect();
+        }
+
+        private void OnDrawGizmos()
+        {
+            while (gizmoQueue.Count > 0)
+            {
+                var g = gizmoQueue.Dequeue();
+                Gizmos.color = Color.green;
+                Gizmos.DrawLine(g.Begin.ToVector3(), g.End.ToVector3());
+            }
         }
     }
 }

@@ -21,6 +21,7 @@ public interface IUnit
     void Update(float deltaTime);
     void InputMove(MoveCommand moveCommand);
     void InputStop(StopCommand stopCommand);
+    void InputKnockback(KnockbackCommand knockbackCommand);
     void OnDespawn();
     void Destroy();
 }

@@ -24,8 +24,8 @@ namespace Potato
             public void Disconnect()
             {
                 Debug.Log("disconnecting");
-                tokenSource.Cancel();
-                receieverTask.Wait();
+                tokenSource?.Cancel();
+                receieverTask?.Wait();
                 rpcs.Clear();
                 client.Close();
                 client.Dispose();

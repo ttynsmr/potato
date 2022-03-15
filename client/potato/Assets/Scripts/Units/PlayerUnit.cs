@@ -58,6 +58,7 @@ public class PlayerUnit : IUnit
 
     public void InputMove(MoveCommand moveCommand)
     {
+        moveCommand.LastMoveCommand = currentMove;
         inputQueue.Enqueue(moveCommand);
     }
 
@@ -74,6 +75,12 @@ public class PlayerUnit : IUnit
         inputQueue.Enqueue(stopCommand);
     }
 
+    public void InputKnockback(KnockbackCommand knockbackCommand)
+    {
+        knockbackCommand.LastMoveCommand = currentMove;
+        inputQueue.Enqueue(knockbackCommand);
+    }
+
     // Update is called once per frame
     public void Update(float deltaTime)
     {
@@ -82,7 +89,7 @@ public class PlayerUnit : IUnit
         ProcessCommand(now);
         if (currentMove != null)
         {
-            Debug.Log(currentMove);
+            //Debug.Log(currentMove);
         }
     }
 
@@ -126,22 +133,58 @@ public class PlayerUnit : IUnit
 
             if (inputQueue.Count > 0)
             {
-                var command = inputQueue.Dequeue();
-                switch (command)
+                var command = inputQueue.Peek();
+                if (command.GetActionTime() > now)
                 {
-                    case MoveCommand moveCommand:
-                        simulatedNow = moveCommand.StartTime;
-                        moveCommand.LastMoveCommand = currentMove;
-                        history.Add(moveCommand);
-                        currentMove = moveCommand;
-                        Direction = moveCommand.Direction;
+                    break;
+                }
+
+                if (currentMove != null && currentMove.CommandType == CommandType.Knockback)
+                {
+                    if (currentMove.IsGoaled(simulatedNow) || (command.GetActionTime() >= currentMove.GetGoalTime()))
+                    {
+                        // ok
+                    }
+                    else
+                    {
+                        // blocked
+                        Debug.Log($"knock back!! input dropping until {currentMove.GetGoalTime()}, command action time is {command.GetActionTime()}.\n");
                         break;
-                    case StopCommand stopCommand:
-                        simulatedNow = stopCommand.StopTime;
-                        stopCommand.LastMoveCommand = currentMove;
-                        Direction = stopCommand.Direction;
-                        history.Add(stopCommand);
-                        currentMove = null;
+                    }
+                }
+                inputQueue.Dequeue();
+
+                switch (command.CommandType)
+                {
+                    case CommandType.Move:
+                        {
+                            var moveCommand = command as MoveCommand;
+                            simulatedNow = moveCommand.StartTime;
+                            moveCommand.LastMoveCommand = currentMove;
+                            history.Add(moveCommand);
+                            currentMove = moveCommand;
+                            Direction = moveCommand.Direction;
+                        }
+                        break;
+                    case CommandType.Knockback:
+                        {
+                            var knockbackCommand = command as KnockbackCommand;
+                            simulatedNow = knockbackCommand.StartTime;
+                            knockbackCommand.LastMoveCommand = currentMove;
+                            history.Add(knockbackCommand);
+                            currentMove = knockbackCommand;
+                            Direction = knockbackCommand.Direction;
+                        }
+                        break;
+                    case CommandType.Stop:
+                        {
+                            var stopCommand = command as StopCommand;
+                            simulatedNow = stopCommand.StopTime;
+                            stopCommand.LastMoveCommand = currentMove;
+                            Direction = stopCommand.Direction;
+                            history.Add(stopCommand);
+                            currentMove = null;
+                        }
                         break;
                 }
 

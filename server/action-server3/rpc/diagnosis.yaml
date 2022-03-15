@@ -13,3 +13,11 @@ contracts:
       response:
         send_time: int64
         receive_time: int64
+    gizmo:
+      imports:
+        - "message"
+      notification:
+        name: string
+        begin: potato.Vector3
+        end: potato.Vector3
+        color: uint32
