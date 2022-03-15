@@ -18,7 +18,7 @@ public interface IUnit
     Potato.UnitDirection Direction { get; set; }
 
     void Start();
-    void Update(float deltaTime);
+    void Update(long now);
     void InputMove(MoveCommand moveCommand);
     void InputStop(StopCommand stopCommand);
     void InputKnockback(KnockbackCommand knockbackCommand);
