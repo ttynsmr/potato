@@ -9,16 +9,16 @@ Unit::Unit(UnitId unitId, SessionId sessionId)
 {
 	auto moveCommand = std::make_shared<MoveCommand>();
 	moveCommand->startTime = 0;
-	moveCommand->from = {};
-	moveCommand->to = {};
+	moveCommand->from = { 0, 0, 0 };
+	moveCommand->to = { 0, 0, 0 };
 	moveCommand->speed = 0;
-	moveCommand->direction = {};
+	moveCommand->direction = potato::UnitDirection::UNIT_DIRECTION_DOWN;
 	moveCommand->moveId = 0;
 
 	auto stopCommand = std::make_shared<StopCommand>();
 	stopCommand->lastMoveCommand = moveCommand;
 	stopCommand->stopTime = 0;
-	stopCommand->direction = {};
+	stopCommand->direction = potato::UnitDirection::UNIT_DIRECTION_DOWN;
 	stopCommand->moveId = 0;
 
 	history.emplace_back(moveCommand);
@@ -146,7 +146,7 @@ Eigen::Vector3f Unit::getTrackbackPosition(int64_t now) const
 {
 	if (history.empty())
 	{
-		return {};
+		return Eigen::Vector3f();
 	}
 	auto past = history.begin();
 	auto next = ++past;
@@ -161,18 +161,20 @@ Eigen::Vector3f Unit::getTrackbackPosition(int64_t now) const
 	}
 
 	auto lastMoveCommand = std::dynamic_pointer_cast<MoveCommand>((*past));
+	long lastActionTime = now;
 	if (lastMoveCommand == nullptr)
 	{
 		auto stopCommand = std::dynamic_pointer_cast<StopCommand>((*past));
 		lastMoveCommand = stopCommand->lastMoveCommand.lock();
+		lastActionTime = stopCommand->getActionTime();
 	}
 
 	auto distance = (lastMoveCommand->to - lastMoveCommand->from).norm();
-	auto progress = std::min(1.0f, (now - lastMoveCommand->startTime) / (distance / lastMoveCommand->speed));
+	auto progress = lastMoveCommand->speed > 0 ? std::min(1.0f, (lastActionTime - lastMoveCommand->startTime) / (distance / lastMoveCommand->speed)) : 0;
 	return lerp(lastMoveCommand->from, lastMoveCommand->to, progress);
 }
 
-Eigen::Vector3f Unit::getCurrentPosition(int64_t now) const
+Eigen::Vector3f Unit::getCurrentPosition() const
 {
 	return position;
 }

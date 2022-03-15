@@ -113,7 +113,7 @@ public:
 
 	Eigen::Vector3f getTrackbackPosition(int64_t now) const;
 
-	Eigen::Vector3f getCurrentPosition(int64_t now) const;
+	Eigen::Vector3f getCurrentPosition() const;
 
 private:
 	UnitId unitId = 0;

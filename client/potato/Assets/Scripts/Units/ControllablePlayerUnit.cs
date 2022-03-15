@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using UnityEngine;
 
 public class ControllablePlayerUnit : IUnit
@@ -162,15 +163,20 @@ public class ControllablePlayerUnit : IUnit
 
         if (!prevAttackButton && Input.GetKey(KeyCode.Return))
         {
+            var context = SynchronizationContext.Current;
             prevAttackButton = true;
             var skillCast = _networkService.Session.GetRpc<Torikime.Battle.SkillCast.Rpc>();
-            skillCast.Request(new Torikime.Battle.SkillCast.Request {
+            skillCast.Request(new Torikime.Battle.SkillCast.Request
+            {
                 SkillId = 0,
                 TargetUnitId = 0,
                 TriggerTime = now,
-            }, (response)=>
+            }, (response) =>
             {
-                Debug.Log($"Request SkillCast {response.Ok} {response.AttackId}");
+                //context.Post((_) =>
+                //{
+                    Debug.Log($"Request SkillCast {response.Ok} {response.AttackId}");
+                //}, null);
             });
         }
         else if(prevAttackButton && !Input.GetKey(KeyCode.Return))

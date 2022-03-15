@@ -380,7 +380,7 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 								}
 
 								auto receiverUnitPositionAtTheTime = unit->getTrackbackPosition(triggerTime);
-								auto range = 20.0f;
+								auto range = 1.0f;
 								if ((receiverUnitPositionAtTheTime - casterUnitPositionAtTheTime).squaredNorm() > range * range)
 								{
 									fmt::print("too far {} > {}\n", (receiverUnitPositionAtTheTime - casterUnitPositionAtTheTime).norm(), range);
@@ -449,6 +449,11 @@ void GameServiceProvider::main()
 		for (auto& unit : _unitRegistory->getUnits())
 		{
 			unit->update(now);
+
+			//fmt::print("unit[{}] position: {}, {}, {},  trackback position: {}, {}, {}\n",
+			//	unit->getUnitId(),
+			//	unit->getCurrentPosition().x(), unit->getCurrentPosition().y(), unit->getCurrentPosition().z(),
+			//unit->getTrackbackPosition(now).x(), unit->getTrackbackPosition(now).y(), unit->getTrackbackPosition(now).z());
 		}
 
 		queue.process();
