@@ -37,24 +37,6 @@
 #include "generated/cpp/unit_knockback.h"
 #include "generated/cpp/battle_skill_cast.h"
 
-#define forward_declaration(name) \
-namespace name \
-{ \
-	class Rpc; \
-	class Responser; \
-	class RequestParcel; \
-	class Responser; \
-	class Notification; \
-} \
-//
-
-forward_declaration(torikime::chat::send_message)
-forward_declaration(torikime::diagnosis::sever_sessions)
-forward_declaration(torikime::diagnosis::ping_pong)
-forward_declaration(torikime::unit::spawn_ready)
-forward_declaration(torikime::unit::spawn)
-forward_declaration(torikime::unit::despawn)
-
 GameServiceProvider::GameServiceProvider(std::shared_ptr<Service> service)
 	: _service(service), _unitRegistory(std::make_shared<potato::UnitRegistory>()) {}
 
@@ -352,17 +334,6 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 
 				queue.enqueue(0, [this, session, attackId, skillId, triggerTime]() {
 					const auto& units = _unitRegistory->getUnits();
-					//auto unit = std::find_if(units.begin(), units.end(), [](auto& u) {
-					//	return requestParcel.request().unit_id() == u->getUnitId();
-					//	});
-					//if (unit != units.end())
-					//{
-					//	//auto stopCommand = std::make_shared<StopCommand>();
-					//	//stopCommand->stopTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-					//	//stopCommand->direction = requestParcel.request().direction();
-					//	//stopCommand->moveId = requestParcel.request().move_id();
-					//	//(*unit)->inputCommand(stopCommand);
-					//}
 
 					std::vector<std::shared_ptr<potato::net::protocol::Payload>> knockbackPayloads;
 
@@ -432,8 +403,6 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 									notification.set_speed(knockbackCommand->speed);
 									notification.set_direction(knockbackCommand->direction);
 									notification.set_move_id(knockbackCommand->moveId);
-									// TODO: change to sendAreacast
-									//_nerworkServiceProvider.lock()->sendBroadcast(0, torikime::unit::knockback::Rpc::serializeNotification(notification));
 									knockbackPayloads.emplace_back(torikime::unit::knockback::Rpc::serializeNotification(notification));
 								}
 
@@ -450,8 +419,6 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 									notification.set_stop_time(knockbackCommand->endTime);
 									notification.set_direction(knockbackCommand->direction);
 									notification.set_move_id(0);
-									// TODO: change to sendAreacast
-									//_nerworkServiceProvider.lock()->sendBroadcast(0, torikime::unit::stop::Rpc::serializeNotification(notification));
 									knockbackPayloads.emplace_back(torikime::unit::stop::Rpc::serializeNotification(notification));
 								}
 							}
@@ -513,11 +480,6 @@ void GameServiceProvider::main()
 		for (auto& unit : _unitRegistory->getUnits())
 		{
 			unit->update(now);
-
-			//fmt::print("unit[{}] position: {}, {}, {},  trackback position: {}, {}, {}\n",
-			//	unit->getUnitId(),
-			//	unit->getCurrentPosition().x(), unit->getCurrentPosition().y(), unit->getCurrentPosition().z(),
-			//unit->getTrackbackPosition(now).x(), unit->getTrackbackPosition(now).y(), unit->getTrackbackPosition(now).z());
 
 			{
 				torikime::diagnosis::gizmo::Notification notification;
