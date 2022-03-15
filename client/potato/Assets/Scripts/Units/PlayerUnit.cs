@@ -133,8 +133,9 @@ public class PlayerUnit : IUnit
             if (inputQueue.Count > 0)
             {
                 var command = inputQueue.Peek();
-                if (command.GetActionTime() > now)
+                if (command.GetActionTime() > simulatedNow)
                 {
+                    simulatedNow = now;
                     break;
                 }
 
