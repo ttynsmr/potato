@@ -9,16 +9,16 @@ Unit::Unit(UnitId unitId, SessionId sessionId)
 {
 	auto moveCommand = std::make_shared<MoveCommand>();
 	moveCommand->startTime = 0;
-	moveCommand->from = {};
-	moveCommand->to = {};
+	moveCommand->from = { 0, 0, 0 };
+	moveCommand->to = { 0, 0, 0 };
 	moveCommand->speed = 0;
-	moveCommand->direction = {};
+	moveCommand->direction = potato::UnitDirection::UNIT_DIRECTION_DOWN;
 	moveCommand->moveId = 0;
 
 	auto stopCommand = std::make_shared<StopCommand>();
 	stopCommand->lastMoveCommand = moveCommand;
 	stopCommand->stopTime = 0;
-	stopCommand->direction = {};
+	stopCommand->direction = potato::UnitDirection::UNIT_DIRECTION_DOWN;
 	stopCommand->moveId = 0;
 
 	history.emplace_back(moveCommand);
@@ -65,12 +65,17 @@ void Unit::inputCommand(std::shared_ptr<ICommand> command)
 	inputQueue.emplace(command);
 }
 
+Eigen::Vector3f lerp(const Eigen::Vector3f& from, const Eigen::Vector3f& to, float progress)
+{
+	return (to - from) * progress + from;
+}
+
 void Unit::update(int64_t now)
 {
 	auto updatePosition = [this](std::shared_ptr<MoveCommand> currentMove, int64_t now) {
 		auto distance = (currentMove->to - currentMove->from).norm();
 		auto progress = std::min(1.0f, (now - currentMove->startTime) / (distance / currentMove->speed));
-		position = (currentMove->to - currentMove->from) * progress + currentMove->from;
+		position = lerp(currentMove->from, currentMove->to, progress);
 		//fmt::print("unit[{}] time: {} position[{}]: x:{} y:{} z:{} direction:{}\n", unitId, now, currentMove->moveId, position.x(), position.y(), position.z(), currentMove->direction);
 	};
 
@@ -125,7 +130,7 @@ void Unit::update(int64_t now)
 		}
 	}
 
-	while (!history.empty())
+	while (history.size() > 2)
 	{
 		if (!history.front()->isExpired(now))
 		{
@@ -135,4 +140,41 @@ void Unit::update(int64_t now)
 		fmt::print("remove old history\n");
 		history.pop_front();
 	}
+}
+
+Eigen::Vector3f Unit::getTrackbackPosition(int64_t now) const
+{
+	if (history.empty())
+	{
+		return Eigen::Vector3f();
+	}
+	auto past = history.begin();
+	auto next = ++past;
+	while (next != history.end())
+	{
+		if ((*next)->getActionTime() > now)
+		{
+			break;
+		}
+
+		past = next++;
+	}
+
+	auto lastMoveCommand = std::dynamic_pointer_cast<MoveCommand>((*past));
+	long lastActionTime = now;
+	if (lastMoveCommand == nullptr)
+	{
+		auto stopCommand = std::dynamic_pointer_cast<StopCommand>((*past));
+		lastMoveCommand = stopCommand->lastMoveCommand.lock();
+		lastActionTime = stopCommand->getActionTime();
+	}
+
+	auto distance = (lastMoveCommand->to - lastMoveCommand->from).norm();
+	auto progress = lastMoveCommand->speed > 0 ? std::min(1.0f, (lastActionTime - lastMoveCommand->startTime) / (distance / lastMoveCommand->speed)) : 0;
+	return lerp(lastMoveCommand->from, lastMoveCommand->to, progress);
+}
+
+Eigen::Vector3f Unit::getCurrentPosition() const
+{
+	return position;
 }

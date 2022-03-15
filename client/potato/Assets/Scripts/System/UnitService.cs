@@ -2,6 +2,7 @@ using Potato;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Torikime.Battle.SkillCast;
 using UnityEngine;
 
 public class UnitService : MonoBehaviour
@@ -83,5 +84,27 @@ public class UnitService : MonoBehaviour
             unit.Destroy();
         }
         units.Clear();
+    }
+
+    internal void OnReceiveSkillCast(Notification notification)
+    {
+        foreach(var result in notification.Results)
+        {
+            var unitId = new UnitId(result.ReceiverUnitId);
+            var unit = units.Find((u) => { return u.UnitId.Equals(unitId); });
+            if (unit == null)
+            {
+                continue;
+            }
+
+            if (unit is ControllablePlayerUnit)
+            {
+                // me
+            }
+            else
+            {
+                // others
+            }
+        }
     }
 }

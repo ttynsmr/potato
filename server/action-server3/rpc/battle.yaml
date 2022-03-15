@@ -1,0 +1,21 @@
+# yaml -> torikime -> generate .proto & rpc code.
+contracts:
+  battle:
+    skill_cast:
+      imports:
+        - "battle"
+      request:
+        trigger_time: int64
+        skill_id: uint32
+        target_unit_id: uint64
+      response:
+        ok: bool
+        attack_id: uint64
+      notification:
+        caster_unit_id: uint64
+        trigger_time: int64
+        skill_id: uint32
+        attack_id: uint64
+        results:
+          container: array
+          type: potato.SkillResult

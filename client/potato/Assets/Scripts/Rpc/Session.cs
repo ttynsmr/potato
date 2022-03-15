@@ -52,26 +52,28 @@ namespace Potato
                         try
                         {
                             byte[] headerBuffer = new byte[PayloadHeader.Size];
-                            var readHeaderSize = client.GetStream().Read(headerBuffer, 0, PayloadHeader.Size);
-                            if (!client.Connected || readHeaderSize == 0)
+                            var readHeaderSize = client.GetStream().ReadAsync(headerBuffer, 0, PayloadHeader.Size, tokenSource.Token);
+                            readHeaderSize.Wait(tokenSource.Token);
+                            if (!client.Connected || readHeaderSize.Result == 0)
                             {
                                 tokenSource.Cancel();
                                 break;
                             }
-                            Debug.Assert(readHeaderSize == PayloadHeader.Size);
+                            Debug.Assert(readHeaderSize.Result == PayloadHeader.Size);
 
                             Payload payload = new Payload
                             {
                                 Header = PayloadHeader.Deserialize(headerBuffer)
                             };
                             payload.SetBufferSize(payload.Header.payloadSize);
-                            var readSize = client.GetStream().Read(payload.GetBuffer(), PayloadHeader.Size, payload.Header.payloadSize);
-                            if (!client.Connected || readSize == 0)
+                            var readSize = client.GetStream().ReadAsync(payload.GetBuffer(), PayloadHeader.Size, payload.Header.payloadSize, tokenSource.Token);
+                            readSize.Wait(tokenSource.Token);
+                            if (!client.Connected || readSize.Result == 0)
                             {
                                 tokenSource.Cancel();
                                 break;
                             }
-                            Debug.Assert(readSize == payload.Header.payloadSize);
+                            Debug.Assert(readSize.Result == payload.Header.payloadSize);
 
                             var rpc = rpcs.Find(x => x.ContractId == payload.Header.contract_id
                              && x.RpcId == payload.Header.rpc_id);

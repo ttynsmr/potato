@@ -93,7 +93,7 @@ public class PlayerUnit : IUnit
     Vector3 CalcCurrentPosition(MoveCommand currentMove, long now)
     {
         var distance = (currentMove.To - currentMove.From).magnitude;
-        var progress = (now - currentMove.StartTime) / (distance / currentMove.Speed);
+        var progress = currentMove.Speed > 0 ? (now - currentMove.StartTime) / (distance / currentMove.Speed) : 0;
         //Debug.Log($"distance:{distance}, progress:{progress}, estimate time:{(distance / currentMove.Speed)}");
         return Vector3.Lerp(currentMove.From, currentMove.To, progress);
     }

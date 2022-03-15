@@ -23,6 +23,7 @@ namespace Torikime
                 new Channel.Search.Rpc(session),
                 new Chat.SendMessage.Rpc(session),
                 new Chat.SendStamp.Rpc(session),
+                new Battle.SkillCast.Rpc(session),
                 new Diagnosis.SeverSessions.Rpc(session),
                 new Diagnosis.PingPong.Rpc(session),
                 new Unit.SpawnReady.Rpc(session),

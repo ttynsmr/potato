@@ -35,6 +35,7 @@ namespace Potato
 
             private void OnDestroy()
             {
+                session?.Disconnect();
             }
 
             public long Now => (long)(DateTime.UtcNow - UnixEpoch).TotalMilliseconds + ServerTimeDifference;

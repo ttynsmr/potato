@@ -51,5 +51,7 @@ private:
 	std::weak_ptr<NetworkServiceProvider> _nerworkServiceProvider;
 	std::atomic<bool> _running = true;
 	std::thread _thread;
-	eventpp::EventQueue<int, void(const std::string&, const bool)> queue;
+	eventpp::EventQueue<int, void(std::function<void()>)> queue;
+
+	uint64_t _attackId = 0;
 };
