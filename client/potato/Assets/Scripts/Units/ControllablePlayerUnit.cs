@@ -59,9 +59,8 @@ public class ControllablePlayerUnit : IUnit
     }
 
     // Update is called once per frame
-    public void Update(float deltaTime)
+    public void Update(long now)
     {
-        var now = _networkService.Now;
         ProcessInput(now);
         ProcessCommand(now);
         if (currentMove != null)

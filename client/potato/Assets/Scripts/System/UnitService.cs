@@ -9,7 +9,13 @@ public class UnitService : MonoBehaviour
 {
     public GameObject TestAvatar;
 
+    private Potato.Network.NetworkService _networkService;
     private List<IUnit> units = new List<IUnit>();
+
+    private void Start()
+    {
+        _networkService = FindObjectOfType<Potato.Network.NetworkService>();
+    }
 
     public void Register(IUnit unit)
     {
@@ -95,7 +101,7 @@ public class UnitService : MonoBehaviour
     {
         foreach (var unit in units)
         {
-            unit.Update(Time.deltaTime);
+            unit.Update(_networkService.Now);
         }
     }
 
