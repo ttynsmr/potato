@@ -15,6 +15,7 @@ public class ControllablePlayerUnit : IUnit
 
     private bool prevAttackButton = false;
 
+    private Queue<ICommand> inputQueue = new Queue<ICommand>();
     private List<ICommand> history = new List<ICommand>();
 
     private MoveCommand currentMove;
@@ -65,7 +66,7 @@ public class ControllablePlayerUnit : IUnit
         ProcessCommand(now);
         if (currentMove != null)
         {
-            Debug.Log(currentMove);
+            //Debug.Log(currentMove);
         }
     }
 
@@ -82,6 +83,45 @@ public class ControllablePlayerUnit : IUnit
     {
         int moveX = (Input.GetKey(KeyCode.D) ? 1 : 0) - (Input.GetKey(KeyCode.A) ? 1 : 0);
         int moveY = (Input.GetKey(KeyCode.W) ? 1 : 0) - (Input.GetKey(KeyCode.S) ? 1 : 0);
+
+        if (inputQueue.Count > 0)
+        {
+            var command = inputQueue.Peek();
+            if (command.GetActionTime() <= now)
+            {
+                switch (command.CommandType)
+                {
+                    case CommandType.Knockback:
+                        currentMove = command as MoveCommand;
+                        break;
+                    case CommandType.Stop:
+                        var stopCommand = command as StopCommand;
+                        stopCommand.LastMoveCommand = currentMove;
+                        currentMove = null;
+                        break;
+                }
+                history.Add(command);
+                inputQueue.Dequeue();
+            }
+        }
+
+        if (currentMove != null && currentMove.CommandType == CommandType.Knockback)
+        {
+            if (currentMove.IsGoaled(now))
+            {
+                // ok
+            }
+            else
+            {
+                // blocked
+                if (moveX != 0 || moveY != 0)
+                {
+                    Debug.Log($"knock back!! input dropping until {currentMove.GetGoalTime()}, command action time is {now}.\n");
+                }
+                return;
+            }
+        }
+
         var moveDirection = new Vector2(moveX, moveY).normalized;
 
         if (prevInputX != moveX || prevInputY != moveY)
@@ -214,10 +254,18 @@ public class ControllablePlayerUnit : IUnit
         throw new System.NotImplementedException();
     }
 
-    public void InputStop(StopCommand _)
+    public void InputStop(StopCommand stopCommand)
     {
-        throw new System.NotImplementedException();
+        stopCommand.LastMoveCommand = currentMove;
+        inputQueue.Enqueue(stopCommand);
     }
+
+    public void InputKnockback(KnockbackCommand knockbackCommand)
+    {
+        knockbackCommand.LastMoveCommand = currentMove;
+        inputQueue.Enqueue(knockbackCommand);
+    }
+
     public void Destroy()
     {
         if (Appearance != null)

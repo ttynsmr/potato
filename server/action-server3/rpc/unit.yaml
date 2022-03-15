@@ -74,3 +74,15 @@ contracts:
         stop_time: int64 # 移動停止時間
         direction: potato.UnitDirection
         move_id: uint64
+    knockback:
+      imports:
+        - "message"
+      notification:
+        unit_id: uint64
+        start_time: int64
+        end_time: int64
+        from: potato.Vector3
+        to: potato.Vector3
+        speed: float
+        direction: potato.UnitDirection
+        move_id: uint64

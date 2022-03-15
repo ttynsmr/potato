@@ -26,11 +26,13 @@ namespace Torikime
                 new Battle.SkillCast.Rpc(session),
                 new Diagnosis.SeverSessions.Rpc(session),
                 new Diagnosis.PingPong.Rpc(session),
+                new Diagnosis.Gizmo.Rpc(session),
                 new Unit.SpawnReady.Rpc(session),
                 new Unit.Spawn.Rpc(session),
                 new Unit.Despawn.Rpc(session),
                 new Unit.Move.Rpc(session),
-                new Unit.Stop.Rpc(session)
+                new Unit.Stop.Rpc(session),
+                new Unit.Knockback.Rpc(session),
             };
             return rpcs;
         }

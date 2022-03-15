@@ -10,11 +10,13 @@
 #include "proto/chat_send_message.pb.h"
 #include "proto/diagnosis_sever_sessions.pb.h"
 #include "proto/diagnosis_ping_pong.pb.h"
+#include "proto/diagnosis_gizmo.pb.h"
 #include "proto/unit_spawn_ready.pb.h"
 #include "proto/unit_spawn.pb.h"
 #include "proto/unit_despawn.pb.h"
 #include "proto/unit_move.pb.h"
 #include "proto/unit_stop.pb.h"
+#include "proto/unit_knockback.pb.h"
 #include "proto/battle_skill_cast.pb.h"
 
 #include "rpc.h"
@@ -26,11 +28,13 @@
 #include "generated/cpp/chat_send_message.h"
 #include "generated/cpp/diagnosis_sever_sessions.h"
 #include "generated/cpp/diagnosis_ping_pong.h"
+#include "generated/cpp/diagnosis_gizmo.h"
 #include "generated/cpp/unit_spawn_ready.h"
 #include "generated/cpp/unit_spawn.h"
 #include "generated/cpp/unit_despawn.h"
 #include "generated/cpp/unit_move.h"
 #include "generated/cpp/unit_stop.h"
+#include "generated/cpp/unit_knockback.h"
 #include "generated/cpp/battle_skill_cast.h"
 
 #define forward_declaration(name) \
@@ -360,6 +364,8 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 					//	//(*unit)->inputCommand(stopCommand);
 					//}
 
+					std::vector<std::shared_ptr<potato::net::protocol::Payload>> knockbackPayloads;
+
 					{
 						auto casterUnit = _unitRegistory->findUnitBySessionId(session->getSessionId());
 						fmt::print("attack reveived caster:{} trigger_time:{} skill_id:{} attack_id:{}\n", casterUnit->getUnitId(), triggerTime, skillId, attackId);
@@ -394,10 +400,68 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 								result->set_heal(0);
 								result->set_miss(false);
 								result->set_dodged(false);
+
+								auto knockbackDirection = (receiverUnitPositionAtTheTime - casterUnitPositionAtTheTime).normalized();
+								auto knockbackCommand = std::make_shared<KnockbackCommand>();
+								int64_t knockbackDuration = 200;
+								knockbackCommand->startTime = triggerTime;
+								knockbackCommand->endTime = triggerTime + knockbackDuration;
+								knockbackCommand->moveId = 0;
+								knockbackCommand->from = receiverUnitPositionAtTheTime;
+								knockbackCommand->to = receiverUnitPositionAtTheTime + knockbackDirection * 1;
+								knockbackCommand->lastMoveCommand = unit->getLastMoveCommand();
+								knockbackCommand->direction = unit->getDirection();
+								knockbackCommand->speed = (knockbackCommand->to - knockbackCommand->from).norm() / static_cast<float>(knockbackDuration);
+								unit->inputCommand(knockbackCommand);
+
+								{
+									torikime::unit::knockback::Notification notification;
+									notification.set_unit_id(unit->getUnitId());
+									notification.set_start_time(knockbackCommand->startTime);
+									notification.set_end_time(knockbackCommand->endTime);
+									auto from = new potato::Vector3();
+									from->set_x(knockbackCommand->from[0]);
+									from->set_y(knockbackCommand->from[1]);
+									from->set_z(knockbackCommand->from[2]);
+									auto to = new potato::Vector3();
+									to->set_x(knockbackCommand->to[0]);
+									to->set_y(knockbackCommand->to[1]);
+									to->set_z(knockbackCommand->to[2]);
+									notification.set_allocated_from(from);
+									notification.set_allocated_to(to);
+									notification.set_speed(knockbackCommand->speed);
+									notification.set_direction(knockbackCommand->direction);
+									notification.set_move_id(knockbackCommand->moveId);
+									// TODO: change to sendAreacast
+									//_nerworkServiceProvider.lock()->sendBroadcast(0, torikime::unit::knockback::Rpc::serializeNotification(notification));
+									knockbackPayloads.emplace_back(torikime::unit::knockback::Rpc::serializeNotification(notification));
+								}
+
+								auto stopCommand = std::make_shared<StopCommand>();
+								stopCommand->stopTime = knockbackCommand->endTime;
+								stopCommand->direction = knockbackCommand->direction;
+								stopCommand->moveId = 0;
+								unit->inputCommand(stopCommand);
+
+								{
+									torikime::unit::stop::Notification notification;
+									notification.set_unit_id(unit->getUnitId());
+									notification.set_time(knockbackCommand->endTime);
+									notification.set_stop_time(knockbackCommand->endTime);
+									notification.set_direction(knockbackCommand->direction);
+									notification.set_move_id(0);
+									// TODO: change to sendAreacast
+									//_nerworkServiceProvider.lock()->sendBroadcast(0, torikime::unit::stop::Rpc::serializeNotification(notification));
+									knockbackPayloads.emplace_back(torikime::unit::stop::Rpc::serializeNotification(notification));
+								}
 							}
 						}
 						// TODO: change to sendAreacast
 						_nerworkServiceProvider.lock()->sendBroadcast(0, Rpc::serializeNotification(notification));
+						for (auto& payload : knockbackPayloads)
+						{
+							_nerworkServiceProvider.lock()->sendBroadcast(0, payload);
+						}
 					}
 
 					});
@@ -454,6 +518,23 @@ void GameServiceProvider::main()
 			//	unit->getUnitId(),
 			//	unit->getCurrentPosition().x(), unit->getCurrentPosition().y(), unit->getCurrentPosition().z(),
 			//unit->getTrackbackPosition(now).x(), unit->getTrackbackPosition(now).y(), unit->getTrackbackPosition(now).z());
+
+			{
+				torikime::diagnosis::gizmo::Notification notification;
+				notification.set_name(fmt::format("unit[{}]", unit->getUnitId()));
+				auto from = new potato::Vector3();
+				from->set_x(0);
+				from->set_y(0);
+				from->set_z(0);
+				auto to = new potato::Vector3();
+				to->set_x(unit->getPosition().x());
+				to->set_y(unit->getPosition().y());
+				to->set_z(unit->getPosition().z());
+				notification.set_allocated_begin(from);
+				notification.set_allocated_end(to);
+				notification.set_color(0xffffffff);
+				_nerworkServiceProvider.lock()->sendBroadcast(0, torikime::diagnosis::gizmo::Rpc::serializeNotification(notification));
+			}
 		}
 
 		queue.process();

@@ -103,25 +103,51 @@ void Unit::update(int64_t now)
 			updatePosition(currentMove, simulatedNow);
 		}
 
-		if (inputQueue.size() > 0)
+		if (inputQueue.size() > 0 && inputQueue.front()->getActionTime() <= now)
 		{
 			auto command = inputQueue.front();
-			inputQueue.pop();
-			if (std::dynamic_pointer_cast<MoveCommand>(command) != nullptr)
+
+			if (currentMove != nullptr && currentMove->getCommandType() == CommandType::KnockBack)
 			{
-				auto moveCommand = std::dynamic_pointer_cast<MoveCommand>(command);
-				simulatedNow = moveCommand->startTime;
-				moveCommand->lastMoveCommand = currentMove;
-				history.emplace_back(moveCommand);
-				currentMove = moveCommand;
+				auto knockbackMove = std::dynamic_pointer_cast<KnockbackCommand>(currentMove);
+				if (command->getActionTime() >= knockbackMove->getGoalTime())
+				{
+					// ok
+					fmt::print("unit[{}] knockback!!                until {}(.. {}sec), command action time is {}.\n", unitId, knockbackMove->endTime, (knockbackMove->endTime - simulatedNow) / 1000.0, command->getActionTime());
+				}
+				else
+				{
+					// blocked
+					fmt::print("unit[{}] knockback!! input dropping until {}(.. {}sec), command action time is {}.\n", unitId, knockbackMove->endTime, (knockbackMove->endTime - simulatedNow) / 1000.0, command->getActionTime());
+					fmt::print("unit[{}] now:{} simulationNow:{} endTime:{} actionTime:{}\n", unitId, now, now - simulatedNow, knockbackMove->endTime - simulatedNow, command->getActionTime() - simulatedNow);
+					fmt::print("unit[{}] CommandType:{} dropped\n", unitId, static_cast<int>(command->getCommandType()));
+					simulatedNow = now;
+					break;
+				}
 			}
-			else if(std::dynamic_pointer_cast<StopCommand>(command) != nullptr)
+			inputQueue.pop();
+
+			switch (command->getCommandType())
 			{
-				auto stopCommand = std::dynamic_pointer_cast<StopCommand>(command);
-				simulatedNow = stopCommand->stopTime;
-				stopCommand->lastMoveCommand = currentMove;
-				history.emplace_back(stopCommand);
-				currentMove = nullptr;
+			case CommandType::Move:
+			case CommandType::KnockBack:
+				{
+					auto moveCommand = std::dynamic_pointer_cast<MoveCommand>(command);
+					simulatedNow = moveCommand->startTime;
+					moveCommand->lastMoveCommand = currentMove;
+					history.emplace_back(moveCommand);
+					currentMove = moveCommand;
+				}
+				break;
+			case CommandType::Stop:
+				{
+					auto stopCommand = std::dynamic_pointer_cast<StopCommand>(command);
+					simulatedNow = stopCommand->stopTime;
+					stopCommand->lastMoveCommand = currentMove;
+					history.emplace_back(stopCommand);
+					currentMove = nullptr;
+				}
+				break;
 			}
 		}
 		else
@@ -137,7 +163,7 @@ void Unit::update(int64_t now)
 			break;
 		}
 
-		fmt::print("remove old history\n");
+		//fmt::print("remove old history\n");
 		history.pop_front();
 	}
 }

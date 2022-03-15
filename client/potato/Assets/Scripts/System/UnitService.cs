@@ -55,7 +55,7 @@ public class UnitService : MonoBehaviour
     {
         var unitId = new UnitId(notification.UnitId);
         var unit = units.Find((u) => { return u.UnitId.Equals(unitId); });
-        if (unit == null || unit is ControllablePlayerUnit)
+        if (unit == null)
         {
             Debug.LogWarning($"unit {notification.UnitId} not found");
             return;
@@ -67,6 +67,28 @@ public class UnitService : MonoBehaviour
             Direction = notification.Direction,
         };
         unit.InputStop(stopCommand);
+    }
+
+    public void OnReceiveKnockback(Torikime.Unit.Knockback.Notification notification)
+    {
+        var unitId = new UnitId(notification.UnitId);
+        var unit = units.Find((u) => { return u.UnitId.Equals(unitId); });
+        if (unit == null)
+        {
+            Debug.LogWarning($"unit {notification.UnitId} not found");
+            return;
+        }
+
+        KnockbackCommand moveCommand = new KnockbackCommand
+        {
+            StartTime = notification.StartTime,
+            EndTime = notification.EndTime,
+            From = notification.From.ToVector3(),
+            To = notification.To.ToVector3(),
+            Speed = notification.Speed,
+            Direction = notification.Direction,
+        };
+        unit.InputKnockback(moveCommand);
     }
 
     private void Update()
