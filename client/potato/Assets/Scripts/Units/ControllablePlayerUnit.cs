@@ -200,7 +200,7 @@ public class ControllablePlayerUnit : IUnit
         prevInputX = moveX;
         prevInputY = moveY;
 
-        if (!prevAttackButton && Input.GetKey(KeyCode.Return))
+        if (!prevAttackButton && Input.GetKey(KeyCode.P))
         {
             var context = SynchronizationContext.Current;
             prevAttackButton = true;
@@ -218,7 +218,7 @@ public class ControllablePlayerUnit : IUnit
                 //}, null);
             });
         }
-        else if(prevAttackButton && !Input.GetKey(KeyCode.Return))
+        else if(prevAttackButton && !Input.GetKey(KeyCode.P))
         {
             prevAttackButton = false;
         }
