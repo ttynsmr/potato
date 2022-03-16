@@ -38,9 +38,9 @@ namespace {{ namespace }}::{{ contract }}::{{ name }}
 	public:
 		std::uint32_t getContractId() const override { return {{ contract_id }}; };
 		std::uint32_t getRpcId() const override { return {{ rpc_id }}; };
-		std::shared_ptr<potato::net::session>& getSession() override { return _session; };
+		std::shared_ptr<potato::net::session> getSession() override { return _session; };
 
-		Rpc(std::shared_ptr<potato::net::session>& session);
+		Rpc(std::shared_ptr<potato::net::session> session);
 
 {%- if "request" in rpc %}
 		using RequestDelegate = std::function<void(const {{ namespace }}::{{ contract }}::{{ name }}::RequestParcel& request, std::shared_ptr<Responser>& responser)>;

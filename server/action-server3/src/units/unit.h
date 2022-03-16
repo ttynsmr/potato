@@ -8,6 +8,7 @@
 #include "proto/message.pb.h"
 
 #include "unit_types.h"
+#include "session/session_types.h"
 #include "area/area_types.h"
 
 enum class CommandType
@@ -108,8 +109,7 @@ public:
 class Unit
 {
 public:
-	using SessionId = int64_t;
-	Unit(UnitId unitId, SessionId sessionId);
+	Unit(UnitId unitId, potato::net::SessionId sessionId);
 
 	void inputCommand(std::shared_ptr<ICommand> command);
 	void update(int64_t now);
@@ -120,12 +120,12 @@ public:
 
 	UnitId getUnitId() const
 	{
-		return unitId;
+		return _unitId;
 	}
 
-	SessionId getSessionId() const
+	potato::net::SessionId getSessionId() const
 	{
-		return sessionId;
+		return _sessionId;
 	}
 
 	AreaId getAreaId() const
@@ -164,9 +164,11 @@ public:
 
 	Eigen::Vector3f getCurrentPosition() const;
 
+	void setPosition(const Eigen::Vector3f& position);
+
 private:
-	UnitId unitId = 0;
-	SessionId sessionId = 0;
+	const UnitId _unitId = 0;
+	potato::net::SessionId _sessionId = 0;
 	AreaId _areaId = 0;
 	int64_t simulatedNow = 0;
 	int32_t _lastLatency = 0;
