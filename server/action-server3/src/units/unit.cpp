@@ -76,6 +76,7 @@ void Unit::update(int64_t now)
 		auto distance = (currentMove->to - currentMove->from).norm();
 		auto progress = std::min(1.0f, (now - currentMove->startTime) / (distance / currentMove->speed));
 		position = lerp(currentMove->from, currentMove->to, progress);
+		_direction = currentMove->direction;
 		//fmt::print("unit[{}] time: {} position[{}]: x:{} y:{} z:{} direction:{}\n", unitId, now, currentMove->moveId, position.x(), position.y(), position.z(), currentMove->direction);
 	};
 

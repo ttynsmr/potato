@@ -24,7 +24,7 @@ class GameServiceProvider : public IServiceProvider, public std::enable_shared_f
 public:
 	GameServiceProvider(std::shared_ptr<Service> service);
 
-	bool isRunning();
+	bool isRunning() override;
 
 	void initialize();
 
