@@ -9,11 +9,11 @@ class SerializeServiceProvider : public IServiceProvider, public std::enable_sha
 public:
 	SerializeServiceProvider(std::shared_ptr<Service> service);
 
-	bool isRunning();
+	bool isRunning() override;
 
-	void start();
+	void start() override;
 
-	void stop();
+	void stop() override;
 
 private:
 	std::shared_ptr<Service> _service;
