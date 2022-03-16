@@ -4,25 +4,10 @@
 #include <memory>
 #include <fmt/core.h>
 
-Unit::Unit(UnitId unitId, SessionId sessionId)
-	: unitId(unitId), sessionId(sessionId)
+Unit::Unit(UnitId unitId, potato::net::SessionId sessionId)
+	: _unitId(unitId), _sessionId(sessionId)
 {
-	auto moveCommand = std::make_shared<MoveCommand>();
-	moveCommand->startTime = 0;
-	moveCommand->from = { 0, 0, 0 };
-	moveCommand->to = { 0, 0, 0 };
-	moveCommand->speed = 0;
-	moveCommand->direction = potato::UnitDirection::UNIT_DIRECTION_DOWN;
-	moveCommand->moveId = 0;
-
-	auto stopCommand = std::make_shared<StopCommand>();
-	stopCommand->lastMoveCommand = moveCommand;
-	stopCommand->stopTime = 0;
-	stopCommand->direction = potato::UnitDirection::UNIT_DIRECTION_DOWN;
-	stopCommand->moveId = 0;
-
-	history.emplace_back(moveCommand);
-	history.emplace_back(stopCommand);
+	setPosition({ 0, 0, 0 });
 }
 
 std::shared_ptr<ICommand> Unit::getLastCommand()
@@ -114,14 +99,14 @@ void Unit::update(int64_t now)
 				if (command->getActionTime() >= knockbackMove->getGoalTime())
 				{
 					// ok
-					fmt::print("unit[{}] knockback!!                until {}(.. {}sec), command action time is {}.\n", unitId, knockbackMove->endTime, (knockbackMove->endTime - simulatedNow) / 1000.0, command->getActionTime());
+					fmt::print("unit[{}] knockback!!                until {}(.. {}sec), command action time is {}.\n", _unitId, knockbackMove->endTime, (knockbackMove->endTime - simulatedNow) / 1000.0, command->getActionTime());
 				}
 				else
 				{
 					// blocked
-					fmt::print("unit[{}] knockback!! input dropping until {}(.. {}sec), command action time is {}.\n", unitId, knockbackMove->endTime, (knockbackMove->endTime - simulatedNow) / 1000.0, command->getActionTime());
-					fmt::print("unit[{}] now:{} simulationNow:{} endTime:{} actionTime:{}\n", unitId, now, now - simulatedNow, knockbackMove->endTime - simulatedNow, command->getActionTime() - simulatedNow);
-					fmt::print("unit[{}] CommandType:{} dropped\n", unitId, static_cast<int>(command->getCommandType()));
+					fmt::print("unit[{}] knockback!! input dropping until {}(.. {}sec), command action time is {}.\n", _unitId, knockbackMove->endTime, (knockbackMove->endTime - simulatedNow) / 1000.0, command->getActionTime());
+					fmt::print("unit[{}] now:{} simulationNow:{} endTime:{} actionTime:{}\n", _unitId, now, now - simulatedNow, knockbackMove->endTime - simulatedNow, command->getActionTime() - simulatedNow);
+					fmt::print("unit[{}] CommandType:{} dropped\n", _unitId, static_cast<int>(command->getCommandType()));
 					simulatedNow = now;
 					break;
 				}
@@ -204,4 +189,26 @@ Eigen::Vector3f Unit::getTrackbackPosition(int64_t now) const
 Eigen::Vector3f Unit::getCurrentPosition() const
 {
 	return position;
+}
+
+void Unit::setPosition(const Eigen::Vector3f& position)
+{
+	history.clear();
+
+	auto moveCommand = std::make_shared<MoveCommand>();
+	moveCommand->startTime = 0;
+	moveCommand->from = position;
+	moveCommand->to = position;
+	moveCommand->speed = 0;
+	moveCommand->direction = potato::UnitDirection::UNIT_DIRECTION_DOWN;
+	moveCommand->moveId = 0;
+
+	auto stopCommand = std::make_shared<StopCommand>();
+	stopCommand->lastMoveCommand = moveCommand;
+	stopCommand->stopTime = 0;
+	stopCommand->direction = potato::UnitDirection::UNIT_DIRECTION_DOWN;
+	stopCommand->moveId = 0;
+
+	history.emplace_back(moveCommand);
+	history.emplace_back(stopCommand);
 }

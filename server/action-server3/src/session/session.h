@@ -38,6 +38,8 @@ namespace potato::net
 
 		SessionId getSessionId() const { return _sessionId; }
 
+		static constexpr SessionId getSystemSessionId() { return 0; }
+
 	private:
 		void readHeader();
 		void readPercel(const protocol::PayloadHeader& header);

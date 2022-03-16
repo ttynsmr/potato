@@ -44,6 +44,11 @@ enum class Send
 
 void NetworkServiceProvider::sendTo(potato::net::SessionId sessionId, std::shared_ptr<potato::net::protocol::Payload> payload)
 {
+	if (potato::net::session::getSystemSessionId())
+	{
+		return;
+	}
+
 	boost::asio::post(_io_context.get_executor(), [this, sessionId, payload]() {
 		auto session = _sessions.find(_sessionId);
 		if (session == _sessions.end())

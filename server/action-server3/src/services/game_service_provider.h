@@ -2,8 +2,10 @@
 
 #include <memory>
 #include <iostream>
+
 #include "service.h"
 #include "service_provider.h"
+#include "session/session_types.h"
 
 namespace potato
 {
@@ -35,6 +37,9 @@ public:
 	void onDisconnected(std::shared_ptr<potato::net::session> session);
 
 	void sendSystemMessage(const std::string& message);
+
+	void sendSpawnUnit(potato::net::SessionId sessionId, std::shared_ptr<Unit> spawnUnit);
+	void sendDespawn(potato::net::SessionId sessionId, std::shared_ptr<Unit> despaenUnit);
 
 	void main();
 

@@ -99,9 +99,10 @@ public class UnitService : MonoBehaviour
 
     private void Update()
     {
+        var now = _networkService.Now;
         foreach (var unit in units)
         {
-            unit.Update(_networkService.Now);
+            unit.Update(now);
         }
     }
 
