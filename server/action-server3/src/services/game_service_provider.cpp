@@ -547,7 +547,7 @@ void GameServiceProvider::main()
 			auto now = std::chrono::high_resolution_clock::now();
 			auto spareTime = std::chrono::high_resolution_clock::now() - prev;
 			prev = now;
-			std::this_thread::sleep_for(std::chrono::milliseconds(std::max(0L, 100 - std::chrono::duration_cast<std::chrono::microseconds>(spareTime).count())));
+			std::this_thread::sleep_for(std::max(std::chrono::nanoseconds(0), std::chrono::milliseconds(100) - spareTime));
 			fmt::print("spareTime: {}ms\n", std::chrono::duration_cast<std::chrono::microseconds>(spareTime).count());
 		}
 	}
