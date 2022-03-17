@@ -512,13 +512,15 @@ void GameServiceProvider::sendDespawn(potato::net::SessionId sessionId, std::sha
 void GameServiceProvider::main()
 {
 	auto prev = std::chrono::high_resolution_clock::now();
+	auto nextSecond = std::chrono::high_resolution_clock::now() + std::chrono::seconds(1);
 	queue.appendListener(0, [](std::function<void()> f) { f(); });
+	int32_t fps = 0;
 	while (_running)
 	{
-		const auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+		const auto nowUpdate = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 		for (auto& unit : _unitRegistory->getUnits())
 		{
-			unit->update(now);
+			unit->update(nowUpdate);
 
 			//{
 			//	torikime::diagnosis::gizmo::Notification notification;
@@ -544,11 +546,20 @@ void GameServiceProvider::main()
 		sendSystemMessage("hey");
 
 		{
-			auto now = std::chrono::high_resolution_clock::now();
-			auto spareTime = std::chrono::high_resolution_clock::now() - prev;
-			prev = now;
+			fps++;
+
+			const auto now = std::chrono::high_resolution_clock::now();
+			if (now >= nextSecond)
+			{
+				fmt::print("fps: {}\n", fps);
+				fps = 0;
+				nextSecond = std::chrono::high_resolution_clock::now() + std::chrono::seconds(1);
+			}
+			const auto spareTime = std::chrono::high_resolution_clock::now() - prev;
 			std::this_thread::sleep_for(std::max(std::chrono::nanoseconds(0), std::chrono::milliseconds(100) - spareTime));
-			fmt::print("spareTime: {}ms\n", std::chrono::duration_cast<std::chrono::microseconds>(spareTime).count());
+			prev = std::chrono::high_resolution_clock::now();
+
+			fmt::print("spareTime: {}microseconds\n", std::chrono::duration_cast<std::chrono::microseconds>(spareTime).count());
 		}
 	}
 }
