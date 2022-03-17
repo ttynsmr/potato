@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <fmt/core.h>
+#include <fmt/ranges.h>
 
 #include "session/session.h"
 #include "services/network_service_provider.h"
@@ -515,6 +516,7 @@ void GameServiceProvider::main()
 	auto nextSecond = std::chrono::high_resolution_clock::now() + std::chrono::seconds(1);
 	queue.appendListener(0, [](std::function<void()> f) { f(); });
 	int32_t fps = 0;
+	std::vector<int32_t> frameProcessingTime;
 	while (_running)
 	{
 		const auto nowUpdate = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
@@ -551,7 +553,8 @@ void GameServiceProvider::main()
 			const auto now = std::chrono::high_resolution_clock::now();
 			if (now >= nextSecond)
 			{
-				fmt::print("fps: {}\n", fps);
+				fmt::print("fps: {}, microsec/frame: [{:5}]\n", fps, fmt::join(frameProcessingTime, ","));
+				frameProcessingTime.clear();
 				fps = 0;
 				nextSecond = std::chrono::high_resolution_clock::now() + std::chrono::seconds(1);
 			}
@@ -559,7 +562,8 @@ void GameServiceProvider::main()
 			std::this_thread::sleep_for(std::max(std::chrono::nanoseconds(0), std::chrono::milliseconds(100) - spareTime));
 			prev = std::chrono::high_resolution_clock::now();
 
-			fmt::print("spareTime: {}microseconds\n", std::chrono::duration_cast<std::chrono::microseconds>(spareTime).count());
+			// fmt::print("spareTime: {}microseconds\n", std::chrono::duration_cast<std::chrono::microseconds>(spareTime).count());
+			frameProcessingTime.emplace_back(std::chrono::duration_cast<std::chrono::microseconds>(spareTime).count());
 		}
 	}
 }
