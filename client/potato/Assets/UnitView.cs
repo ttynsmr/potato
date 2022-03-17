@@ -6,6 +6,7 @@ public class UnitView : MonoBehaviour
 {
     public RuntimeAnimatorController animatorController;
     public Animator animator;
+    public TextMesh displayName;
 
     private Potato.UnitDirection direction;
 

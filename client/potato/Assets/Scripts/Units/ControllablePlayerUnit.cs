@@ -19,6 +19,7 @@ public class ControllablePlayerUnit : IUnit
     private List<ICommand> history = new List<ICommand>();
 
     private MoveCommand currentMove;
+    private Potato.Avatar avatar;
 
 
     public Vector3 Position { get; private set; }
@@ -32,12 +33,14 @@ public class ControllablePlayerUnit : IUnit
         _networkService = networkService;
         UnitId = unitId;
         Direction = direction;
+        this.avatar = avatar;
     }
 
     public void Start()
     {
         Appearance = GameObject.Instantiate(UnitService.TestAvatar).GetComponent<UnitView>();
         Appearance.name = $"ControllablePlayerUnit({UnitId})";
+        Appearance.displayName.text = avatar.Name;
         history.Add(new StopCommand
         {
             LastMoveCommand = new MoveCommand {

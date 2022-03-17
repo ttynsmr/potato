@@ -2,11 +2,13 @@
 
 #include <memory>
 #include <fmt/core.h>
+#include <fmt/ranges.h>
 
 #include "session/session.h"
 #include "services/network_service_provider.h"
 
 #include "proto/message.pb.h"
+#include "proto/auth_login.pb.h"
 #include "proto/chat_send_message.pb.h"
 #include "proto/diagnosis_sever_sessions.pb.h"
 #include "proto/diagnosis_ping_pong.pb.h"
@@ -25,6 +27,7 @@
 
 #include "area/area.h"
 
+#include "generated/cpp/auth_login.h"
 #include "generated/cpp/chat_send_message.h"
 #include "generated/cpp/diagnosis_sever_sessions.h"
 #include "generated/cpp/diagnosis_ping_pong.h"
@@ -75,6 +78,7 @@ void GameServiceProvider::initialize()
 		{
 			auto newUnit = _unitRegistory->createUnit(potato::net::session::getSystemSessionId());
 			newUnit->setPosition({ p, 0, 0 });
+			newUnit->setDisplayName(fmt::format("NONAME{}", newUnit->getUnitId()));
 			addToArea(0, newUnit);
 		}
 	}
@@ -82,12 +86,24 @@ void GameServiceProvider::initialize()
 
 void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> session)
 {
+	auto authLogin = std::make_shared<torikime::auth::login::Rpc>(session);
+	authLogin->subscribeRequest([this, session](const auto& requestParcel, auto& responser)
+		{
+			torikime::auth::login::Response response;
+			response.set_ok(true);
+			responser->send(true, std::move(response));
+
+			session->setDisplayName(requestParcel.request().user_id());
+			fmt::print("session id[{}] user_id: {} logged in\n", session->getSessionId(), requestParcel.request().user_id());
+			});
+	_nerworkServiceProvider.lock()->registerRpc(authLogin);
+
 	auto chat = std::make_shared<torikime::chat::send_message::Rpc>(session);
 	std::weak_ptr<torikime::chat::send_message::Rpc> weak_chat = chat;
-	chat->subscribeRequest([this, weak_chat, session](const torikime::chat::send_message::RequestParcel& request, std::shared_ptr<torikime::chat::send_message::Responser>& responser)
+	chat->subscribeRequest([this, weak_chat, session](const torikime::chat::send_message::RequestParcel& requestParcel, std::shared_ptr<torikime::chat::send_message::Responser>& responser)
 		{
 			//std::cout << "receive RequestParcel\n";
-			const auto message = request.request().message();
+			const auto message = requestParcel.request().message();
 			torikime::chat::send_message::Response response;
 			const int64_t messageId = 0;
 			response.set_message_id(messageId);
@@ -132,6 +148,7 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 	unitSpawnReady->subscribeRequest([this, session](const auto& request, auto& responser)
 		{
 			auto newUnit = _unitRegistory->createUnit(session->getSessionId());
+			newUnit->setDisplayName(session->getDisplayName());
 
 			const auto areaId = static_cast<AreaId>(request.request().area_id());
 			// response
@@ -162,7 +179,7 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 				response.set_allocated_individuality(individuality);
 				response.set_cause(potato::UNIT_SPAWN_CAUSE_LOGGEDIN);
 				auto avatar = new potato::Avatar();
-				avatar->set_name(std::string("hoge"));
+				avatar->set_name(session->getDisplayName());
 				response.set_allocated_avatar(avatar);
 				responser->send(true, std::move(response));
 			}
@@ -292,11 +309,11 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 								auto range = 1.0f;
 								if ((receiverUnitPositionAtTheTime - casterUnitPositionAtTheTime).squaredNorm() > range * range)
 								{
-									fmt::print("too far {} > {}\n", (receiverUnitPositionAtTheTime - casterUnitPositionAtTheTime).norm(), range);
+									//fmt::print("too far {} > {}\n", (receiverUnitPositionAtTheTime - casterUnitPositionAtTheTime).norm(), range);
 									continue;
 								}
 
-								fmt::print("cast skill hit {} to {}\n", casterUnit->getUnitId(), unit->getUnitId());
+								//fmt::print("cast skill hit {} to {}\n", casterUnit->getUnitId(), unit->getUnitId());
 								auto result = notification.add_results();
 								result->set_receiver_unit_id(unit->getUnitId());
 								result->set_damage(100);
@@ -417,7 +434,7 @@ void GameServiceProvider::sendSpawnUnit(potato::net::SessionId sessionId, std::s
 		notification.set_allocated_individuality(individuality);
 		notification.set_cause(potato::UNIT_SPAWN_CAUSE_LOGGEDIN);
 		auto avatar = new potato::Avatar();
-		avatar->set_name(std::string("hoge"));
+		avatar->set_name(spawnUnit->getDisplayName());
 		notification.set_allocated_avatar(avatar);
 		_nerworkServiceProvider.lock()->sendBroadcast(sessionId, torikime::unit::spawn::Rpc::serializeNotification(notification));
 
@@ -445,7 +462,7 @@ void GameServiceProvider::sendSpawnUnit(potato::net::SessionId sessionId, std::s
 				notification.set_allocated_individuality(individuality);
 				notification.set_cause(potato::UNIT_SPAWN_CAUSE_ASIS);
 				auto avatar = new potato::Avatar();
-				avatar->set_name(std::string("hoge"));
+				avatar->set_name(unit->getDisplayName());
 				notification.set_allocated_avatar(avatar);
 				auto payload = torikime::unit::spawn::Rpc::serializeNotification(notification);
 				_nerworkServiceProvider.lock()->sendTo(sessionId, payload);
@@ -499,7 +516,7 @@ void GameServiceProvider::sendDespawn(potato::net::SessionId sessionId, std::sha
 {
 	if (despawnUnit == nullptr)
 	{
-		fmt::print("session[{}] call sendDespawn but unit is null\n");
+		fmt::print("session[{}] call sendDespawn but unit is null\n", sessionId);
 		return;
 	}
 	auto unitDespawn = std::make_shared<torikime::unit::despawn::Rpc>(std::shared_ptr<potato::net::session>());
@@ -515,6 +532,7 @@ void GameServiceProvider::main()
 	auto nextSecond = std::chrono::high_resolution_clock::now() + std::chrono::seconds(1);
 	queue.appendListener(0, [](std::function<void()> f) { f(); });
 	int32_t fps = 0;
+	std::vector<int32_t> frameProcessingTime;
 	while (_running)
 	{
 		const auto nowUpdate = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
@@ -551,7 +569,8 @@ void GameServiceProvider::main()
 			const auto now = std::chrono::high_resolution_clock::now();
 			if (now >= nextSecond)
 			{
-				fmt::print("fps: {}\n", fps);
+				fmt::print("fps: {}, microsec/frame: [{:5}]\n", fps, fmt::join(frameProcessingTime, ","));
+				frameProcessingTime.clear();
 				fps = 0;
 				nextSecond = std::chrono::high_resolution_clock::now() + std::chrono::seconds(1);
 			}
@@ -559,7 +578,8 @@ void GameServiceProvider::main()
 			std::this_thread::sleep_for(std::max(std::chrono::nanoseconds(0), std::chrono::milliseconds(100) - spareTime));
 			prev = std::chrono::high_resolution_clock::now();
 
-			fmt::print("spareTime: {}microseconds\n", std::chrono::duration_cast<std::chrono::microseconds>(spareTime).count());
+			// fmt::print("spareTime: {}microseconds\n", std::chrono::duration_cast<std::chrono::microseconds>(spareTime).count());
+			frameProcessingTime.emplace_back(std::chrono::duration_cast<std::chrono::microseconds>(spareTime).count());
 		}
 	}
 }

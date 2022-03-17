@@ -166,6 +166,9 @@ public:
 
 	void setPosition(const Eigen::Vector3f& position);
 
+	void setDisplayName(const std::string& displayName) { _displayName = displayName; }
+	const std::string& getDisplayName() const { return _displayName; }
+
 private:
 	const UnitId _unitId = 0;
 	potato::net::SessionId _sessionId = 0;
@@ -178,4 +181,5 @@ private:
 	std::list<std::shared_ptr<ICommand>> history;
 	potato::UnitDirection _direction = potato::UNIT_DIRECTION_DOWN;
 	bool _isMoving = false;
+	std::string _displayName;
 };
