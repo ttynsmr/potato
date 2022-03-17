@@ -20,6 +20,7 @@ namespace Potato
 
         public GameObject panel;
         public InputField hostInputField;
+        public InputField nameInputField;
         public Button connectButton;
 
         public Camera mainCamera;
@@ -43,6 +44,7 @@ namespace Potato
         {
             connectButton.onClick.AddListener(() => {
                 hostInputField.gameObject.SetActive(false);
+                nameInputField.gameObject.SetActive(false);
                 connectButton.gameObject.SetActive(false);
                 serverHost = hostInputField.text;
             });
@@ -61,6 +63,7 @@ namespace Potato
                     unitService.Reset();
 
                     hostInputField?.gameObject.SetActive(true);
+                    nameInputField.gameObject.SetActive(true);
                     connectButton?.gameObject.SetActive(true);
                     panel?.SetActive(true);
 
@@ -123,6 +126,13 @@ namespace Potato
 
             yield return new WaitUntil(() => timeSyncronized);
             panel.SetActive(false);
+
+            yield return networkService.Session.GetRpc<Torikime.Auth.Login.Rpc>().RequestCoroutine(
+                new Torikime.Auth.Login.Request { UserId = nameInputField.text, Password = "" },
+                (response) => {
+                    Debug.Log($"Login response {response.Ok}, {response.Token}");
+                });
+
 
             {
                 var rpc = networkService.Session.GetRpc<Torikime.Unit.SpawnReady.Rpc>();

@@ -14,6 +14,7 @@ public class PlayerUnit : IUnit
     private List<ICommand> history = new List<ICommand>();
     private MoveCommand currentMove;
     private long simulatedNow = 0;
+    private Potato.Avatar avatar;
 
     public Vector3 Position { get; private set; }
 
@@ -27,6 +28,7 @@ public class PlayerUnit : IUnit
         UnitId = unitId;
         Position = position;
         Direction = direction;
+        this.avatar = avatar;
     }
 
     public void Start()
@@ -34,7 +36,8 @@ public class PlayerUnit : IUnit
         simulatedNow = _networkService.Now;
         Appearance = GameObject.Instantiate(UnitService.TestAvatar).GetComponent<UnitView>();
         Appearance.transform.position = Position;
-        Appearance.name = $"PlayerUnit({UnitId})";
+        Appearance.name = $"PlayerUnit({UnitId}) {avatar.Name}";
+        Appearance.displayName.text = avatar.Name;
         history.Add(new StopCommand
         {
             LastMoveCommand = new MoveCommand
