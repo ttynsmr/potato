@@ -4,6 +4,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
+using UnityEngine.Networking;
 using UnityEngine.UI;
 
 namespace Potato
@@ -42,6 +43,15 @@ namespace Potato
 
         private IEnumerator LoginSequence()
         {
+            var web = UnityWebRequest.Get("https://asia-northeast1-potato-343314.cloudfunctions.net/function-1");
+            yield return web.SendWebRequest();
+            Debug.Log(web.result);
+            Debug.Log(web.downloadHandler.text);
+            if (web.downloadHandler.text.Length > 0)
+            {
+                hostInputField.text = web.downloadHandler.text;
+            }
+
             connectButton.onClick.AddListener(() => {
                 hostInputField.gameObject.SetActive(false);
                 nameInputField.gameObject.SetActive(false);
