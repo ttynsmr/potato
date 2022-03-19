@@ -72,14 +72,6 @@ public class ControllablePlayerUnit : IUnit
         }
     }
 
-    Vector3 CalcCurrentPosition(MoveCommand currentMove, long now)
-    {
-        var distance = (currentMove.To - currentMove.From).magnitude;
-        var progress = (now - currentMove.StartTime) / (distance / currentMove.Speed);
-        //Debug.Log($"distance:{distance}, progress:{progress}, estimate time:{(distance / currentMove.Speed)}");
-        return Vector3.Lerp(currentMove.From, currentMove.To, progress);
-    }
-
     private ulong moveId;
     private void ProcessInput(long now)
     {
@@ -155,7 +147,7 @@ public class ControllablePlayerUnit : IUnit
                     Debug.Log($"Request Stop {response.Ok}");
                 });;
                 Debug.Log("Request Stop");
-                var expectedStopPosition = CalcCurrentPosition(stopCommand.LastMoveCommand, stopCommand.StopTime);
+                var expectedStopPosition = stopCommand.LastMoveCommand.CalcCurrentPosition(stopCommand.StopTime);
                 Debug.Log($"expected stop [{moveId}] stop time:{now} position: ({expectedStopPosition.x}, {expectedStopPosition.y}, {expectedStopPosition.z})");
             }
             else
@@ -235,12 +227,12 @@ public class ControllablePlayerUnit : IUnit
             if (lastCommand is StopCommand)
             {
                 var stopCommand = (StopCommand)lastCommand;
-                Position = CalcCurrentPosition(stopCommand.LastMoveCommand, stopCommand.StopTime);
+                Position = stopCommand.LastMoveCommand.CalcCurrentPosition(stopCommand.StopTime);
             }
         }
         else
         {
-            Position = CalcCurrentPosition(currentMove, now);
+            Position = currentMove.CalcCurrentPosition(now);
         }
 
         if (Appearance)

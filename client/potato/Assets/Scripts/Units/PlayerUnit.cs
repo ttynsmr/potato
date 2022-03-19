@@ -99,14 +99,6 @@ public class PlayerUnit : IUnit
     {
     }
 
-    Vector3 CalcCurrentPosition(MoveCommand currentMove, long now)
-    {
-        var distance = (currentMove.To - currentMove.From).magnitude;
-        var progress = currentMove.Speed > 0 ? (now - currentMove.StartTime) / (distance / currentMove.Speed) : 0;
-        //Debug.Log($"distance:{distance}, progress:{progress}, estimate time:{(distance / currentMove.Speed)}");
-        return Vector3.Lerp(currentMove.From, currentMove.To, progress);
-    }
-
     private void ProcessCommand(long now)
     {
         while (simulatedNow < now)
@@ -120,7 +112,7 @@ public class PlayerUnit : IUnit
                     {
                         var last = history.Last();
                         var stopCommand = (StopCommand)last;
-                        Position = CalcCurrentPosition(stopCommand.LastMoveCommand, stopCommand.StopTime);
+                        Position = stopCommand.LastMoveCommand.CalcCurrentPosition(stopCommand.StopTime);
                         if (inputQueue.Count == 0)
                         {
                             break;
@@ -130,7 +122,7 @@ public class PlayerUnit : IUnit
             }
             else
             {
-                Position = CalcCurrentPosition(currentMove, simulatedNow);
+                Position = currentMove.CalcCurrentPosition(simulatedNow);
             }
 
             if (inputQueue.Count > 0)

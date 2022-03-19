@@ -51,6 +51,13 @@ public class MoveCommand : ICommand
         var lastStartTime = LastMoveCommand != null ? LastMoveCommand.StartTime : 0;
         return $"last command: {lastStartTime}, StartTime:{StartTime}, From:{From}, To:{To}, Speed:{Speed}, Direction:{Direction}";
     }
+
+    public Vector3 CalcCurrentPosition(long now)
+    {
+        var distance = (To - From).magnitude;
+        var progress = Speed > 0 ? (now - StartTime) / (distance / Speed) : 0;
+        return Vector3.Lerp(From, To, progress);
+    }
 }
 
 public class KnockbackCommand : MoveCommand
