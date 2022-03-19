@@ -11,7 +11,7 @@ public class ControllablePlayerUnit : IUnit
     private Potato.Network.NetworkService _networkService;
     private int prevInputX;
     private int prevInputY;
-    private float moveSpeed = 0.0025f;
+    private float moveSpeedPerMilliSecond = 0.0025f;
 
     private bool prevAttackButton = false;
 
@@ -177,7 +177,7 @@ public class ControllablePlayerUnit : IUnit
                     From = Position,
                     To = (Position + new Vector3(moveDirection.x, moveDirection.y) * 1000.0f),
                     Direction = Direction,
-                    Speed = moveSpeed
+                    Speed = moveSpeedPerMilliSecond
                 };
                 command = moveCommand;
                 currentMove = moveCommand;
