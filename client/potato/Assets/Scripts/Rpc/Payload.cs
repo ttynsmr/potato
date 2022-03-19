@@ -69,9 +69,6 @@ namespace Potato
 
                 public PayloadHeader Header { get; set; } = new PayloadHeader();
 
-                // std::byte* getPayloadData() { return &buffer[sizeof(PayloadHeader)]; };
-                // const std::byte* getPayloadData() const { return &buffer[sizeof(PayloadHeader)]; };
-
                 public byte[] GetBuffer() { return buffer; }
 
                 private byte[] buffer;

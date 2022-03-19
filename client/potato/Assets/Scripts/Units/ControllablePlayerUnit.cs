@@ -61,15 +61,10 @@ public class ControllablePlayerUnit : IUnit
         GameObject.Destroy(Appearance.gameObject);
     }
 
-    // Update is called once per frame
     public void Update(long now)
     {
         ProcessInput(now);
         ProcessCommand(now);
-        if (currentMove != null)
-        {
-            //Debug.Log(currentMove);
-        }
     }
 
     private ulong moveId;
@@ -207,10 +202,7 @@ public class ControllablePlayerUnit : IUnit
                 TriggerTime = now,
             }, (response) =>
             {
-                //context.Post((_) =>
-                //{
-                    Debug.Log($"Request SkillCast {response.Ok} {response.AttackId}");
-                //}, null);
+                Debug.Log($"Request SkillCast {response.Ok} {response.AttackId}");
             });
         }
         else if(prevAttackButton && !Input.GetKey(KeyCode.P))

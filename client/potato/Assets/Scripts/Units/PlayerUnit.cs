@@ -190,45 +190,6 @@ public class PlayerUnit : IUnit
             }
         }
 
-        //while (simulatedNow < now)
-        //{
-        //    var lastCommand = history.Count > 0 ? history.Last() : null;
-        //    if (currentMove == null)
-        //    {
-        //        if (lastCommand is StopCommand)
-        //        {
-        //            return;
-        //        }
-
-        //        currentMove = (MoveCommand)history.Last();
-        //    }
-
-        //    Positoin = CalcCurrentPosition(currentMove, simulatedNow);
-
-        //    if (inputQueue.Count > 0)
-        //    {
-        //        var command = inputQueue.Dequeue();
-        //        switch (command)
-        //        {
-        //            case MoveCommand moveCommand:
-        //                simulatedNow = moveCommand.StartTime;
-        //                moveCommand.LastMoveCommand = currentMove;
-        //                history.Add(moveCommand);
-        //                currentMove = moveCommand;
-        //                break;
-        //            case StopCommand stopCommand:
-        //                stopCommand.LastMoveCommand = currentMove;
-        //                history.Add(stopCommand);
-        //                currentMove = null;
-        //                break;
-        //        }
-        //    }
-        //    else
-        //    {
-        //        simulatedNow = now;
-        //    }
-        //}
-
         if (Appearance)
         {
             Appearance.transform.position = Position;
