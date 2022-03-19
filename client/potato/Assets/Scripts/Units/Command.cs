@@ -55,7 +55,7 @@ public class MoveCommand : ICommand
     public Vector3 CalcCurrentPosition(long now)
     {
         var distance = (To - From).magnitude;
-        var progress = Speed > 0 ? (now - StartTime) / (distance / Speed) : 0;
+        var progress = Speed > 0 && distance > 0 ? (now - StartTime) / (distance / Speed) : 0;
         return Vector3.Lerp(From, To, progress);
     }
 }
