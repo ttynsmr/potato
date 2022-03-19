@@ -125,7 +125,7 @@ public class PlayerUnit : IUnit
                 Position = currentMove.CalcCurrentPosition(simulatedNow);
             }
 
-            if (inputQueue.Count > 0)
+            if (inputQueue.Count > 0 && inputQueue.Peek().GetActionTime() <= now)
             {
                 var command = inputQueue.Peek();
                 if (command.GetActionTime() > simulatedNow)

@@ -107,6 +107,7 @@ public:
 };
 	
 class Unit
+	: public std::enable_shared_from_this<Unit>
 {
 public:
 	Unit(UnitId unitId, potato::net::SessionId sessionId);
@@ -169,6 +170,9 @@ public:
 	void setDisplayName(const std::string& displayName) { _displayName = displayName; }
 	const std::string& getDisplayName() const { return _displayName; }
 
+	using UnitAction = std::function<void(std::shared_ptr<Unit> unit, int64_t now)>;
+	void setUnitAction(UnitAction unitAction) { _action = unitAction; }
+
 private:
 	const UnitId _unitId = 0;
 	potato::net::SessionId _sessionId = 0;
@@ -182,4 +186,5 @@ private:
 	potato::UnitDirection _direction = potato::UNIT_DIRECTION_DOWN;
 	bool _isMoving = false;
 	std::string _displayName;
+	UnitAction _action;
 };

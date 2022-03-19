@@ -73,12 +73,46 @@ void GameServiceProvider::initialize()
 			area->enter(newUnit);
 		};
 
-		//for (float p = -20; p < 20; p += 1.5f)
+		//for (float p = -20; p < 20; p += 0.005f)
 		for (float p = -20; p < 20; p += 3.0f)
 		{
 			auto newUnit = _unitRegistory->createUnit(potato::net::session::getSystemSessionId());
 			newUnit->setPosition({ p, 0, 0 });
 			newUnit->setDisplayName(fmt::format("NONAME{}", newUnit->getUnitId()));
+			newUnit->setUnitAction([this](auto unit, auto now) {
+				auto getMoveDirection = [](const Eigen::Vector3f& direction) {
+					if (direction.y() == 0)
+					{
+						return direction.x() > 0 ? potato::UnitDirection::UNIT_DIRECTION_RIGHT : potato::UnitDirection::UNIT_DIRECTION_LEFT;
+					}
+					else
+					{
+						return direction.y() < 0 ? potato::UnitDirection::UNIT_DIRECTION_DOWN : potato::UnitDirection::UNIT_DIRECTION_UP;
+					}
+				};
+
+				if (!unit->isMoving() && ((now / 10 * 1000) & 1) == 0)
+				{
+					auto moveCommand = std::make_shared<MoveCommand>();
+					moveCommand->startTime = now;
+					const auto& from = unit->getTrackbackPosition(now);
+					const auto& to = from + (Eigen::Vector3f::Random() - Eigen::Vector3f::Random()).normalized() * 500;
+					moveCommand->from = from;
+					moveCommand->to = to;
+					moveCommand->speed = 0.0025f;
+					moveCommand->direction = getMoveDirection((moveCommand->to - moveCommand->from).normalized());
+					moveCommand->moveId = 0;
+					unit->inputCommand(moveCommand);
+					sendMove(0, unit, moveCommand);
+
+					auto stopCommand = std::make_shared<StopCommand>();
+					stopCommand->stopTime = now + 2000;
+					stopCommand->direction = moveCommand->direction;
+					stopCommand->moveId = 0;
+					unit->inputCommand(stopCommand);
+					sendStop(0, unit, stopCommand);
+				}
+				});
 			addToArea(0, newUnit);
 		}
 	}
@@ -524,6 +558,48 @@ void GameServiceProvider::sendDespawn(potato::net::SessionId sessionId, std::sha
 	notification.set_session_id(sessionId);
 	notification.set_unit_id(despawnUnit->getUnitId());
 	_nerworkServiceProvider.lock()->sendBroadcast(sessionId, torikime::unit::despawn::Rpc::serializeNotification(notification));
+}
+
+void GameServiceProvider::sendMove(potato::net::SessionId sessionId, std::shared_ptr<Unit> unit, std::shared_ptr<MoveCommand> moveCommand)
+{
+	if (moveCommand != nullptr)
+	{
+		torikime::unit::move::Notification notification;
+		notification.set_unit_id(unit->getUnitId());
+		notification.set_time(moveCommand->startTime);
+		auto from = new potato::Vector3();
+		from->set_x(moveCommand->from[0]);
+		from->set_y(moveCommand->from[1]);
+		from->set_z(moveCommand->from[2]);
+		auto to = new potato::Vector3();
+		to->set_x(moveCommand->to[0]);
+		to->set_y(moveCommand->to[1]);
+		to->set_z(moveCommand->to[2]);
+		notification.set_allocated_from(from);
+		notification.set_allocated_to(to);
+		notification.set_speed(moveCommand->speed);
+		notification.set_direction(moveCommand->direction);
+		notification.set_move_id(moveCommand->moveId);
+		_nerworkServiceProvider.lock()->sendTo(sessionId, torikime::unit::move::Rpc::serializeNotification(notification));
+	}
+}
+
+void GameServiceProvider::sendStop(potato::net::SessionId sessionId, std::shared_ptr<Unit> unit, std::shared_ptr<StopCommand> stopCommand)
+{
+	if (stopCommand != nullptr)
+	{
+		torikime::unit::stop::Notification notification;
+		notification.set_unit_id(unit->getUnitId());
+		auto lastMoveCommand = stopCommand->lastMoveCommand.lock();
+		auto lastMoveTime = lastMoveCommand != nullptr ? lastMoveCommand->startTime : 0;
+		notification.set_time(lastMoveTime);
+		notification.set_stop_time(stopCommand->stopTime);
+		notification.set_direction(stopCommand->direction);
+		notification.set_move_id(stopCommand->moveId);
+
+		auto payload = torikime::unit::stop::Rpc::serializeNotification(notification);
+		_nerworkServiceProvider.lock()->sendTo(sessionId, payload);
+	}
 }
 
 void GameServiceProvider::main()
