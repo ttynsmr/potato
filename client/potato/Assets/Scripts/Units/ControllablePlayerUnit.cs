@@ -11,7 +11,7 @@ public class ControllablePlayerUnit : IUnit
     private Potato.Network.NetworkService _networkService;
     private int prevInputX;
     private int prevInputY;
-    private float moveSpeed = 0.0025f;
+    private float moveSpeedPerMilliSecond = 0.0025f;
 
     private bool prevAttackButton = false;
 
@@ -61,23 +61,10 @@ public class ControllablePlayerUnit : IUnit
         GameObject.Destroy(Appearance.gameObject);
     }
 
-    // Update is called once per frame
     public void Update(long now)
     {
         ProcessInput(now);
         ProcessCommand(now);
-        if (currentMove != null)
-        {
-            //Debug.Log(currentMove);
-        }
-    }
-
-    Vector3 CalcCurrentPosition(MoveCommand currentMove, long now)
-    {
-        var distance = (currentMove.To - currentMove.From).magnitude;
-        var progress = (now - currentMove.StartTime) / (distance / currentMove.Speed);
-        //Debug.Log($"distance:{distance}, progress:{progress}, estimate time:{(distance / currentMove.Speed)}");
-        return Vector3.Lerp(currentMove.From, currentMove.To, progress);
     }
 
     private ulong moveId;
@@ -155,7 +142,7 @@ public class ControllablePlayerUnit : IUnit
                     Debug.Log($"Request Stop {response.Ok}");
                 });;
                 Debug.Log("Request Stop");
-                var expectedStopPosition = CalcCurrentPosition(stopCommand.LastMoveCommand, stopCommand.StopTime);
+                var expectedStopPosition = stopCommand.LastMoveCommand.CalcCurrentPosition(stopCommand.StopTime);
                 Debug.Log($"expected stop [{moveId}] stop time:{now} position: ({expectedStopPosition.x}, {expectedStopPosition.y}, {expectedStopPosition.z})");
             }
             else
@@ -177,7 +164,7 @@ public class ControllablePlayerUnit : IUnit
                     From = Position,
                     To = (Position + new Vector3(moveDirection.x, moveDirection.y) * 1000.0f),
                     Direction = Direction,
-                    Speed = moveSpeed
+                    Speed = moveSpeedPerMilliSecond
                 };
                 command = moveCommand;
                 currentMove = moveCommand;
@@ -215,10 +202,7 @@ public class ControllablePlayerUnit : IUnit
                 TriggerTime = now,
             }, (response) =>
             {
-                //context.Post((_) =>
-                //{
-                    Debug.Log($"Request SkillCast {response.Ok} {response.AttackId}");
-                //}, null);
+                Debug.Log($"Request SkillCast {response.Ok} {response.AttackId}");
             });
         }
         else if(prevAttackButton && !Input.GetKey(KeyCode.P))
@@ -235,12 +219,12 @@ public class ControllablePlayerUnit : IUnit
             if (lastCommand is StopCommand)
             {
                 var stopCommand = (StopCommand)lastCommand;
-                Position = CalcCurrentPosition(stopCommand.LastMoveCommand, stopCommand.StopTime);
+                Position = stopCommand.LastMoveCommand.CalcCurrentPosition(stopCommand.StopTime);
             }
         }
         else
         {
-            Position = CalcCurrentPosition(currentMove, now);
+            Position = currentMove.CalcCurrentPosition(now);
         }
 
         if (Appearance)

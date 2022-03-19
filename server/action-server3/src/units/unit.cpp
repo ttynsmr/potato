@@ -211,4 +211,6 @@ void Unit::setPosition(const Eigen::Vector3f& position)
 
 	history.emplace_back(moveCommand);
 	history.emplace_back(stopCommand);
+
+	currentMove.reset();
 }
