@@ -115,7 +115,7 @@ void GameServiceProvider::initialize()
 					}
 
 					const auto to = from + randomDirection * 500;
-					fmt::print("from: {}, {}, {}  to:{}, {}, {}\n", from.x(), from.y(), from.z(), to.x(), to.y(), to.z());
+					//fmt::print("from: {}, {}, {}  to:{}, {}, {}\n", from.x(), from.y(), from.z(), to.x(), to.y(), to.z());
 					moveCommand->from = from;
 					moveCommand->to = to;
 					moveCommand->speed = 0.0025f;
