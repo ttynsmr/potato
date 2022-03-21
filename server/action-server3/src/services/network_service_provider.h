@@ -63,7 +63,7 @@ private:
 	boost::asio::io_context _io_context;
 	boost::asio::ip::tcp::acceptor _acceptor;
 	eventpp::EventQueue<Send, void(std::vector<potato::net::SessionId>, std::shared_ptr<potato::net::protocol::Payload> payload)> _sendPayloadQueue;
-	std::atomic_int _sessionId = 0;
+	std::atomic_int _sessionIdGenerateCounter = 0;
 	std::unordered_map<potato::net::SessionId, std::shared_ptr<potato::net::session>> _sessions;
 	std::vector<std::shared_ptr<torikime::RpcInterface>> _rpcs;
 	std::shared_ptr<Service> _service;

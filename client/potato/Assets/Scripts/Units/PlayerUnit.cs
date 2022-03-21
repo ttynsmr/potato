@@ -63,6 +63,7 @@ public class PlayerUnit : IUnit
     {
         moveCommand.LastMoveCommand = currentMove;
         inputQueue.Enqueue(moveCommand);
+        Debug.Log($"InputMove {moveCommand.From} {moveCommand.To}.\n");
     }
 
     public void InputStop(StopCommand stopCommand)
@@ -125,7 +126,7 @@ public class PlayerUnit : IUnit
                 Position = currentMove.CalcCurrentPosition(simulatedNow);
             }
 
-            if (inputQueue.Count > 0)
+            if (inputQueue.Count > 0 && inputQueue.Peek().GetActionTime() <= now)
             {
                 var command = inputQueue.Peek();
                 if (command.GetActionTime() > simulatedNow)

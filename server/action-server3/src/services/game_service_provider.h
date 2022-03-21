@@ -20,6 +20,8 @@ namespace potato
 
 class NetworkServiceProvider;
 class Unit;
+class MoveCommand;
+class StopCommand;
 
 class GameServiceProvider : public IServiceProvider, public std::enable_shared_from_this<GameServiceProvider>
 {
@@ -40,6 +42,9 @@ public:
 
 	void sendSpawnUnit(potato::net::SessionId sessionId, std::shared_ptr<Unit> spawnUnit);
 	void sendDespawn(potato::net::SessionId sessionId, std::shared_ptr<Unit> despaenUnit);
+
+	void sendMove(potato::net::SessionId sessionId, std::shared_ptr<Unit> unit, std::shared_ptr<MoveCommand> moveCommand);
+	void sendStop(potato::net::SessionId sessionId, std::shared_ptr<Unit> unit, std::shared_ptr<StopCommand> stopCommand);
 
 	void main();
 

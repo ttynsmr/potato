@@ -8,6 +8,7 @@ Unit::Unit(UnitId unitId, potato::net::SessionId sessionId)
 	: _unitId(unitId), _sessionId(sessionId)
 {
 	setPosition({ 0, 0, 0 });
+	simulatedNow = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 }
 
 std::shared_ptr<ICommand> Unit::getLastCommand()
@@ -79,6 +80,7 @@ void Unit::update(int64_t now)
 					updatePosition(stopCommand->lastMoveCommand.lock(), stopCommand->stopTime);
 					if (inputQueue.size() == 0)
 					{
+						simulatedNow = now;
 						break;
 					}
 				}
@@ -123,6 +125,7 @@ void Unit::update(int64_t now)
 					moveCommand->lastMoveCommand = currentMove;
 					history.emplace_back(moveCommand);
 					currentMove = moveCommand;
+					_isMoving = true;
 				}
 				break;
 			case CommandType::Stop:
@@ -132,6 +135,7 @@ void Unit::update(int64_t now)
 					stopCommand->lastMoveCommand = currentMove;
 					history.emplace_back(stopCommand);
 					currentMove = nullptr;
+					_isMoving = false;
 				}
 				break;
 			}
@@ -140,6 +144,11 @@ void Unit::update(int64_t now)
 		{
 			simulatedNow = now;
 		}
+	}
+
+	if (_action)
+	{
+		_action(shared_from_this(), simulatedNow);
 	}
 
 	while (history.size() > 2)
