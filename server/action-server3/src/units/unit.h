@@ -3,7 +3,8 @@
 #include <list>
 #include <queue>
 #include <memory>
-#include <Eigen/Core>
+
+#include "core/configured_eigen.h"
 
 #include "proto/message.pb.h"
 

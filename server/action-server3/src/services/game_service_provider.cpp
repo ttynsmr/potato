@@ -3,6 +3,7 @@
 #include <memory>
 #include <fmt/core.h>
 #include <fmt/ranges.h>
+#include <random>
 
 #include "session/session.h"
 #include "services/network_service_provider.h"
@@ -74,7 +75,9 @@ void GameServiceProvider::initialize()
 		};
 
 		//for (float p = -20; p < 20; p += 0.005f)
-		for (float p = -20; p < 20; p += 3.0f)
+		for (float p = -20; p < 20; p += 0.05f)
+		//for (float p = -20; p < 20; p += 3.0f)
+		//float p = 0;
 		{
 			auto newUnit = _unitRegistory->createUnit(potato::net::session::getSystemSessionId());
 			newUnit->setPosition({ p, 0, 0 });
@@ -91,16 +94,32 @@ void GameServiceProvider::initialize()
 					}
 				};
 
-				if (!unit->isMoving() && ((now / 10 * 1000) & 1) == 0)
+				if (!unit->isMoving() && ((now / 1000) % 5) == 0)
 				{
 					auto moveCommand = std::make_shared<MoveCommand>();
 					moveCommand->startTime = now;
-					const auto& from = unit->getTrackbackPosition(now);
-					const auto& to = from + (Eigen::Vector3f::Random() - Eigen::Vector3f::Random()).normalized() * 500;
+					const auto from = unit->getTrackbackPosition(now);
+					Eigen::Vector3f randomDirection;
+
+					if (((now / 1000) % 15) != 0)
+					{
+						std::random_device rd;
+						std::default_random_engine eng(rd());
+						std::uniform_real_distribution<float> distr(-1, 1);
+						randomDirection << distr(eng), distr(eng), distr(eng);
+						randomDirection.normalize();
+					}
+					else
+					{
+						randomDirection = -from.normalized();
+					}
+
+					const auto to = from + randomDirection * 500;
+					fmt::print("from: {}, {}, {}  to:{}, {}, {}\n", from.x(), from.y(), from.z(), to.x(), to.y(), to.z());
 					moveCommand->from = from;
 					moveCommand->to = to;
 					moveCommand->speed = 0.0025f;
-					moveCommand->direction = getMoveDirection((moveCommand->to - moveCommand->from).normalized());
+					moveCommand->direction = getMoveDirection(randomDirection);
 					moveCommand->moveId = 0;
 					unit->inputCommand(moveCommand);
 					sendMove(0, unit, moveCommand);
@@ -343,11 +362,11 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 								auto range = 1.0f;
 								if ((receiverUnitPositionAtTheTime - casterUnitPositionAtTheTime).squaredNorm() > range * range)
 								{
-									//fmt::print("too far {} > {}\n", (receiverUnitPositionAtTheTime - casterUnitPositionAtTheTime).norm(), range);
+									fmt::print("too far {} > {}\n", (receiverUnitPositionAtTheTime - casterUnitPositionAtTheTime).norm(), range);
 									continue;
 								}
 
-								//fmt::print("cast skill hit {} to {}\n", casterUnit->getUnitId(), unit->getUnitId());
+								fmt::print("cast skill hit {} to {}\n", casterUnit->getUnitId(), unit->getUnitId());
 								auto result = notification.add_results();
 								result->set_receiver_unit_id(unit->getUnitId());
 								result->set_damage(100);
