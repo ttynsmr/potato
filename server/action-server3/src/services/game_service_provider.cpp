@@ -599,7 +599,7 @@ void GameServiceProvider::sendMove(potato::net::SessionId sessionId, std::shared
 		notification.set_speed(moveCommand->speed);
 		notification.set_direction(moveCommand->direction);
 		notification.set_move_id(moveCommand->moveId);
-		_nerworkServiceProvider.lock()->sendTo(sessionId, torikime::unit::move::Rpc::serializeNotification(notification));
+		_nerworkServiceProvider.lock()->sendBroadcast(sessionId, torikime::unit::move::Rpc::serializeNotification(notification));
 	}
 }
 
@@ -617,7 +617,7 @@ void GameServiceProvider::sendStop(potato::net::SessionId sessionId, std::shared
 		notification.set_move_id(stopCommand->moveId);
 
 		auto payload = torikime::unit::stop::Rpc::serializeNotification(notification);
-		_nerworkServiceProvider.lock()->sendTo(sessionId, payload);
+		_nerworkServiceProvider.lock()->sendBroadcast(sessionId, payload);
 	}
 }
 

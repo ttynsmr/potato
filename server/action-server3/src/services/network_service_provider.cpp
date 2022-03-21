@@ -44,13 +44,13 @@ enum class Send
 
 void NetworkServiceProvider::sendTo(potato::net::SessionId sessionId, std::shared_ptr<potato::net::protocol::Payload> payload)
 {
-	if (potato::net::session::getSystemSessionId())
+	if (potato::net::session::getSystemSessionId() == sessionId)
 	{
 		return;
 	}
 
 	boost::asio::post(_io_context.get_executor(), [this, sessionId, payload]() {
-		auto session = _sessions.find(_sessionId);
+		auto session = _sessions.find(sessionId);
 		if (session == _sessions.end())
 		{
 			return;
@@ -125,15 +125,15 @@ void NetworkServiceProvider::do_accept()
 		socket.set_option(option);
 		if (!ec)
 		{
-			auto session = std::make_shared<potato::net::session>(std::move(socket), ++_sessionId);
-			session->subscribeDisconnect([this, session](potato::net::SessionId _sessionId)
+			auto session = std::make_shared<potato::net::session>(std::move(socket), ++_sessionIdGenerateCounter);
+			session->subscribeDisconnect([this, session](potato::net::SessionId sessionId)
 				{
-					auto r = std::remove_if(_rpcs.begin(), _rpcs.end(), [_sessionId](auto& rpc) { return rpc->getSession()->getSessionId() == _sessionId; });
-					_rpcs.erase(r, _rpcs.end());
-					_sessions.erase(_sessionId);
-					fmt::print("session: {} disconnected. current session count is {}\n", _sessionId, _sessions.size());
-
 					_disconnectedDelegate(session);
+
+					auto r = std::remove_if(_rpcs.begin(), _rpcs.end(), [sessionId](auto& rpc) { return rpc->getSession()->getSessionId() == sessionId; });
+					_rpcs.erase(r, _rpcs.end());
+					_sessions.erase(sessionId);
+					fmt::print("session: {} disconnected. current session count is {}\n", sessionId, _sessions.size());
 				});
 
 			_acceptedDelegate(session);
@@ -153,7 +153,7 @@ void NetworkServiceProvider::do_accept()
 
 			_sessions.emplace(session->getSessionId(), session);
 			session->start();
-			fmt::print("session: {} accepted. current session count is {}\n", _sessionId, _sessions.size());
+			fmt::print("session: {} accepted. current session count is {}\n", session->getSessionId(), _sessions.size());
 
 			_sessionStartedDelegate(session);
 		}
