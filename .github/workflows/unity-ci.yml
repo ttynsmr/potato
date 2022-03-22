@@ -34,7 +34,7 @@ jobs:
           architecture: "x64"
 
       # Cache
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         with:
           path: client/potato/Library
           key: Library-${{ hashFiles('client/potato/Assets/**', 'client/potato/Packages/**', 'client/potato/ProjectSettings/**') }}
