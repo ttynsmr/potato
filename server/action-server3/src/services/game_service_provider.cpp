@@ -75,8 +75,8 @@ void GameServiceProvider::initialize()
 		};
 
 		//for (float p = -20; p < 20; p += 0.005f)
-		for (float p = -20; p < 20; p += 0.05f)
-		//for (float p = -20; p < 20; p += 3.0f)
+		//for (float p = -20; p < 20; p += 0.05f)
+		for (float p = -20; p < 20; p += 3.0f)
 		//float p = 0;
 		{
 			auto newUnit = _unitRegistory->createUnit(potato::net::session::getSystemSessionId());
@@ -106,7 +106,7 @@ void GameServiceProvider::initialize()
 						std::random_device rd;
 						std::default_random_engine eng(rd());
 						std::uniform_real_distribution<float> distr(-1, 1);
-						randomDirection << distr(eng), distr(eng), distr(eng);
+						randomDirection << distr(eng), distr(eng), 0;
 						randomDirection.normalize();
 					}
 					else
@@ -115,7 +115,6 @@ void GameServiceProvider::initialize()
 					}
 
 					const auto to = from + randomDirection * 500;
-					//fmt::print("from: {}, {}, {}  to:{}, {}, {}\n", from.x(), from.y(), from.z(), to.x(), to.y(), to.z());
 					moveCommand->from = from;
 					moveCommand->to = to;
 					moveCommand->speed = 0.0025f;
@@ -130,6 +129,13 @@ void GameServiceProvider::initialize()
 					stopCommand->moveId = 0;
 					unit->inputCommand(stopCommand);
 					sendStop(0, unit, stopCommand);
+
+					const auto expectStop = moveCommand->getPosition(stopCommand->stopTime);
+					fmt::print("from: {}, {}, {}  to:{}, {}, {}  expectStop:{}, {}, {}\n",
+						from.x(), from.y(), from.z(),
+						to.x(), to.y(), to.z(),
+						expectStop.x(), expectStop.y(), expectStop.z()
+					);
 				}
 				});
 			addToArea(0, newUnit);
