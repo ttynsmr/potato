@@ -62,11 +62,10 @@ void NetworkServiceProvider::sendTo(potato::net::SessionId sessionId, std::share
 
 void NetworkServiceProvider::sendMulticast(const std::vector<potato::net::SessionId>& sessionIds, std::shared_ptr<potato::net::protocol::Payload> payload)
 {
-	boost::asio::post(_io_context.get_executor(), [this, sessionIds, payload]() {
-		for (auto sessionId : sessionIds)
-		{
-			sendTo(sessionId, payload);
-		}});
+	for (auto sessionId : sessionIds)
+	{
+		sendTo(sessionId, payload);
+	}
 }
 
 void NetworkServiceProvider::sendBroadcast(potato::net::SessionId fromSessionId, std::shared_ptr<potato::net::protocol::Payload> payload)
