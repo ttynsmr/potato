@@ -63,7 +63,7 @@ public class PlayerUnit : IUnit
     {
         moveCommand.LastMoveCommand = currentMove;
         inputQueue.Enqueue(moveCommand);
-        Debug.Log($"InputMove {moveCommand.From} {moveCommand.To}.\n");
+        //Debug.Log($"InputMove {moveCommand.From} {moveCommand.To}.\n");
     }
 
     public void InputStop(StopCommand stopCommand)

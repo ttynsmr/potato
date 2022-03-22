@@ -62,11 +62,10 @@ void NetworkServiceProvider::sendTo(potato::net::SessionId sessionId, std::share
 
 void NetworkServiceProvider::sendMulticast(const std::vector<potato::net::SessionId>& sessionIds, std::shared_ptr<potato::net::protocol::Payload> payload)
 {
-	boost::asio::post(_io_context.get_executor(), [this, sessionIds, payload]() {
-		for (auto sessionId : sessionIds)
-		{
-			sendTo(sessionId, payload);
-		}});
+	for (auto sessionId : sessionIds)
+	{
+		sendTo(sessionId, payload);
+	}
 }
 
 void NetworkServiceProvider::sendBroadcast(potato::net::SessionId fromSessionId, std::shared_ptr<potato::net::protocol::Payload> payload)
@@ -121,8 +120,8 @@ void NetworkServiceProvider::do_accept()
 {
 	_acceptor.async_accept([this](boost::system::error_code ec, boost::asio::ip::tcp::socket socket) {
 		fmt::print("async_accept\n");
-		boost::asio::ip::tcp::no_delay option(true);
-		socket.set_option(option);
+		socket.set_option(boost::asio::ip::tcp::no_delay(true));
+		socket.set_option(boost::asio::socket_base::send_buffer_size(128 * 1024));
 		if (!ec)
 		{
 			auto session = std::make_shared<potato::net::session>(std::move(socket), ++_sessionIdGenerateCounter);
