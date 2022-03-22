@@ -106,7 +106,7 @@ void GameServiceProvider::initialize()
 						std::random_device rd;
 						std::default_random_engine eng(rd());
 						std::uniform_real_distribution<float> distr(-1, 1);
-						randomDirection << distr(eng), distr(eng), distr(eng);
+						randomDirection << distr(eng), distr(eng), 0;
 						randomDirection.normalize();
 					}
 					else
