@@ -115,7 +115,6 @@ void GameServiceProvider::initialize()
 					}
 
 					const auto to = from + randomDirection * 500;
-					//fmt::print("from: {}, {}, {}  to:{}, {}, {}\n", from.x(), from.y(), from.z(), to.x(), to.y(), to.z());
 					moveCommand->from = from;
 					moveCommand->to = to;
 					moveCommand->speed = 0.0025f;
@@ -130,6 +129,13 @@ void GameServiceProvider::initialize()
 					stopCommand->moveId = 0;
 					unit->inputCommand(stopCommand);
 					sendStop(0, unit, stopCommand);
+
+					const auto expectStop = moveCommand->getPosition(stopCommand->stopTime);
+					fmt::print("from: {}, {}, {}  to:{}, {}, {}  expectStop:{}, {}, {}\n",
+						from.x(), from.y(), from.z(),
+						to.x(), to.y(), to.z(),
+						expectStop.x(), expectStop.y(), expectStop.z()
+					);
 				}
 				});
 			addToArea(0, newUnit);
