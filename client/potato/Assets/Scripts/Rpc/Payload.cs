@@ -52,6 +52,11 @@ namespace Potato
                     buffer[6] = rpcIdBuffer[0];
                     buffer[7] = rpcIdBuffer[1];
                 }
+
+                public override string ToString()
+                {
+                    return $"payloadSize:{payloadSize} version:{version} meta:{meta} contract_id:{contract_id} rpc_id:{rpc_id}";
+                }
             };
 
             public class Payload

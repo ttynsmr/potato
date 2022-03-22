@@ -17,6 +17,7 @@ namespace Potato
             public Session(TcpClient client)
             {
                 client.NoDelay = true;
+                client.ReceiveBufferSize = 256 * 1024;
                 this.client = client;
                 rpcs = Torikime.RpcBuilder.Build(this);
             }
@@ -52,6 +53,7 @@ namespace Potato
                         try
                         {
                             byte[] headerBuffer = new byte[PayloadHeader.Size];
+                            //Debug.Log($"waiting read header {PayloadHeader.Size}bytes");
                             var readHeaderSize = client.GetStream().ReadAsync(headerBuffer, 0, PayloadHeader.Size, tokenSource.Token);
                             readHeaderSize.Wait(tokenSource.Token);
                             if (!client.Connected || readHeaderSize.Result == 0)
@@ -66,6 +68,7 @@ namespace Potato
                                 Header = PayloadHeader.Deserialize(headerBuffer)
                             };
                             payload.SetBufferSize(payload.Header.payloadSize);
+                            //Debug.Log($"waiting rayload header {payload.Header.payloadSize}bytes");
                             var readSize = client.GetStream().ReadAsync(payload.GetBuffer(), PayloadHeader.Size, payload.Header.payloadSize, tokenSource.Token);
                             readSize.Wait(tokenSource.Token);
                             if (!client.Connected || readSize.Result == 0)
@@ -78,7 +81,12 @@ namespace Potato
                             var rpc = rpcs.Find(x => x.ContractId == payload.Header.contract_id
                              && x.RpcId == payload.Header.rpc_id);
 
-                            if (rpc.ContractId == Torikime.Diagnosis.PingPong.Rpc.StaticContractId
+                            if (rpc == null)
+                            {
+                                Debug.LogError($"payload.Header.contract_id: {payload.Header.contract_id} not found {payload.Header}");
+                            }
+
+                            if (rpc != null && rpc.ContractId == Torikime.Diagnosis.PingPong.Rpc.StaticContractId
                             && rpc.RpcId == Torikime.Diagnosis.PingPong.Rpc.StaticRpcId)
                             {
                                 try
