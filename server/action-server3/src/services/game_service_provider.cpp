@@ -75,8 +75,8 @@ void GameServiceProvider::initialize()
 		};
 
 		//for (float p = -20; p < 20; p += 0.005f)
-		for (float p = -20; p < 20; p += 0.05f)
-		//for (float p = -20; p < 20; p += 3.0f)
+		//for (float p = -20; p < 20; p += 0.05f)
+		for (float p = -20; p < 20; p += 3.0f)
 		//float p = 0;
 		{
 			auto newUnit = _unitRegistory->createUnit(potato::net::session::getSystemSessionId());
