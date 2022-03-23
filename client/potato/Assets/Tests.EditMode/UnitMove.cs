@@ -170,13 +170,21 @@ public class UnitMove
             Direction = Potato.UnitDirection.Down,
         };
 
-        Assert.IsTrue(move.IsGoaled(move.GetGoalTime()));
+        Assert.IsFalse(move.IsGoaled(long.MinValue));
+        Assert.IsFalse(move.IsGoaled(-1));
+        Assert.IsFalse(move.IsGoaled(0));
         Assert.IsFalse(move.IsGoaled(100));
         Assert.IsFalse(move.IsGoaled(1000));
         Assert.IsFalse(move.IsGoaled(2000));
+        Assert.IsFalse(move.IsGoaled(2098));
         Assert.IsFalse(move.IsGoaled(2099));
         Assert.IsTrue(move.IsGoaled(2100));
         Assert.IsTrue(move.IsGoaled(2101));
+        Assert.IsTrue(move.IsGoaled(2102));
+        Assert.IsTrue(move.IsGoaled(int.MaxValue));
+        Assert.IsTrue(move.IsGoaled(long.MaxValue));
+
+        Assert.IsTrue(move.IsGoaled(move.GetGoalTime()));
     }
 
     [Test]
@@ -191,6 +199,12 @@ public class UnitMove
             Direction = Potato.UnitDirection.Down,
         };
 
-        Assert.AreEqual(2100, move.GetGoalTime());
+        Assert.That(move.GetGoalTime(), Is.GreaterThanOrEqualTo(2099).And.LessThanOrEqualTo(2100));
+        move.Speed = 1 / 10000.0f;
+        Assert.That(move.GetGoalTime(), Is.GreaterThanOrEqualTo(20099).And.LessThanOrEqualTo(20100));
+        move.Speed = 1 / 100000.0f;
+        Assert.That(move.GetGoalTime(), Is.GreaterThanOrEqualTo(200099).And.LessThanOrEqualTo(200100));
+        move.Speed = 1 / 1000000.0f;
+        Assert.That(move.GetGoalTime(), Is.GreaterThanOrEqualTo(2000099).And.LessThanOrEqualTo(2000100));
     }
 }
