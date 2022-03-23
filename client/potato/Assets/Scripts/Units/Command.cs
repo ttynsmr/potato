@@ -38,7 +38,7 @@ public class MoveCommand : ICommand
 
     public bool IsGoaled(long now)
 	{
-		return GetGoalTime() <= now;
+        return GetGoalTime() <= now + 1;
 	}
 
     virtual public long GetGoalTime()
