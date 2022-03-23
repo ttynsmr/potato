@@ -1,9 +1,11 @@
 {
-    "name": "Rpc",
+    "name": "Units",
     "rootNamespace": "",
     "references": [
+        "GUID:fd7079b1d6388cb4195321dc9ce5b144",
+        "GUID:d2a1c14f29b1faf49a57beab4007c7f1",
         "GUID:78cd2e4cce174be4e9dd89c6dc4e2e11",
-        "GUID:fd7079b1d6388cb4195321dc9ce5b144"
+        "GUID:37ea47c61175e6e4881de5d3eec22056"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

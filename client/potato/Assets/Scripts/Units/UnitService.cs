@@ -106,7 +106,7 @@ public class UnitService : MonoBehaviour
         }
     }
 
-    internal void Reset()
+    public void Reset()
     {
         foreach (var unit in units)
         {
@@ -115,7 +115,7 @@ public class UnitService : MonoBehaviour
         units.Clear();
     }
 
-    internal void OnReceiveSkillCast(Notification notification)
+    public void OnReceiveSkillCast(Notification notification)
     {
         foreach(var result in notification.Results)
         {

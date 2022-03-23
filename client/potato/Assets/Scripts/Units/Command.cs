@@ -43,7 +43,8 @@ public class MoveCommand : ICommand
 
     virtual public long GetGoalTime()
     {
-        return (long)((To - From).magnitude / Speed) + StartTime;
+        var t = ((To - From).magnitude / Speed) + StartTime;
+        return (long)t;
     }
 
     public override string ToString()

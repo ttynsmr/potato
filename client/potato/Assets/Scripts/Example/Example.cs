@@ -101,7 +101,7 @@ namespace Potato
                 var unitSpawn = networkService.Session.GetRpc<Torikime.Unit.Spawn.Rpc>();
                 unitSpawn.OnNotification += (notification) =>
                 {
-                    var unit = new PlayerUnit(networkService, new UnitId(notification.UnitId), notification.Position.ToVector3(), notification.Direction, notification.Avatar);
+                    var unit = new PlayerUnit(networkService.Now, new UnitId(notification.UnitId), notification.Position.ToVector3(), notification.Direction, notification.Avatar);
                     unitService.Register(unit);
                 };
 
