@@ -49,6 +49,33 @@ void Unit::inputCommand(std::shared_ptr<ICommand> command)
 	}
 
 	inputQueue.emplace(command);
+
+	if (command->getCommandType() == CommandType::KnockBack)
+	{
+		interveneHistory(command);
+	}
+}
+
+void Unit::interveneHistory(std::shared_ptr<ICommand> interveneCommand)
+{
+	bool needsIntervene = getLastCommand()->getActionTime() >= interveneCommand->getActionTime();
+	if(!needsIntervene)
+	{
+		return;
+	}
+
+	history.erase(std::find_if(history.begin(), history.end(), [interveneCommand](auto command) {
+		return command->getActionTime() >= interveneCommand->getActionTime();
+		}), history.end());
+
+	//if (getLastCommand()->getCommandType() == CommandType::Stop)
+	//{
+	//	currentMove.reset();
+	//}
+	//else
+	//{
+	//	currentMove = std::dynamic_pointer_cast<MoveCommand>(getLastCommand());
+	//}
 }
 
 Eigen::Vector3f lerp(const Eigen::Vector3f& from, const Eigen::Vector3f& to, float progress)
@@ -118,6 +145,15 @@ void Unit::update(int64_t now)
 			switch (command->getCommandType())
 			{
 			case CommandType::Move:
+				{
+					auto moveCommand = std::dynamic_pointer_cast<MoveCommand>(command);
+					simulatedNow = moveCommand->startTime;
+					moveCommand->lastMoveCommand = currentMove;
+					history.emplace_back(moveCommand);
+					currentMove = moveCommand;
+					_isMoving = true;
+				}
+				break;
 			case CommandType::KnockBack:
 				{
 					auto moveCommand = std::dynamic_pointer_cast<MoveCommand>(command);

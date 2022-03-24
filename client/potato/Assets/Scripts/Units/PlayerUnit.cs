@@ -81,6 +81,11 @@ public class PlayerUnit : IUnit
     {
         knockbackCommand.LastMoveCommand = currentMove;
         inputQueue.Enqueue(knockbackCommand);
+
+        // ‚±‚±‚Å‚â‚é•K—v‚ª‚ ‚é
+        InterveneHistory(knockbackCommand);
+        currentMove = knockbackCommand;
+        simulatedNow = knockbackCommand.GetActionTime();
     }
 
     // Update is called once per frame
@@ -96,6 +101,38 @@ public class PlayerUnit : IUnit
 
     private void ProcessInput(long now)
     {
+    }
+
+    //void Unit::interveneHistory(std::shared_ptr<ICommand> interveneCommand)
+    //{
+    //    bool needsIntervene = getLastCommand()->getActionTime() >= interveneCommand->getActionTime();
+    //    if (!needsIntervene)
+    //    {
+    //        return;
+    //    }
+
+    //    history.erase(std::find_if(history.begin(), history.end(), [interveneCommand](auto command) {
+    //        return command->getActionTime() >= interveneCommand->getActionTime();
+    //    }), history.end());
+
+    //    if (getLastCommand()->getCommandType() == CommandType::Stop)
+    //    {
+    //        currentMove.reset();
+    //    }
+    //    else
+    //    {
+    //        currentMove = std::dynamic_pointer_cast<MoveCommand>(getLastCommand());
+    //    }
+    //}
+    private void InterveneHistory(ICommand interveneCommand)
+    {
+        var index = history.FindIndex((command) => { return command.GetActionTime() >= interveneCommand.GetActionTime(); });
+        if (index == -1)
+        {
+            return;
+        }
+
+        history.RemoveRange(index, history.Count - index);
     }
 
     private void ProcessCommand(long now)

@@ -27,7 +27,7 @@ namespace potato::net
 		auto self(shared_from_this());
 
 		_socket.async_write_some(boost::asio::buffer(payload->getBuffer()),
-			[this, self, payload](boost::system::error_code ec, std::size_t length) {
+			[this, self, payload](boost::system::error_code /*ec*/, std::size_t /*length*/) {
 				//fmt::print("async_write_some result: ec:{}, sent length:{} payload size:{}\n", ec.value() , length, payload->getBuffer().size());
 			});
 	}
