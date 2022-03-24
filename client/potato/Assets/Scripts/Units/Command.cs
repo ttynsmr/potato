@@ -10,16 +10,21 @@ public enum CommandType
 public interface ICommand
 {
     abstract CommandType CommandType { get; }
+    abstract MoveCommand LastMoveCommand { get; set; }
 
     abstract bool IsExpired(long now);
 
     abstract long GetActionTime();
+
+    abstract Vector3 CalcCurrentPosition(long now);
 }
 
 public class MoveCommand : ICommand
 {
     public virtual CommandType CommandType { get => CommandType.Move; }
-    public MoveCommand LastMoveCommand;
+
+    public MoveCommand LastMoveCommand { get; set; }
+
     public long StartTime;
     public Vector3 From;
     public Vector3 To;
@@ -75,7 +80,8 @@ public class KnockbackCommand : MoveCommand
 public class StopCommand : ICommand
 {
     public CommandType CommandType { get => CommandType.Stop; }
-    public MoveCommand LastMoveCommand;
+    public MoveCommand LastMoveCommand { get; set; }
+
     public long StopTime;
     public Potato.UnitDirection Direction;
 
@@ -87,6 +93,13 @@ public class StopCommand : ICommand
     public long GetActionTime()
     {
         return StopTime;
+    }
+
+    public Vector3 CalcCurrentPosition(long now)
+    {
+        var distance = (LastMoveCommand.To - LastMoveCommand.From).magnitude;
+        var progress = LastMoveCommand.Speed > 0 && distance > 0 ? (Mathf.Min(StopTime, now) - LastMoveCommand.StartTime) / (distance / LastMoveCommand.Speed) : 0;
+        return Vector3.Lerp(LastMoveCommand.From, LastMoveCommand.To, progress);
     }
 
     public override string ToString()
