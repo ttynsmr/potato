@@ -59,6 +59,10 @@ public class PlayerUnit : IUnit
 
     public void InputMove(MoveCommand moveCommand)
     {
+        if (moveCommand.CommandType != CommandType.Move)
+        {
+            Debug.LogError($"expected command type is {CommandType.Move} actual command type is {moveCommand.CommandType}");
+        }
         moveCommand.LastMoveCommand = currentMove;
         inputQueue.Enqueue(moveCommand);
         //Debug.Log($"InputMove {moveCommand.From} {moveCommand.To}.\n");
@@ -105,6 +109,8 @@ public class PlayerUnit : IUnit
 
     private void InterveneHistory(ICommand interveneCommand)
     {
+        inputQueue.Clear();
+
         var index = history.FindIndex((command) => { return command.GetActionTime() >= interveneCommand.GetActionTime(); });
         if (index == -1)
         {
