@@ -41,14 +41,36 @@ void Unit::inputCommand(std::shared_ptr<ICommand> command)
 	if (stopCommand != nullptr)
 	{
 		stopCommand->lastMoveCommand = std::dynamic_pointer_cast<MoveCommand>(getLastCommand());
-		_isMoving = false;
-	}
-	else
-	{
-		_isMoving = true;
 	}
 
 	inputQueue.emplace(command);
+
+	if (command->getCommandType() == CommandType::KnockBack)
+	{
+		interveneHistory(command);
+	}
+}
+
+void Unit::interveneHistory(std::shared_ptr<ICommand> interveneCommand)
+{
+	bool needsIntervene = getLastCommand()->getActionTime() >= interveneCommand->getActionTime();
+	if(!needsIntervene)
+	{
+		return;
+	}
+
+	history.erase(std::find_if(history.begin(), history.end(), [interveneCommand](auto command) {
+		return command->getActionTime() >= interveneCommand->getActionTime();
+		}), history.end());
+
+	//if (getLastCommand()->getCommandType() == CommandType::Stop)
+	//{
+	//	currentMove.reset();
+	//}
+	//else
+	//{
+	//	currentMove = std::dynamic_pointer_cast<MoveCommand>(getLastCommand());
+	//}
 }
 
 Eigen::Vector3f lerp(const Eigen::Vector3f& from, const Eigen::Vector3f& to, float progress)
@@ -73,10 +95,9 @@ void Unit::update(int64_t now)
 			auto lastCommand = history.size() > 0 ? history.back() : nullptr;
 			if (lastCommand != nullptr)
 			{
-				if (typeid(lastCommand) != typeid(std::shared_ptr<StopCommand>))
+				if (lastCommand->getCommandType() == CommandType::Stop)
 				{
-					auto last = history.back();
-					auto stopCommand = std::dynamic_pointer_cast<StopCommand>(last);
+					auto stopCommand = std::dynamic_pointer_cast<StopCommand>(lastCommand);
 					updatePosition(stopCommand->lastMoveCommand.lock(), stopCommand->stopTime);
 					if (inputQueue.size() == 0)
 					{
@@ -84,6 +105,10 @@ void Unit::update(int64_t now)
 						break;
 					}
 				}
+			}
+			else
+			{
+				currentMove = std::dynamic_pointer_cast<MoveCommand>(lastCommand);
 			}
 		}
 		else
@@ -118,6 +143,15 @@ void Unit::update(int64_t now)
 			switch (command->getCommandType())
 			{
 			case CommandType::Move:
+				{
+					auto moveCommand = std::dynamic_pointer_cast<MoveCommand>(command);
+					simulatedNow = moveCommand->startTime;
+					moveCommand->lastMoveCommand = currentMove;
+					history.emplace_back(moveCommand);
+					currentMove = moveCommand;
+					_isMoving = true;
+				}
+				break;
 			case CommandType::KnockBack:
 				{
 					auto moveCommand = std::dynamic_pointer_cast<MoveCommand>(command);

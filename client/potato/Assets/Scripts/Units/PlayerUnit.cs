@@ -81,6 +81,11 @@ public class PlayerUnit : IUnit
     {
         knockbackCommand.LastMoveCommand = currentMove;
         inputQueue.Enqueue(knockbackCommand);
+
+        // ここでやる必要がある
+        InterveneHistory(knockbackCommand);
+        currentMove = knockbackCommand;
+        simulatedNow = knockbackCommand.GetActionTime();
     }
 
     // Update is called once per frame
@@ -96,6 +101,17 @@ public class PlayerUnit : IUnit
 
     private void ProcessInput(long now)
     {
+    }
+
+    private void InterveneHistory(ICommand interveneCommand)
+    {
+        var index = history.FindIndex((command) => { return command.GetActionTime() >= interveneCommand.GetActionTime(); });
+        if (index == -1)
+        {
+            return;
+        }
+
+        history.RemoveRange(index, history.Count - index);
     }
 
     private void ProcessCommand(long now)
@@ -120,7 +136,8 @@ public class PlayerUnit : IUnit
                     else
                     {
                         // blocked
-                        Debug.Log($"knock back!! input dropping until {currentMove.GetGoalTime()}, command action time is {command.GetActionTime()}.\n");
+                        Debug.Log($"knock back!! simulatedNow:{simulatedNow}({currentMove.GetGoalTime() - now}), input dropping until {currentMove.GetGoalTime()}, command action time is {command.GetActionTime()}.\n");
+                        simulatedNow = now;
                         break;
                     }
                 }

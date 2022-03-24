@@ -126,6 +126,7 @@ public:
 	Unit(UnitId unitId, potato::net::SessionId sessionId);
 
 	void inputCommand(std::shared_ptr<ICommand> command);
+	void interveneHistory(std::shared_ptr<ICommand> command);
 	void update(int64_t now);
 
 	std::shared_ptr<ICommand> getLastCommand();
