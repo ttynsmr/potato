@@ -9,7 +9,6 @@ public class PlayerUnit : IUnit
 {
     public UnitView Appearance { get; set; }
 
-    private Potato.Network.NetworkService _networkService;
     private Queue<ICommand> inputQueue = new Queue<ICommand>();
     private List<ICommand> history = new List<ICommand>();
     private MoveCommand currentMove;
@@ -22,22 +21,13 @@ public class PlayerUnit : IUnit
     public UnitService UnitService { get; set; }
     public Potato.UnitDirection Direction { get; set; }
 
-    public PlayerUnit(Potato.Network.NetworkService networkService, UnitId unitId, Vector3 position, Potato.UnitDirection direction, Potato.Avatar avatar)
+    public PlayerUnit(long initialNow, UnitId unitId, Vector3 position, Potato.UnitDirection direction, Potato.Avatar avatar)
     {
-        _networkService = networkService;
         UnitId = unitId;
         Position = position;
         Direction = direction;
         this.avatar = avatar;
-    }
-
-    public void Start()
-    {
-        simulatedNow = _networkService.Now;
-        Appearance = GameObject.Instantiate(UnitService.TestAvatar).GetComponent<UnitView>();
-        Appearance.transform.position = Position;
-        Appearance.name = $"PlayerUnit({UnitId}) {avatar.Name}";
-        Appearance.displayName.text = avatar.Name;
+        simulatedNow = initialNow;
         history.Add(new StopCommand
         {
             LastMoveCommand = new MoveCommand
@@ -49,9 +39,17 @@ public class PlayerUnit : IUnit
                 Direction = 0,
                 Speed = 1,
             },
-            StopTime = _networkService.Now,
+            StopTime = initialNow,
             Direction = 0
         });
+    }
+
+    public void Start()
+    {
+        Appearance = GameObject.Instantiate(UnitService.TestAvatar).GetComponent<UnitView>();
+        Appearance.transform.position = Position;
+        Appearance.name = $"PlayerUnit({UnitId}) {avatar.Name}";
+        Appearance.displayName.text = avatar.Name;
     }
 
     public void OnDespawn()
@@ -104,28 +102,6 @@ public class PlayerUnit : IUnit
     {
         while (simulatedNow < now)
         {
-            if (currentMove == null)
-            {
-                var lastCommand = history.Count > 0 ? history.Last() : null;
-                if (lastCommand != null)
-                {
-                    if (lastCommand is StopCommand)
-                    {
-                        var last = history.Last();
-                        var stopCommand = (StopCommand)last;
-                        Position = stopCommand.LastMoveCommand.CalcCurrentPosition(stopCommand.StopTime);
-                        if (inputQueue.Count == 0)
-                        {
-                            break;
-                        }
-                    }
-                }
-            }
-            else
-            {
-                Position = currentMove.CalcCurrentPosition(simulatedNow);
-            }
-
             if (inputQueue.Count > 0 && inputQueue.Peek().GetActionTime() <= now)
             {
                 var command = inputQueue.Peek();
@@ -189,6 +165,24 @@ public class PlayerUnit : IUnit
             {
                 simulatedNow = now;
             }
+        }
+
+        if (currentMove == null)
+        {
+            var lastCommand = history.Count > 0 ? history.Last() : null;
+            if (lastCommand != null)
+            {
+                if (lastCommand is StopCommand)
+                {
+                    var last = history.Last();
+                    var stopCommand = (StopCommand)last;
+                    Position = stopCommand.LastMoveCommand.CalcCurrentPosition(stopCommand.StopTime);
+                }
+            }
+        }
+        else
+        {
+            Position = currentMove.CalcCurrentPosition(simulatedNow);
         }
 
         if (Appearance)

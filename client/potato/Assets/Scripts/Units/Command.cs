@@ -38,12 +38,13 @@ public class MoveCommand : ICommand
 
     public bool IsGoaled(long now)
 	{
-		return GetGoalTime() <= now;
+        return GetGoalTime() <= now;
 	}
 
     virtual public long GetGoalTime()
     {
-        return (long)((To - From).magnitude / Speed) + StartTime;
+        var t = ((To - From).magnitude / Speed) + StartTime;
+        return (long)t;
     }
 
     public override string ToString()
