@@ -21,6 +21,8 @@ public class PlayerUnit : IUnit
     public UnitService UnitService { get; set; }
     public Potato.UnitDirection Direction { get; set; }
 
+    public ICommand GetLastCommand { get { return history.Count > 0 ? history.Last() : null; } }
+
     public PlayerUnit(long initialNow, UnitId unitId, Vector3 position, Potato.UnitDirection direction, Potato.Avatar avatar)
     {
         UnitId = unitId;
@@ -83,13 +85,12 @@ public class PlayerUnit : IUnit
 
     public void InputKnockback(KnockbackCommand knockbackCommand)
     {
+        InterveneHistory(knockbackCommand);
+
         knockbackCommand.LastMoveCommand = currentMove;
         inputQueue.Enqueue(knockbackCommand);
 
-        // ここでやる必要がある
-        InterveneHistory(knockbackCommand);
-        currentMove = knockbackCommand;
-        simulatedNow = knockbackCommand.GetActionTime();
+        simulatedNow = knockbackCommand.GetActionTime() - 1;
     }
 
     // Update is called once per frame
@@ -127,13 +128,7 @@ public class PlayerUnit : IUnit
             if (inputQueue.Count > 0 && inputQueue.Peek().GetActionTime() <= now)
             {
                 var command = inputQueue.Peek();
-                if (command.GetActionTime() > simulatedNow)
-                {
-                    simulatedNow = now;
-                    break;
-                }
-
-                if (currentMove != null && currentMove.CommandType == CommandType.Knockback)
+                if (command != currentMove && currentMove != null && currentMove.CommandType == CommandType.Knockback)
                 {
                     if (currentMove.IsGoaled(simulatedNow) || (command.GetActionTime() >= currentMove.GetGoalTime()))
                     {
@@ -214,6 +209,34 @@ public class PlayerUnit : IUnit
             Appearance.Direction = Direction;
             Appearance.Moving = !(history.Last() is StopCommand);
         }
+    }
+
+    public Vector3 GetTrackbackPosition(long now)
+    {
+        if (history.Count == 0)
+        {
+            return Vector3.zero;
+        }
+
+        if (now > history.Last().GetActionTime())
+        {
+            if (history.Last().CommandType == CommandType.Stop)
+            {
+                return history.Last().LastMoveCommand.CalcCurrentPosition(history.Last().GetActionTime());
+            }
+            else
+            {
+                return ((MoveCommand)history.Last()).CalcCurrentPosition(now);
+            }
+        }
+
+        var commandAtTheTime = history.Find((command) => { return command.GetActionTime() >= now; });
+        if (commandAtTheTime == null)
+        {
+            return Vector3.zero;
+        }
+
+        return commandAtTheTime.CalcCurrentPosition(now);
     }
 
     public void Destroy()
