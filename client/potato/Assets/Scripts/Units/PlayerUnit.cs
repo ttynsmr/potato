@@ -82,7 +82,7 @@ public class PlayerUnit : IUnit
         knockbackCommand.LastMoveCommand = currentMove;
         inputQueue.Enqueue(knockbackCommand);
 
-        // Ç±Ç±Ç≈Ç‚ÇÈïKóvÇ™Ç†ÇÈ
+        // „Åì„Åì„Åß„ÇÑ„ÇãÂøÖË¶Å„Åå„ÅÇ„Çã
         InterveneHistory(knockbackCommand);
         currentMove = knockbackCommand;
         simulatedNow = knockbackCommand.GetActionTime();
@@ -157,7 +157,8 @@ public class PlayerUnit : IUnit
                     else
                     {
                         // blocked
-                        Debug.Log($"knock back!! input dropping until {currentMove.GetGoalTime()}, command action time is {command.GetActionTime()}.\n");
+                        Debug.Log($"knock back!! simulatedNow:{simulatedNow}({currentMove.GetGoalTime() - now}), input dropping until {currentMove.GetGoalTime()}, command action time is {command.GetActionTime()}.\n");
+                        simulatedNow = now;
                         break;
                     }
                 }

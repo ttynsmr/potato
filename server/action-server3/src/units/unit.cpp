@@ -41,11 +41,11 @@ void Unit::inputCommand(std::shared_ptr<ICommand> command)
 	if (stopCommand != nullptr)
 	{
 		stopCommand->lastMoveCommand = std::dynamic_pointer_cast<MoveCommand>(getLastCommand());
-		_isMoving = false;
+		//_isMoving = false;
 	}
 	else
 	{
-		_isMoving = true;
+		//_isMoving = true;
 	}
 
 	inputQueue.emplace(command);
@@ -100,10 +100,10 @@ void Unit::update(int64_t now)
 			auto lastCommand = history.size() > 0 ? history.back() : nullptr;
 			if (lastCommand != nullptr)
 			{
-				if (typeid(lastCommand) != typeid(std::shared_ptr<StopCommand>))
+				//if (typeid(lastCommand) != typeid(std::shared_ptr<StopCommand>))
+				if (lastCommand->getCommandType() == CommandType::Stop)
 				{
-					auto last = history.back();
-					auto stopCommand = std::dynamic_pointer_cast<StopCommand>(last);
+					auto stopCommand = std::dynamic_pointer_cast<StopCommand>(lastCommand);
 					updatePosition(stopCommand->lastMoveCommand.lock(), stopCommand->stopTime);
 					if (inputQueue.size() == 0)
 					{
@@ -111,6 +111,10 @@ void Unit::update(int64_t now)
 						break;
 					}
 				}
+			}
+			else
+			{
+				currentMove = std::dynamic_pointer_cast<MoveCommand>(lastCommand);
 			}
 		}
 		else
