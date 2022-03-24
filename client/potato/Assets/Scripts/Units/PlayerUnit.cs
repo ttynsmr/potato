@@ -103,27 +103,6 @@ public class PlayerUnit : IUnit
     {
     }
 
-    //void Unit::interveneHistory(std::shared_ptr<ICommand> interveneCommand)
-    //{
-    //    bool needsIntervene = getLastCommand()->getActionTime() >= interveneCommand->getActionTime();
-    //    if (!needsIntervene)
-    //    {
-    //        return;
-    //    }
-
-    //    history.erase(std::find_if(history.begin(), history.end(), [interveneCommand](auto command) {
-    //        return command->getActionTime() >= interveneCommand->getActionTime();
-    //    }), history.end());
-
-    //    if (getLastCommand()->getCommandType() == CommandType::Stop)
-    //    {
-    //        currentMove.reset();
-    //    }
-    //    else
-    //    {
-    //        currentMove = std::dynamic_pointer_cast<MoveCommand>(getLastCommand());
-    //    }
-    //}
     private void InterveneHistory(ICommand interveneCommand)
     {
         var index = history.FindIndex((command) => { return command.GetActionTime() >= interveneCommand.GetActionTime(); });
