@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public enum CommandType
@@ -48,7 +49,7 @@ public class MoveCommand : ICommand
 
     virtual public long GetGoalTime()
     {
-        var t = ((To - From).magnitude / Speed) + StartTime;
+        var t = ((To - From).magnitude / (double)Speed) + StartTime;
         return (long)t;
     }
 
@@ -58,7 +59,7 @@ public class MoveCommand : ICommand
         return $"last command: {lastStartTime}, StartTime:{StartTime}, From:{From}, To:{To}, Speed:{Speed}, Direction:{Direction}";
     }
 
-    public Vector3 CalcCurrentPosition(long now)
+    public virtual Vector3 CalcCurrentPosition(long now)
     {
         var distance = (To - From).magnitude;
         var progress = Speed > 0 && distance > 0 ? (now - StartTime) / (distance / Speed) : 0;
@@ -75,6 +76,13 @@ public class KnockbackCommand : MoveCommand
         return EndTime;
     }
     public long EndTime;
+
+    public override Vector3 CalcCurrentPosition(long now)
+    {
+        var distance = (To - From).magnitude;
+        var progress = Speed > 0 && distance > 0 ? (Math.Min(EndTime, now) - StartTime) / (distance / Speed) : 0;
+        return Vector3.Lerp(From, To, progress);
+    }
 }
 
 public class StopCommand : ICommand
@@ -98,7 +106,7 @@ public class StopCommand : ICommand
     public Vector3 CalcCurrentPosition(long now)
     {
         var distance = (LastMoveCommand.To - LastMoveCommand.From).magnitude;
-        var progress = LastMoveCommand.Speed > 0 && distance > 0 ? (Mathf.Min(StopTime, now) - LastMoveCommand.StartTime) / (distance / LastMoveCommand.Speed) : 0;
+        var progress = LastMoveCommand.Speed > 0 && distance > 0 ? (Math.Min(StopTime, now) - LastMoveCommand.StartTime) / (distance / LastMoveCommand.Speed) : 0;
         return Vector3.Lerp(LastMoveCommand.From, LastMoveCommand.To, progress);
     }
 
