@@ -55,7 +55,6 @@ jobs:
           pushd server/action-server3/torikime
           python -m pip install --upgrade pip
           pip install pipenv --upgrade-strategy=only-if-needed
-          pipenv install
-          pipenv install pyyaml jinja2 inflection
+          pipenv sync
           pipenv run python torikime.py --help
           popd
