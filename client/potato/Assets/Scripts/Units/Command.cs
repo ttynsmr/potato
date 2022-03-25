@@ -48,7 +48,7 @@ public class MoveCommand : ICommand
 
     virtual public long GetGoalTime()
     {
-        var t = ((To - From).magnitude / Speed) + StartTime;
+        var t = ((To - From).magnitude / (double)Speed) + StartTime;
         return (long)t;
     }
 
