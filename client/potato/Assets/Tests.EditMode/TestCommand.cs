@@ -117,23 +117,160 @@ public class TestCommand
     }
 
     [Test]
-    public void MoveCommandGoalTime()
+    [TestCase(1 / 1000.0f, 2100)]
+    [TestCase(1 / 10000.0f, 20100)]
+    [TestCase(1 / 100000.0f, 200100)]
+    [TestCase(1 / 1000000.0f, 2000100)]
+    public void MoveCommandGoalTime(float speed, long expectTime)
     {
         var move = new MoveCommand
         {
             From = new Vector3(1, 0, 0),
             To = new Vector3(3, 0, 0),
             StartTime = 100,
+            Speed = speed,
+            Direction = Potato.UnitDirection.Down,
+        };
+
+        Assert.That(move.GetGoalTime(), Is.GreaterThanOrEqualTo(expectTime - 1).And.LessThanOrEqualTo(expectTime));
+    }
+
+    [Test]
+    public void StopCommand()
+    {
+        var move = new MoveCommand
+        {
+            From = new Vector3(0, 0, 0),
+            To = new Vector3(2, 0, 0),
+            StartTime = 0,
+            Speed = 1 / 1000.0f,
+            Direction = Potato.UnitDirection.Down,
+        };
+        var stop = new StopCommand
+        {
+            LastMoveCommand = move,
+            StopTime = 1000,
+            Direction = Potato.UnitDirection.Down,
+        };
+
+        Assert.AreEqual(CommandType.Stop, stop.CommandType);
+        Assert.AreEqual(new Vector3(0, 0, 0), stop.CalcCurrentPosition(0));
+        Assert.AreEqual(new Vector3(1, 0, 0), stop.CalcCurrentPosition(1000));
+        Assert.AreEqual(new Vector3(1, 0, 0), stop.CalcCurrentPosition(2000));
+
+        var stopAsICommand = stop as ICommand;
+        Assert.AreEqual(CommandType.Stop, stopAsICommand.CommandType);
+        Assert.AreEqual(new Vector3(0, 0, 0), stopAsICommand.CalcCurrentPosition(0));
+        Assert.AreEqual(new Vector3(1, 0, 0), stopAsICommand.CalcCurrentPosition(1000));
+        Assert.AreEqual(new Vector3(1, 0, 0), stopAsICommand.CalcCurrentPosition(2000));
+    }
+
+    [Test]
+    public void KnockbackCommand()
+    {
+        var knockback = new KnockbackCommand
+        {
+            From = new Vector3(0, 0, 0),
+            To = new Vector3(2, 0, 0),
+            StartTime = 0,
+            EndTime = 1000,
             Speed = 1 / 1000.0f,
             Direction = Potato.UnitDirection.Down,
         };
 
-        Assert.That(move.GetGoalTime(), Is.GreaterThanOrEqualTo(2099).And.LessThanOrEqualTo(2100));
-        move.Speed = 1 / 10000.0f;
-        Assert.That(move.GetGoalTime(), Is.GreaterThanOrEqualTo(20099).And.LessThanOrEqualTo(20100));
-        move.Speed = 1 / 100000.0f;
-        Assert.That(move.GetGoalTime(), Is.GreaterThanOrEqualTo(200099).And.LessThanOrEqualTo(200100));
-        move.Speed = 1 / 1000000.0f;
-        Assert.That(move.GetGoalTime(), Is.GreaterThanOrEqualTo(2000099).And.LessThanOrEqualTo(2000100));
+        Assert.AreEqual(CommandType.Knockback, knockback.CommandType);
+        Assert.AreEqual(new Vector3(0, 0, 0), knockback.CalcCurrentPosition(0));
+        Assert.AreEqual(new Vector3(1, 0, 0), knockback.CalcCurrentPosition(1000));
+        Assert.AreEqual(new Vector3(1, 0, 0), knockback.CalcCurrentPosition(2000));
+
+        var knockbackAsICommand = knockback as ICommand;
+        Assert.AreEqual(CommandType.Knockback, knockbackAsICommand.CommandType);
+        Assert.AreEqual(new Vector3(0, 0, 0), knockbackAsICommand.CalcCurrentPosition(0));
+        Assert.AreEqual(new Vector3(1, 0, 0), knockbackAsICommand.CalcCurrentPosition(1000));
+        Assert.AreEqual(new Vector3(1, 0, 0), knockbackAsICommand.CalcCurrentPosition(2000));
+
+        var knockbackAsMove = knockback as MoveCommand;
+        Assert.AreEqual(CommandType.Knockback, knockbackAsMove.CommandType);
+        Assert.AreEqual(new Vector3(0, 0, 0), knockbackAsMove.CalcCurrentPosition(0));
+        Assert.AreEqual(new Vector3(1, 0, 0), knockbackAsMove.CalcCurrentPosition(1000));
+        Assert.AreEqual(new Vector3(1, 0, 0), knockbackAsMove.CalcCurrentPosition(2000));
+    }
+
+    [Test]
+    public void KnockbackCommandAndStop()
+    {
+        var knockback = new KnockbackCommand
+        {
+            From = new Vector3(0, 0, 0),
+            To = new Vector3(2, 0, 0),
+            StartTime = 0,
+            EndTime = 1000,
+            Speed = 1 / 1000.0f,
+            Direction = Potato.UnitDirection.Down,
+        };
+        var stop = new StopCommand
+        {
+            LastMoveCommand = knockback,
+            StopTime = 1000,
+            Direction = Potato.UnitDirection.Down,
+        };
+
+        Assert.AreEqual(CommandType.Stop, stop.CommandType);
+        Assert.AreEqual(new Vector3(0, 0, 0), stop.CalcCurrentPosition(0));
+        Assert.AreEqual(new Vector3(1, 0, 0), stop.CalcCurrentPosition(1000));
+        Assert.AreEqual(new Vector3(1, 0, 0), stop.CalcCurrentPosition(2000));
+    }
+
+    [Test]
+    [TestCase(2, 0, 0)]
+    [TestCase(1000, 0, 0)]
+    [TestCase(2000, 0, 0)]
+    public void KnockbackCommandGoaled(float toX, float toY, float toZ)
+    {
+        var knockback = new KnockbackCommand
+        {
+            From = new Vector3(1, 0, 0),
+            To = new Vector3(toX, toY, toZ),
+            StartTime = 100,
+            EndTime = 2100,
+            Speed = 1 / 1000.0f,
+            Direction = Potato.UnitDirection.Down,
+        };
+
+        Assert.IsFalse(knockback.IsGoaled(long.MinValue));
+        Assert.IsFalse(knockback.IsGoaled(-1));
+        Assert.IsFalse(knockback.IsGoaled(0));
+        Assert.IsFalse(knockback.IsGoaled(100));
+        Assert.IsFalse(knockback.IsGoaled(1000));
+        Assert.IsFalse(knockback.IsGoaled(2000));
+        Assert.IsFalse(knockback.IsGoaled(2098));
+        // 2099 is unstable;
+        Assert.IsTrue(knockback.IsGoaled(2100));
+        Assert.IsTrue(knockback.IsGoaled(2101));
+        Assert.IsTrue(knockback.IsGoaled(2102));
+        Assert.IsTrue(knockback.IsGoaled(int.MaxValue));
+        Assert.IsTrue(knockback.IsGoaled(long.MaxValue));
+
+        Assert.IsTrue(knockback.IsGoaled(knockback.GetGoalTime()));
+    }
+
+    [Test]
+    [TestCase(1 / 1000.0f, 2100)]
+    [TestCase(1 / 10000.0f, 20100)]
+    [TestCase(1 / 100000.0f, 200100)]
+    [TestCase(1 / 1000000.0f, 2000100)]
+    public void KnockbackCommandGoalTime(float speed, long expectTime)
+    {
+        var move = new KnockbackCommand
+        {
+            From = new Vector3(1, 0, 0),
+            To = new Vector3(3, 0, 0),
+            StartTime = 100,
+            EndTime = expectTime,
+            Speed = speed,
+            Direction = Potato.UnitDirection.Down,
+        };
+
+        Assert.That(move.GetGoalTime(), Is.GreaterThanOrEqualTo(expectTime - 1).And.LessThanOrEqualTo(expectTime));
     }
 }

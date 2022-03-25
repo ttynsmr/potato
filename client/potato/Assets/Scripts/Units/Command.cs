@@ -58,7 +58,7 @@ public class MoveCommand : ICommand
         return $"last command: {lastStartTime}, StartTime:{StartTime}, From:{From}, To:{To}, Speed:{Speed}, Direction:{Direction}";
     }
 
-    public Vector3 CalcCurrentPosition(long now)
+    public virtual Vector3 CalcCurrentPosition(long now)
     {
         var distance = (To - From).magnitude;
         var progress = Speed > 0 && distance > 0 ? (now - StartTime) / (distance / Speed) : 0;
@@ -75,6 +75,13 @@ public class KnockbackCommand : MoveCommand
         return EndTime;
     }
     public long EndTime;
+
+    public override Vector3 CalcCurrentPosition(long now)
+    {
+        var distance = (To - From).magnitude;
+        var progress = Speed > 0 && distance > 0 ? (Mathf.Min(EndTime, now) - StartTime) / (distance / Speed) : 0;
+        return Vector3.Lerp(From, To, progress);
+    }
 }
 
 public class StopCommand : ICommand
