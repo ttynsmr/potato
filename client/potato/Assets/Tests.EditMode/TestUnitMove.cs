@@ -129,207 +129,228 @@ public class UnitMove
     }
 
     [Test]
-    public void PlayerUnitGetTrackbackPositionWithStop()
+    [TestCase(0)]
+    [TestCase(1)]
+    [TestCase(10)]
+    [TestCase(100)]
+    [TestCase(1000)]
+    [TestCase(1648084343000)]
+    [TestCase(4475783471000)]
+    public void PlayerUnitGetTrackbackPositionWithStop(long timeOffset)
     {
-        static PlayerUnit createUnit()
+        static PlayerUnit createUnit(long timeOffset)
         {
             var unit = new PlayerUnit(0, new UnitId(0), Vector3.zero, Potato.UnitDirection.Down, null);
             unit.InputMove(new MoveCommand
             {
                 From = Vector3.zero,
                 To = new Vector3(1000, 0, 0),
-                StartTime = 1,
+                StartTime = timeOffset + 1,
                 Speed = 1,
             });
             unit.InputStop(new StopCommand
             {
-                StopTime = 2,
+                StopTime = timeOffset + 2,
             });
             unit.InputMove(new MoveCommand
             {
                 From = new Vector3(1, 0, 0),
                 To = new Vector3(1, 1000, 0),
-                StartTime = 3,
+                StartTime = timeOffset + 3,
                 Speed = 1,
             });
             unit.InputStop(new StopCommand
             {
-                StopTime = 4,
+                StopTime = timeOffset + 4,
             });
             return unit;
         }
 
         {
-            PlayerUnit unit1 = createUnit();
-            unit1.Update(0);
+            PlayerUnit unit1 = createUnit(timeOffset);
+            unit1.Update(timeOffset + 0);
             Assert.That(unit1.Position, Is.AreApproximatelyEqual(Vector3.zero));
-            unit1.Update(1);
+            unit1.Update(timeOffset + 1);
             Assert.That(unit1.Position, Is.AreApproximatelyEqual(Vector3.zero));
-            unit1.Update(2);
+            unit1.Update(timeOffset + 2);
             Assert.That(unit1.Position, Is.AreApproximatelyEqual(new Vector3(1, 0, 0)));
-            unit1.Update(3);
+            unit1.Update(timeOffset + 3);
             Assert.That(unit1.Position, Is.AreApproximatelyEqual(new Vector3(1, 0, 0)));
-            unit1.Update(4);
+            unit1.Update(timeOffset + 4);
             Assert.That(unit1.Position, Is.AreApproximatelyEqual(new Vector3(1, 1, 0)));
-            unit1.Update(5);
+            unit1.Update(timeOffset + 5);
             Assert.That(unit1.Position, Is.AreApproximatelyEqual(new Vector3(1, 1, 0)));
         }
 
         {
-            PlayerUnit unit1 = createUnit();
+            PlayerUnit unit1 = createUnit(timeOffset);
             for (int i = 0; i <= 5; i++)
             {
-                Assert.That(unit1.GetTrackbackPosition(i), Is.AreApproximatelyEqual(Vector3.zero));
+                Assert.That(unit1.GetTrackbackPosition(timeOffset + i), Is.AreApproximatelyEqual(Vector3.zero));
             }
         }
 
         {
-            PlayerUnit unit1 = createUnit();
-            unit1.Update(4);
-            Assert.That(unit1.GetTrackbackPosition(0), Is.AreApproximatelyEqual(Vector3.zero));
-            Assert.That(unit1.GetTrackbackPosition(1), Is.AreApproximatelyEqual(Vector3.zero));
-            Assert.That(unit1.GetTrackbackPosition(2), Is.AreApproximatelyEqual(new Vector3(1, 0, 0)));
-            Assert.That(unit1.GetTrackbackPosition(3), Is.AreApproximatelyEqual(new Vector3(1, 0, 0)));
-            Assert.That(unit1.GetTrackbackPosition(4), Is.AreApproximatelyEqual(new Vector3(1, 1, 0)));
-            Assert.That(unit1.GetTrackbackPosition(5), Is.AreApproximatelyEqual(new Vector3(1, 1, 0)));
+            PlayerUnit unit1 = createUnit(timeOffset);
+            unit1.Update(timeOffset + 4);
+            Assert.That(unit1.GetTrackbackPosition(timeOffset + 0), Is.AreApproximatelyEqual(Vector3.zero));
+            Assert.That(unit1.GetTrackbackPosition(timeOffset + 1), Is.AreApproximatelyEqual(Vector3.zero));
+            Assert.That(unit1.GetTrackbackPosition(timeOffset + 2), Is.AreApproximatelyEqual(new Vector3(1, 0, 0)));
+            Assert.That(unit1.GetTrackbackPosition(timeOffset + 3), Is.AreApproximatelyEqual(new Vector3(1, 0, 0)));
+            Assert.That(unit1.GetTrackbackPosition(timeOffset + 4), Is.AreApproximatelyEqual(new Vector3(1, 1, 0)));
+            Assert.That(unit1.GetTrackbackPosition(timeOffset + 5), Is.AreApproximatelyEqual(new Vector3(1, 1, 0)));
         }
     }
 
     [Test]
-    public void PlayerUnitGetTrackbackPositionWithMove()
+    [TestCase(0)]
+    [TestCase(1)]
+    [TestCase(10)]
+    [TestCase(100)]
+    [TestCase(1000)]
+    [TestCase(1648084343000)]
+    [TestCase(4475783471000)]
+    public void PlayerUnitGetTrackbackPositionWithMove(long timeOffset)
     {
-        static PlayerUnit createUnit()
+        static PlayerUnit createUnit(long timeOffset)
         {
             var unit = new PlayerUnit(0, new UnitId(0), Vector3.zero, Potato.UnitDirection.Down, null);
             unit.InputMove(new MoveCommand
             {
                 From = Vector3.zero,
                 To = new Vector3(1000, 0, 0),
-                StartTime = 1,
+                StartTime = timeOffset + 1,
                 Speed = 1,
             });
             unit.InputStop(new StopCommand
             {
-                StopTime = 2,
+                StopTime = timeOffset + 2,
             });
             unit.InputMove(new MoveCommand
             {
                 From = new Vector3(1, 0, 0),
                 To = new Vector3(1, 1000, 0),
-                StartTime = 3,
+                StartTime = timeOffset + 3,
                 Speed = 1,
             });
             return unit;
         }
 
         {
-            PlayerUnit unit1 = createUnit();
-            unit1.Update(0);
+            PlayerUnit unit1 = createUnit(timeOffset);
+            unit1.Update(timeOffset + 0);
             Assert.That(unit1.Position, Is.AreApproximatelyEqual(Vector3.zero));
-            unit1.Update(1);
+            unit1.Update(timeOffset + 1);
             Assert.That(unit1.Position, Is.AreApproximatelyEqual(Vector3.zero));
-            unit1.Update(2);
+            unit1.Update(timeOffset + 2);
             Assert.That(unit1.Position, Is.AreApproximatelyEqual(new Vector3(1, 0, 0)));
-            unit1.Update(3);
+            unit1.Update(timeOffset + 3);
             Assert.That(unit1.Position, Is.AreApproximatelyEqual(new Vector3(1, 0, 0)));
-            unit1.Update(4);
+            unit1.Update(timeOffset + 4);
             Assert.That(unit1.Position, Is.AreApproximatelyEqual(new Vector3(1, 1, 0)));
-            unit1.Update(5);
+            unit1.Update(timeOffset + 5);
             Assert.That(unit1.Position, Is.AreApproximatelyEqual(new Vector3(1, 2, 0)));
         }
 
         {
-            PlayerUnit unit1 = createUnit();
+            PlayerUnit unit1 = createUnit(timeOffset);
             for (int i = 0; i <= 5; i++)
             {
-                Assert.That(unit1.GetTrackbackPosition(i), Is.AreApproximatelyEqual(Vector3.zero));
+                Assert.That(unit1.GetTrackbackPosition(timeOffset + i), Is.AreApproximatelyEqual(Vector3.zero));
             }
         }
 
         {
-            PlayerUnit unit1 = createUnit();
-            unit1.Update(4);
-            Assert.That(unit1.GetTrackbackPosition(0), Is.AreApproximatelyEqual(Vector3.zero));
-            Assert.That(unit1.GetTrackbackPosition(1), Is.AreApproximatelyEqual(Vector3.zero));
-            Assert.That(unit1.GetTrackbackPosition(2), Is.AreApproximatelyEqual(new Vector3(1, 0, 0)));
-            Assert.That(unit1.GetTrackbackPosition(3), Is.AreApproximatelyEqual(new Vector3(1, 0, 0)));
-            Assert.That(unit1.GetTrackbackPosition(4), Is.AreApproximatelyEqual(new Vector3(1, 1, 0)));
-            Assert.That(unit1.GetTrackbackPosition(5), Is.AreApproximatelyEqual(new Vector3(1, 2, 0)));
+            PlayerUnit unit1 = createUnit(timeOffset);
+            unit1.Update(timeOffset + 4);
+            Assert.That(unit1.GetTrackbackPosition(timeOffset + 0), Is.AreApproximatelyEqual(Vector3.zero));
+            Assert.That(unit1.GetTrackbackPosition(timeOffset + 1), Is.AreApproximatelyEqual(Vector3.zero));
+            Assert.That(unit1.GetTrackbackPosition(timeOffset + 2), Is.AreApproximatelyEqual(new Vector3(1, 0, 0)));
+            Assert.That(unit1.GetTrackbackPosition(timeOffset + 3), Is.AreApproximatelyEqual(new Vector3(1, 0, 0)));
+            Assert.That(unit1.GetTrackbackPosition(timeOffset + 4), Is.AreApproximatelyEqual(new Vector3(1, 1, 0)));
+            Assert.That(unit1.GetTrackbackPosition(timeOffset + 5), Is.AreApproximatelyEqual(new Vector3(1, 2, 0)));
         }
     }
 
     [Test]
-    public void PlayerUnitGetTrackbackPositionWithKnockback()
+    [TestCase(0)]
+    [TestCase(1)]
+    [TestCase(10)]
+    [TestCase(100)]
+    [TestCase(1000)]
+    [TestCase(1648084343000)]
+    [TestCase(4475783471000)]
+    public void PlayerUnitGetTrackbackPositionWithKnockback(long timeOffset)
     {
-        static PlayerUnit createUnit()
+        static PlayerUnit createUnit(long timeOffset)
         {
             var unit = new PlayerUnit(0, new UnitId(0), Vector3.zero, Potato.UnitDirection.Down, null);
             unit.InputMove(new MoveCommand
             {
                 From = Vector3.zero,
                 To = new Vector3(1000, 0, 0),
-                StartTime = 1,
+                StartTime = timeOffset + 1,
                 Speed = 1,
             });
             unit.InputStop(new StopCommand
             {
-                StopTime = 2,
+                StopTime = timeOffset + 2,
             });
             unit.InputMove(new MoveCommand
             {
                 From = new Vector3(1, 0, 0),
                 To = new Vector3(1, 1000, 0),
-                StartTime = 3,
+                StartTime = timeOffset + 3,
                 Speed = 1,
             });
             unit.InputStop(new StopCommand
             {
-                StopTime = 10,
+                StopTime = timeOffset + 10,
             });
             return unit;
         }
 
         {
-            PlayerUnit unit1 = createUnit();
-            unit1.Update(0);
+            PlayerUnit unit1 = createUnit(timeOffset);
+            unit1.Update(timeOffset + 0);
             Assert.That(unit1.Position, Is.AreApproximatelyEqual(Vector3.zero));
-            unit1.Update(1);
+            unit1.Update(timeOffset + 1);
             Assert.That(unit1.Position, Is.AreApproximatelyEqual(Vector3.zero));
-            unit1.Update(2);
+            unit1.Update(timeOffset + 2);
             Assert.That(unit1.Position, Is.AreApproximatelyEqual(new Vector3(1, 0, 0)));
-            unit1.Update(3);
+            unit1.Update(timeOffset + 3);
             Assert.That(unit1.Position, Is.AreApproximatelyEqual(new Vector3(1, 0, 0)));
-            unit1.Update(4);
+            unit1.Update(timeOffset + 4);
             Assert.That(unit1.Position, Is.AreApproximatelyEqual(new Vector3(1, 1, 0)));
-            unit1.Update(5);
+            unit1.Update(timeOffset + 5);
             Assert.That(unit1.Position, Is.AreApproximatelyEqual(new Vector3(1, 2, 0)));
 
             unit1.InputKnockback(new KnockbackCommand
             {
                 From = new Vector3(1, 1, 0),
                 To = new Vector3(1, -1000, 0),
-                StartTime = 4,
-                EndTime = 6,
+                StartTime = timeOffset + 4,
+                EndTime = timeOffset + 6,
                 Speed = 1,
             });
             unit1.InputStop(new StopCommand
             {
-                StopTime = 6,
+                StopTime = timeOffset + 6,
             });
 
-            unit1.Update(6);
+            unit1.Update(timeOffset + 6);
             Assert.That(unit1.Position, Is.AreApproximatelyEqual(new Vector3(1, -1, 0)));
-            unit1.Update(7);
+            unit1.Update(timeOffset + 7);
             Assert.That(unit1.Position, Is.AreApproximatelyEqual(new Vector3(1, -1, 0)));
 
-            Assert.That(unit1.GetTrackbackPosition(0), Is.AreApproximatelyEqual(Vector3.zero));
-            Assert.That(unit1.GetTrackbackPosition(1), Is.AreApproximatelyEqual(Vector3.zero));
-            Assert.That(unit1.GetTrackbackPosition(2), Is.AreApproximatelyEqual(new Vector3(1, 0, 0)));
-            Assert.That(unit1.GetTrackbackPosition(3), Is.AreApproximatelyEqual(new Vector3(1, 0, 0)));
-            Assert.That(unit1.GetTrackbackPosition(4), Is.AreApproximatelyEqual(new Vector3(1, 1, 0)));
-            Assert.That(unit1.GetTrackbackPosition(5), Is.AreApproximatelyEqual(new Vector3(1, 0, 0)));
-            Assert.That(unit1.GetTrackbackPosition(6), Is.AreApproximatelyEqual(new Vector3(1, -1, 0)));
-            Assert.That(unit1.GetTrackbackPosition(7), Is.AreApproximatelyEqual(new Vector3(1, -1, 0)));
+            Assert.That(unit1.GetTrackbackPosition(timeOffset + 0), Is.AreApproximatelyEqual(Vector3.zero));
+            Assert.That(unit1.GetTrackbackPosition(timeOffset + 1), Is.AreApproximatelyEqual(Vector3.zero));
+            Assert.That(unit1.GetTrackbackPosition(timeOffset + 2), Is.AreApproximatelyEqual(new Vector3(1, 0, 0)));
+            Assert.That(unit1.GetTrackbackPosition(timeOffset + 3), Is.AreApproximatelyEqual(new Vector3(1, 0, 0)));
+            Assert.That(unit1.GetTrackbackPosition(timeOffset + 4), Is.AreApproximatelyEqual(new Vector3(1, 1, 0)));
+            Assert.That(unit1.GetTrackbackPosition(timeOffset + 5), Is.AreApproximatelyEqual(new Vector3(1, 0, 0)));
+            Assert.That(unit1.GetTrackbackPosition(timeOffset + 6), Is.AreApproximatelyEqual(new Vector3(1, -1, 0)));
+            Assert.That(unit1.GetTrackbackPosition(timeOffset + 7), Is.AreApproximatelyEqual(new Vector3(1, -1, 0)));
         }
     }
 

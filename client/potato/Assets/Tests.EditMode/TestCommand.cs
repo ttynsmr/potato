@@ -5,27 +5,34 @@ using UnityEngine.TestTools;
 public class TestCommand
 {
     [Test]
-    public void MoveCommand()
+    [TestCase(0)]
+    [TestCase(1)]
+    [TestCase(10)]
+    [TestCase(100)]
+    [TestCase(1000)]
+    [TestCase(1648084343000)]
+    [TestCase(4475783471000)]
+    public void MoveCommand(long timeOffset)
     {
         var move = new MoveCommand
         {
             From = new Vector3(0, 0, 0),
             To = new Vector3(2, 0, 0),
-            StartTime = 0,
+            StartTime = timeOffset,
             Speed = 1 / 1000.0f,
             Direction = Potato.UnitDirection.Down,
         };
 
         Assert.AreEqual(CommandType.Move, move.CommandType);
-        Assert.AreEqual(new Vector3(0, 0, 0), move.CalcCurrentPosition(0));
-        Assert.AreEqual(new Vector3(1, 0, 0), move.CalcCurrentPosition(1000));
-        Assert.AreEqual(new Vector3(2, 0, 0), move.CalcCurrentPosition(2000));
+        Assert.AreEqual(new Vector3(0, 0, 0), move.CalcCurrentPosition(timeOffset + 0));
+        Assert.AreEqual(new Vector3(1, 0, 0), move.CalcCurrentPosition(timeOffset + 1000));
+        Assert.AreEqual(new Vector3(2, 0, 0), move.CalcCurrentPosition(timeOffset + 2000));
 
         move.To = new Vector3(1, 1, 1).normalized * 2;
-        Assert.AreEqual(new Vector3(0, 0, 0), move.CalcCurrentPosition(0));
-        Assert.AreEqual(new Vector3(1, 1, 1).normalized * 1, move.CalcCurrentPosition(1000));
-        Assert.AreEqual(new Vector3(1, 1, 1).normalized * 2, move.CalcCurrentPosition(2000));
-        Assert.AreEqual(new Vector3(1, 1, 1).normalized * 2, move.CalcCurrentPosition(3000));
+        Assert.AreEqual(new Vector3(0, 0, 0), move.CalcCurrentPosition(timeOffset + 0));
+        Assert.AreEqual(new Vector3(1, 1, 1).normalized * 1, move.CalcCurrentPosition(timeOffset + 1000));
+        Assert.AreEqual(new Vector3(1, 1, 1).normalized * 2, move.CalcCurrentPosition(timeOffset + 2000));
+        Assert.AreEqual(new Vector3(1, 1, 1).normalized * 2, move.CalcCurrentPosition(timeOffset + 3000));
     }
 
     [Test]
@@ -117,22 +124,34 @@ public class TestCommand
     }
 
     [Test]
-    [TestCase(1 / 1000.0f, 2100)]
-    [TestCase(1 / 10000.0f, 20100)]
-    [TestCase(1 / 100000.0f, 200100)]
-    [TestCase(1 / 1000000.0f, 2000100)]
-    public void MoveCommandGoalTime(float speed, long expectTime)
+    [TestCase(1 / 1000.0f, 2100, 0)]
+    [TestCase(1 / 10000.0f, 20100, 0)]
+    [TestCase(1 / 100000.0f, 200100, 0)]
+    [TestCase(1 / 1000000.0f, 2000100, 0)]
+    [TestCase(1 / 1000.0f, 2100, 5)]
+    [TestCase(1 / 10000.0f, 20100, 5)]
+    [TestCase(1 / 100000.0f, 200100, 5)]
+    [TestCase(1 / 1000000.0f, 2000100, 5)]
+    [TestCase(1 / 1000.0f, 2100, 1648084343000)]
+    [TestCase(1 / 10000.0f, 20100, 1648084343000)]
+    [TestCase(1 / 100000.0f, 200100, 1648084343000)]
+    [TestCase(1 / 1000000.0f, 2000100, 1648084343000)]
+    [TestCase(1 / 1000.0f, 2100, 4475783471000)]
+    [TestCase(1 / 10000.0f, 20100, 4475783471000)]
+    [TestCase(1 / 100000.0f, 200100, 4475783471000)]
+    [TestCase(1 / 1000000.0f, 2000100, 4475783471000)]
+    public void MoveCommandGoalTime(float speed, long expectTime, long timeOffset)
     {
         var move = new MoveCommand
         {
             From = new Vector3(1, 0, 0),
             To = new Vector3(3, 0, 0),
-            StartTime = 100,
+            StartTime = timeOffset + 100,
             Speed = speed,
             Direction = Potato.UnitDirection.Down,
         };
 
-        Assert.That(move.GetGoalTime(), Is.GreaterThanOrEqualTo(expectTime - 1).And.LessThanOrEqualTo(expectTime));
+        Assert.That(move.GetGoalTime(), Is.GreaterThanOrEqualTo(timeOffset + expectTime - 1).And.LessThanOrEqualTo(timeOffset + expectTime));
     }
 
     [Test]
