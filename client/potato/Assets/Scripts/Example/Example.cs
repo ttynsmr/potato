@@ -31,6 +31,8 @@ namespace Potato
 
         private Queue<Torikime.Diagnosis.Gizmo.Notification> gizmoQueue = new Queue<Torikime.Diagnosis.Gizmo.Notification>();
 
+        private ConcurrentQueue<Action> queue = new ConcurrentQueue<Action>();
+
         private IEnumerator Start()
         {
             var task = UnityEngine.SceneManagement.SceneManager.LoadSceneAsync("Assets/Examples/Map1/Map1.unity", UnityEngine.SceneManagement.LoadSceneMode.Additive);
@@ -63,6 +65,38 @@ namespace Potato
 
             networkService = FindObjectOfType<Potato.Network.NetworkService>();
             var session = networkService.Connect(serverHost, int.Parse(serverPort));
+            Torikime.RpcHolder.Rpcs = Torikime.RpcBuilder.Build(session);
+            session.OnPayloadReceoved = (Potato.Network.Protocol.Payload payload) =>
+            {
+                var rpc = Torikime.RpcHolder.Rpcs.Find(x => x.ContractId == payload.Header.contract_id
+                 && x.RpcId == payload.Header.rpc_id);
+
+                if (rpc == null)
+                {
+                    Debug.LogError($"payload.Header.contract_id: {payload.Header.contract_id} not found {payload.Header}");
+                }
+
+                if (rpc != null && rpc.ContractId == Torikime.Diagnosis.PingPong.Rpc.StaticContractId
+                && rpc.RpcId == Torikime.Diagnosis.PingPong.Rpc.StaticRpcId)
+                {
+                    try
+                    {
+                        // call immediately(in network thread)
+                        rpc.ReceievePayload(payload);
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.LogException(e);
+                    }
+                }
+
+                if (rpc != null)
+                {
+                    queue.Enqueue(() => { rpc.ReceievePayload(payload); });
+                }
+            };
+
+
             var context = SynchronizationContext.Current;
             session.OnDisconnected += (_) =>
             {
@@ -70,6 +104,7 @@ namespace Potato
                 {
                     Debug.LogWarning("Session disconnected.");
 
+                    Torikime.RpcHolder.Clear();
                     unitService.Reset();
 
                     hostInputField?.gameObject.SetActive(true);
@@ -82,7 +117,7 @@ namespace Potato
             };
 
             {
-                var sendMessage = networkService.Session.GetRpc<Torikime.Chat.SendMessage.Rpc>();
+                var sendMessage = Torikime.RpcHolder.GetRpc<Torikime.Chat.SendMessage.Rpc>();
                 sendMessage.OnNotification += (notification) =>
                 {
                     //Debug.Log("Notification received: " + notification.From + "[" + notification.Message + "]");
@@ -98,36 +133,36 @@ namespace Potato
             }
 
             {
-                var unitSpawn = networkService.Session.GetRpc<Torikime.Unit.Spawn.Rpc>();
+                var unitSpawn = Torikime.RpcHolder.GetRpc<Torikime.Unit.Spawn.Rpc>();
                 unitSpawn.OnNotification += (notification) =>
                 {
                     var unit = new PlayerUnit(networkService.Now, new UnitId(notification.UnitId), notification.Position.ToVector3(), notification.Direction, notification.Avatar);
                     unitService.Register(unit);
                 };
 
-                var unitDespawn = networkService.Session.GetRpc<Torikime.Unit.Despawn.Rpc>();
+                var unitDespawn = Torikime.RpcHolder.GetRpc<Torikime.Unit.Despawn.Rpc>();
                 unitDespawn.OnNotification += (notification) =>
                 {
                     unitService.UnregisterByUnitId(new UnitId(notification.UnitId));
                 };
 
-                var unitMove = networkService.Session.GetRpc<Torikime.Unit.Move.Rpc>();
+                var unitMove = Torikime.RpcHolder.GetRpc<Torikime.Unit.Move.Rpc>();
                 unitMove.OnNotification += unitService.OnReceiveMove;
 
-                var unitStop = networkService.Session.GetRpc<Torikime.Unit.Stop.Rpc>();
+                var unitStop = Torikime.RpcHolder.GetRpc<Torikime.Unit.Stop.Rpc>();
                 unitStop.OnNotification += unitService.OnReceiveStop;
 
-                var unitKnockback = networkService.Session.GetRpc<Torikime.Unit.Knockback.Rpc>();
+                var unitKnockback = Torikime.RpcHolder.GetRpc<Torikime.Unit.Knockback.Rpc>();
                 unitKnockback.OnNotification += unitService.OnReceiveKnockback;
             }
 
             {
-                var gizmo = networkService.Session.GetRpc<Torikime.Diagnosis.Gizmo.Rpc>();
+                var gizmo = Torikime.RpcHolder.GetRpc<Torikime.Diagnosis.Gizmo.Rpc>();
                 gizmo.OnNotification += (notification) => { gizmoQueue.Enqueue(notification); };
             }
 
             {
-                var battleSkillCast = networkService.Session.GetRpc<Torikime.Battle.SkillCast.Rpc>();
+                var battleSkillCast = Torikime.RpcHolder.GetRpc<Torikime.Battle.SkillCast.Rpc>();
                 battleSkillCast.OnNotification += unitService.OnReceiveSkillCast;
             }
 
@@ -137,7 +172,7 @@ namespace Potato
             yield return new WaitUntil(() => timeSyncronized);
             panel.SetActive(false);
 
-            yield return networkService.Session.GetRpc<Torikime.Auth.Login.Rpc>().RequestCoroutine(
+            yield return Torikime.RpcHolder.GetRpc<Torikime.Auth.Login.Rpc>().RequestCoroutine(
                 new Torikime.Auth.Login.Request { UserId = nameInputField.text, Password = "" },
                 (response) => {
                     Debug.Log($"Login response {response.Ok}, {response.Token}");
@@ -145,7 +180,7 @@ namespace Potato
 
 
             {
-                var rpc = networkService.Session.GetRpc<Torikime.Unit.SpawnReady.Rpc>();
+                var rpc = Torikime.RpcHolder.GetRpc<Torikime.Unit.SpawnReady.Rpc>();
                 yield return rpc.RequestCoroutine(new Torikime.Unit.SpawnReady.Request { AreaId = 0 }, (response) => {
                     var unit = new ControllablePlayerUnit(networkService, new UnitId(response.UnitId), response.Position.ToVector3(), response.Direction, response.Avatar);
                     unitService.Register(unit);
@@ -167,7 +202,7 @@ namespace Potato
         {
             while (true)
             {
-                var pingpong = networkService.Session.GetRpc<Torikime.Diagnosis.PingPong.Rpc>();
+                var pingpong = Torikime.RpcHolder.GetRpc<Torikime.Diagnosis.PingPong.Rpc>();
                 var request = new Torikime.Diagnosis.PingPong.Request();
                 DateTime UnixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, 0);
                 request.SendTime = (long)(DateTime.UtcNow - UnixEpoch).TotalMilliseconds;
@@ -208,6 +243,14 @@ namespace Potato
             }
         }
 
+        private void Update()
+        {
+            while (queue.TryDequeue(out var action))
+            {
+                action();
+            }
+        }
+
         private void LateUpdate()
         {
             if (networkService == null)
@@ -217,7 +260,7 @@ namespace Potato
 
             {
                 var request = new Torikime.Diagnosis.SeverSessions.Request();
-                var rpc = networkService.Session.GetRpc<Torikime.Diagnosis.SeverSessions.Rpc>();
+                var rpc = Torikime.RpcHolder.GetRpc<Torikime.Diagnosis.SeverSessions.Rpc>();
                 rpc.Request(request, (response) =>
                     {
                         sessionCountText.text = "Current session count is " + response.SessionCount;

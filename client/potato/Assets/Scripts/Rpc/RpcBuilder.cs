@@ -1,6 +1,4 @@
-using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace Torikime
 {
@@ -36,7 +34,20 @@ namespace Torikime
             };
             return rpcs;
         }
+    }
 
-        //static List<IRpc> rpcs = new List<IRpc>();
+    public static class RpcHolder
+    {
+        public static List<IRpc> Rpcs { get; set; }
+
+        public static void Clear()
+        {
+            Rpcs.Clear();
+        }
+
+        public static T GetRpc<T>() where T : IRpc
+        {
+            return (T)Rpcs.Find(x => x is T);
+        }
     }
 }

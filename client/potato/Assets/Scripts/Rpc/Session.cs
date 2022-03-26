@@ -14,12 +14,20 @@ namespace Potato
     {
         public class Session
         {
+
+            public Action<Session> OnDisconnected { get; set; }
+            public Action<Payload> OnPayloadReceoved { get; set; }
+
+            private CancellationTokenSource tokenSource = new CancellationTokenSource();
+            private Task receieverTask;
+
+            private TcpClient client;
+
             public Session(TcpClient client)
             {
                 client.NoDelay = true;
                 client.ReceiveBufferSize = 256 * 1024;
                 this.client = client;
-                rpcs = Torikime.RpcBuilder.Build(this);
             }
 
             public void Disconnect()
@@ -27,7 +35,6 @@ namespace Potato
                 Debug.Log("disconnecting");
                 tokenSource?.Cancel();
                 receieverTask?.Wait();
-                rpcs.Clear();
                 client.Close();
                 client.Dispose();
                 Debug.Log("disconnected");
@@ -37,11 +44,6 @@ namespace Potato
             {
                 // Debug.Log("sent: " + payload.GetBuffer().Length + " bytes");
                 client.GetStream().Write(payload.GetBuffer(), 0, payload.GetBuffer().Length);
-            }
-
-            public T GetRpc<T>() where T : Torikime.IRpc
-            {
-                return (T)rpcs.Find(x => x is T);
             }
 
             public void Start()
@@ -78,36 +80,7 @@ namespace Potato
                             }
                             Debug.Assert(readSize.Result == payload.Header.payloadSize);
 
-                            var rpc = rpcs.Find(x => x.ContractId == payload.Header.contract_id
-                             && x.RpcId == payload.Header.rpc_id);
-
-                            if (rpc == null)
-                            {
-                                Debug.LogError($"payload.Header.contract_id: {payload.Header.contract_id} not found {payload.Header}");
-                            }
-
-                            if (rpc != null && rpc.ContractId == Torikime.Diagnosis.PingPong.Rpc.StaticContractId
-                            && rpc.RpcId == Torikime.Diagnosis.PingPong.Rpc.StaticRpcId)
-                            {
-                                try
-                                {
-                                    rpc.ReceievePayload(payload);
-                                }
-                                catch (Exception)
-                                {
-                                    if (!client.Connected)
-                                    {
-                                        tokenSource.Cancel();
-                                        break;
-                                    }
-                                }
-                                continue;
-                            }
-
-                            if (rpc != null)
-                            {
-                                queue.Enqueue(() => { rpc.ReceievePayload(payload); });
-                            }
+                            OnPayloadReceoved?.Invoke(payload);
                         }
                         catch (Exception e)
                         {
@@ -128,22 +101,7 @@ namespace Potato
 
             public void Update()
             {
-                while (queue.TryDequeue(out var action))
-                {
-                    action();
-                }
             }
-
-            public Action<Session> OnDisconnected { get; set; }
-
-            CancellationTokenSource tokenSource = new CancellationTokenSource();
-            Task receieverTask;
-            private ConcurrentQueue<Action> queue = new ConcurrentQueue<Action>();
-
-
-            private List<Torikime.IRpc> rpcs;
-
-            private TcpClient client;
         }
     }
 }

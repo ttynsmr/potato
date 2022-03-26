@@ -130,7 +130,7 @@ public class ControllablePlayerUnit : IUnit
                 command = stopCommand;
                 currentMove = null;
                 var currentMoveCommand = (MoveCommand)history.Last();
-                var unitStop = _networkService.Session.GetRpc<Torikime.Unit.Stop.Rpc>();
+                var unitStop = Torikime.RpcHolder.GetRpc<Torikime.Unit.Stop.Rpc>();
                 unitStop.Request(new Torikime.Unit.Stop.Request
                 {
                     UnitId = UnitId.RawValue,
@@ -168,7 +168,7 @@ public class ControllablePlayerUnit : IUnit
                 };
                 command = moveCommand;
                 currentMove = moveCommand;
-                var unitMove = _networkService.Session.GetRpc<Torikime.Unit.Move.Rpc>();
+                var unitMove = Torikime.RpcHolder.GetRpc<Torikime.Unit.Move.Rpc>();
                 unitMove.Request(new Torikime.Unit.Move.Request
                 {
                     UnitId = UnitId.RawValue,
@@ -194,7 +194,7 @@ public class ControllablePlayerUnit : IUnit
         {
             var context = SynchronizationContext.Current;
             prevAttackButton = true;
-            var skillCast = _networkService.Session.GetRpc<Torikime.Battle.SkillCast.Rpc>();
+            var skillCast = Torikime.RpcHolder.GetRpc<Torikime.Battle.SkillCast.Rpc>();
             skillCast.Request(new Torikime.Battle.SkillCast.Request
             {
                 SkillId = 0,
