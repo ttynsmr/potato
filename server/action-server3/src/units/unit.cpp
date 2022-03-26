@@ -217,11 +217,23 @@ Eigen::Vector3f Unit::getTrackbackPosition(int64_t now) const
 
 	auto lastMoveCommand = std::dynamic_pointer_cast<MoveCommand>((*past));
 	long lastActionTime = now;
-	if (lastMoveCommand == nullptr)
+	switch ((*past)->getCommandType())
 	{
-		auto stopCommand = std::dynamic_pointer_cast<StopCommand>((*past));
-		lastMoveCommand = stopCommand->lastMoveCommand.lock();
-		lastActionTime = stopCommand->getActionTime();
+	case CommandType::Move:
+		break;
+	case CommandType::KnockBack:
+		{
+			auto knockbackCommand = std::dynamic_pointer_cast<KnockbackCommand>((*past));
+			lastActionTime = std::min(lastActionTime, knockbackCommand->endTime);
+		}
+		break;
+	case CommandType::Stop:
+		{
+			auto stopCommand = std::dynamic_pointer_cast<StopCommand>((*past));
+			lastMoveCommand = stopCommand->lastMoveCommand.lock();
+			lastActionTime = stopCommand->getActionTime();
+		}
+		break;
 	}
 
 	auto distance = (lastMoveCommand->to - lastMoveCommand->from).norm();
