@@ -23,7 +23,7 @@ RUN python3 -m pip install --upgrade pip \
 FROM builder AS action_server3_build
 COPY . /opt/app/action-server3
 RUN cd /opt/app/action-server3 \
-    && cd torikime && pipenv install && pipenv install pyyaml jinja2 inflection && cd ..
+    && cd torikime && pipenv sync && cd ..
 RUN cd /opt/app/action-server3 \
     && mkdir -p build.docker \
     && cmake -H. -Bbuild.docker -GNinja \
