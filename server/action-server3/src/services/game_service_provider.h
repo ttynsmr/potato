@@ -7,6 +7,8 @@
 #include "service_provider.h"
 #include "session/session_types.h"
 
+#include "user/user.h"
+
 namespace potato
 {
 	class UnitRegistory;
@@ -62,6 +64,7 @@ private:
 	std::atomic<bool> _running = true;
 	std::thread _thread;
 	eventpp::EventQueue<int, void(std::function<void()>)> queue;
+	IdLookupContainer _idMapper;
 
 	uint64_t _attackId = 0;
 };

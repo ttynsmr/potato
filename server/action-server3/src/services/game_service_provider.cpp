@@ -28,6 +28,8 @@
 
 #include "area/area.h"
 
+#include "user/user.h"
+
 #include "generated/cpp/auth_login.h"
 #include "generated/cpp/chat_send_message.h"
 #include "generated/cpp/diagnosis_sever_sessions.h"
@@ -145,15 +147,37 @@ void GameServiceProvider::initialize()
 
 void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> session)
 {
+	_idMapper.insert({ UserId(0), session->getSessionId(), UnitId(0) });
+
 	auto authLogin = std::make_shared<torikime::auth::login::Rpc>(session);
 	authLogin->subscribeRequest([this, session](const auto& requestParcel, auto& responser)
 		{
-			torikime::auth::login::Response response;
-			response.set_ok(true);
-			responser->send(true, std::move(response));
-
 			session->setDisplayName(requestParcel.request().user_id());
-			fmt::print("session id[{}] user_id: {} logged in\n", session->getSessionId(), requestParcel.request().user_id());
+
+			UserAuthenticator authenticator;
+			auto r = authenticator.DoAuth(requestParcel.request().user_id(), requestParcel.request().password());
+			if (r.has_value())
+			{
+				torikime::auth::login::Response response;
+
+				// update user id
+				auto& session_index = _idMapper.get<session_id>();
+				auto binderIt = session_index.find(session->getSessionId());
+				if (binderIt != session_index.end())
+				{
+					session_index.replace(binderIt, { r.value(), binderIt->sessionId, binderIt->unitId });
+				}
+
+				fmt::print("session id[{}] user_id: {}({}) logged in\n", session->getSessionId(), r.value(), requestParcel.request().user_id());
+				response.set_ok(true);
+				responser->send(true, std::move(response));
+			}
+			else
+			{
+				torikime::auth::login::Response response;
+				response.set_ok(false);
+				responser->send(false, std::move(response));
+			}
 			});
 	_nerworkServiceProvider.lock()->registerRpc(authLogin);
 
@@ -208,6 +232,14 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 		{
 			auto newUnit = _unitRegistory->createUnit(session->getSessionId());
 			newUnit->setDisplayName(session->getDisplayName());
+
+			// update unit id
+			auto& session_index = _idMapper.get<session_id>();
+			auto binderIt = session_index.find(session->getSessionId());
+			if (binderIt != session_index.end())
+			{
+				session_index.replace(binderIt, { binderIt->userId, binderIt->sessionId, newUnit->getUnitId() });
+			}
 
 			const auto areaId = static_cast<AreaId>(request.request().area_id());
 			// response
@@ -451,6 +483,7 @@ void GameServiceProvider::onSessionStarted(std::shared_ptr<potato::net::session>
 
 void GameServiceProvider::onDisconnected(std::shared_ptr<potato::net::session> session)
 {
+	// TODO: https://github.com/ttynsmr/potato/issues/152
 	auto unit = _unitRegistory->findUnitBySessionId(session->getSessionId());
 	sendDespawn(session->getSessionId(), unit);
 
