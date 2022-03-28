@@ -188,8 +188,8 @@ public:
 	void setUnitAction(UnitAction unitAction) { _action = unitAction; }
 
 private:
-	const UnitId _unitId = 0;
-	potato::net::SessionId _sessionId = 0;
+	const UnitId _unitId = UnitId(0);
+	potato::net::SessionId _sessionId = potato::net::SessionId(0);
 	AreaId _areaId = 0;
 	int64_t simulatedNow = 0;
 	int32_t _lastLatency = 0;

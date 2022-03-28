@@ -124,7 +124,7 @@ void NetworkServiceProvider::do_accept()
 		socket.set_option(boost::asio::socket_base::send_buffer_size(128 * 1024));
 		if (!ec)
 		{
-			auto session = std::make_shared<potato::net::session>(std::move(socket), ++_sessionIdGenerateCounter);
+			auto session = std::make_shared<potato::net::session>(std::move(socket), potato::net::SessionId(++_sessionIdGenerateCounter));
 			session->subscribeDisconnect([this, session](potato::net::SessionId sessionId)
 				{
 					_disconnectedDelegate(session);

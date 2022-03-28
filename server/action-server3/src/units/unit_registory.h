@@ -27,7 +27,7 @@ namespace potato
 
 	private:
 		UnitId generateUnitId();
-		UnitId currentUnitId = 0;
+		UnitId currentUnitId = UnitId(0);
 		std::list<std::shared_ptr<Unit>> units;
 	};
 }
