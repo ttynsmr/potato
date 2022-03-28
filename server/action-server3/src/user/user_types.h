@@ -2,7 +2,7 @@
 
 #include <strong_type/strong_type.hpp>
 struct user_id {};
-using UserId = strong::type<uint64_t, struct user_id, strong::ordered, strong::equality, strong::hashable>;
+using UserId = strong::type<uint64_t, struct user_id, strong::ordered, strong::equality, strong::hashable, strong::default_constructible>;
 
 namespace boost
 {

@@ -4,7 +4,7 @@
 namespace potato::net
 {
 	struct session_id {};
-	using SessionId = strong::type<int32_t, struct session_id, strong::ordered, strong::equality, strong::hashable>;
+	using SessionId = strong::type<int32_t, struct session_id, strong::ordered, strong::equality, strong::hashable, strong::default_constructible>;
 }
 
 namespace boost

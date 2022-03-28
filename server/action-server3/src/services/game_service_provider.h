@@ -8,9 +8,11 @@
 #include "session/session_types.h"
 
 #include "user/user.h"
+#include "user/user_registory.h"
 
 namespace potato
 {
+	class UserRegistory;
 	class UnitRegistory;
 	class Area;
 
@@ -57,6 +59,7 @@ public:
 private:
 	GameServiceProvider() = default;
 	std::shared_ptr<Service> _service;
+	std::shared_ptr<potato::UserRegistory> _userRegistory;
 	std::shared_ptr<potato::UnitRegistory> _unitRegistory;
 	std::list<std::shared_ptr<potato::Area>> _areas;
 	int64_t messageId = 0;

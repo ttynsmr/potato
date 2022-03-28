@@ -29,6 +29,7 @@
 #include "area/area.h"
 
 #include "user/user.h"
+#include "user/user_registory.h"
 
 #include "generated/cpp/auth_login.h"
 #include "generated/cpp/chat_send_message.h"
@@ -44,7 +45,10 @@
 #include "generated/cpp/battle_skill_cast.h"
 
 GameServiceProvider::GameServiceProvider(std::shared_ptr<Service> service)
-	: _service(service), _unitRegistory(std::make_shared<potato::UnitRegistory>()) {}
+	: _service(service)
+	, _userRegistory(std::make_shared<potato::UserRegistory>())
+	, _unitRegistory(std::make_shared<potato::UnitRegistory>())
+{}
 
 bool GameServiceProvider::isRunning()
 {
@@ -166,6 +170,9 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 				if (binderIt != session_index.end())
 				{
 					session_index.replace(binderIt, { r.value(), binderIt->sessionId, binderIt->unitId });
+					auto user = _userRegistory->registerUser(r.value());
+					user->setSession(session);
+					user->setUnitId(binderIt->unitId);
 				}
 
 				fmt::print("session id[{}] user_id: {}({}) logged in\n", session->getSessionId(), r.value(), requestParcel.request().user_id());
@@ -483,6 +490,15 @@ void GameServiceProvider::onSessionStarted(std::shared_ptr<potato::net::session>
 
 void GameServiceProvider::onDisconnected(std::shared_ptr<potato::net::session> session)
 {
+	// update user id
+	auto& session_index = _idMapper.get<potato::net::session_id>();
+	auto binderIt = session_index.find(session->getSessionId());
+	if (binderIt != session_index.end())
+	{
+		session_index.replace(binderIt, { binderIt->userId, potato::net::SessionId(0), binderIt->unitId });
+		auto user = _userRegistory->find(binderIt->userId);
+	}
+
 	// TODO: https://github.com/ttynsmr/potato/issues/152
 	auto unit = _unitRegistory->findUnitBySessionId(session->getSessionId());
 	sendDespawn(session->getSessionId(), unit);
@@ -696,6 +712,10 @@ void GameServiceProvider::main()
 		_service->getQueue().process();
 
 		sendSystemMessage("hey");
+
+		{
+			_userRegistory->update(nowUpdate);
+		}
 
 		{
 			fps++;

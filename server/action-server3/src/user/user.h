@@ -31,3 +31,31 @@ public:
 		return std::optional<UserId>(std::hash<std::string>()(id + password));
 	}
 };
+
+namespace potato
+{
+	namespace net
+	{
+		class session;
+	}
+
+	class User
+	{
+	public:
+		User(UserId userId);
+
+		UserId getUserId() const;
+
+		potato::net::SessionId getSessionId() const;
+		void setSession(std::shared_ptr<potato::net::session> session);
+
+		UnitId getUnitId() const;
+		void setUnitId(UnitId unitId);
+
+	private:
+		UserId _userId;
+		std::weak_ptr<potato::net::session> _session;
+		UnitId _unitId;
+		int64_t lastConnectedTime = 0;
+	};
+}

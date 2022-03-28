@@ -4,7 +4,7 @@
 
 #include <strong_type/strong_type.hpp>
 struct unit_id {};
-using UnitId = strong::type<uint64_t, struct unit_id, strong::ordered, strong::equality, strong::hashable, strong::incrementable>;
+using UnitId = strong::type<uint64_t, struct unit_id, strong::ordered, strong::equality, strong::hashable, strong::incrementable, strong::default_constructible>;
 
 namespace boost
 {
