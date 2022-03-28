@@ -168,7 +168,7 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 					session_index.replace(binderIt, { r.value(), binderIt->sessionId, binderIt->unitId });
 				}
 
-				fmt::print("session id[{}] user_id: {}({}) logged in\n", session->getSessionId(), r.value(), requestParcel.request().user_id());
+				fmt::print("session id[{}] user_id: {}({}) logged in\n", session->getSessionId(), value_of(r.value()), requestParcel.request().user_id());
 				response.set_ok(true);
 				responser->send(true, std::move(response));
 			}

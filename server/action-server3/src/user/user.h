@@ -2,8 +2,12 @@
 
 #include <strong_type/strong_type.hpp>
 struct user_id {};
-//using UserId = strong::type<uint64_t, struct user_id, strong::ordered>;
-using UserId = uint64_t;
+using UserId = strong::type<uint64_t, struct user_id, strong::ordered, strong::equality, strong::hashable>;
+
+namespace boost
+{
+	inline size_t hash_value(const UserId& v) { return std::hash<UserId>()(v); }
+}
 
 #include <boost/multi_index_container.hpp>
 #include <boost/multi_index/member.hpp>
@@ -36,6 +40,6 @@ class UserAuthenticator
 public:
 	std::optional<UserId> DoAuth(std::string id, std::string password)
 	{
-		return UserId(std::hash<std::string>()(id + password));
+		return std::optional<UserId>(std::hash<std::string>()(id + password));
 	}
 };
