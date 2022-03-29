@@ -38,7 +38,7 @@ namespace potato::net
 
 		SessionId getSessionId() const { return _sessionId; }
 
-		static constexpr SessionId getSystemSessionId() { return 0; }
+		static constexpr SessionId getSystemSessionId() { return SessionId(0); }
 
 		void setDisplayName(const std::string& displayName) { _displayName = displayName; }
 		const std::string& getDisplayName() const { return _displayName; }

@@ -28,6 +28,9 @@
 
 #include "area/area.h"
 
+#include "user/user.h"
+#include "user/user_registory.h"
+
 #include "generated/cpp/auth_login.h"
 #include "generated/cpp/chat_send_message.h"
 #include "generated/cpp/diagnosis_sever_sessions.h"
@@ -42,7 +45,10 @@
 #include "generated/cpp/battle_skill_cast.h"
 
 GameServiceProvider::GameServiceProvider(std::shared_ptr<Service> service)
-	: _service(service), _unitRegistory(std::make_shared<potato::UnitRegistory>()) {}
+	: _service(service)
+	, _userRegistory(std::make_shared<potato::UserRegistory>())
+	, _unitRegistory(std::make_shared<potato::UnitRegistory>())
+{}
 
 bool GameServiceProvider::isRunning()
 {
@@ -58,6 +64,24 @@ void GameServiceProvider::initialize()
 	_nerworkServiceProvider.lock()->setAcceptedDelegate([this](auto _) { onAccepted(_); });
 	_nerworkServiceProvider.lock()->setSessionStartedDelegate([this](auto _) { onSessionStarted(_); });
 	_nerworkServiceProvider.lock()->setDisconnectedDelegate([this](auto _) { onDisconnected(_); });
+
+	_userRegistory->setOnUnregisterUser([this](auto user) {
+		auto unit = _unitRegistory->findUnitByUnitId(user->getUnitId());
+		sendDespawn(potato::net::SessionId(0), unit);
+
+		auto areaId = unit->getAreaId();
+		auto areaIt = std::find_if(_areas.begin(), _areas.end(), [areaId](auto& area) { return area->getAreaId() == areaId; });
+		if (areaIt != _areas.end())
+		{
+			(*areaIt)->leave(unit);
+		}
+
+		_unitRegistory->unregisterUnit(unit);
+
+		auto& user_index = _idMapper.get<user_id>();
+		auto binderIt = user_index.find(user->getUserId());
+		_idMapper.erase(binderIt);
+		});
 
 	{
 		auto addToArea = [this](AreaId areaId, std::shared_ptr<Unit> newUnit) {
@@ -121,14 +145,14 @@ void GameServiceProvider::initialize()
 					moveCommand->direction = getMoveDirection(randomDirection);
 					moveCommand->moveId = 0;
 					unit->inputCommand(moveCommand);
-					sendMove(0, unit, moveCommand);
+					sendMove(potato::net::SessionId(0), unit, moveCommand);
 
 					auto stopCommand = std::make_shared<StopCommand>();
 					stopCommand->stopTime = now + 2000;
 					stopCommand->direction = moveCommand->direction;
 					stopCommand->moveId = 0;
 					unit->inputCommand(stopCommand);
-					sendStop(0, unit, stopCommand);
+					sendStop(potato::net::SessionId(0), unit, stopCommand);
 
 					const auto expectStop = moveCommand->getPosition(stopCommand->stopTime);
 					fmt::print("from: {}, {}, {}  to:{}, {}, {}  expectStop:{}, {}, {}\n",
@@ -146,21 +170,61 @@ void GameServiceProvider::initialize()
 void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> session)
 {
 	auto authLogin = std::make_shared<torikime::auth::login::Rpc>(session);
-	authLogin->subscribeRequest([this, session](const auto& requestParcel, auto& responser)
+	auto weakSession = std::weak_ptr(session);
+	authLogin->subscribeRequest([this, weakSession](const auto& requestParcel, auto& responser)
 		{
-			torikime::auth::login::Response response;
-			response.set_ok(true);
-			responser->send(true, std::move(response));
+			auto session = weakSession.lock();
+			assert(session);
 
 			session->setDisplayName(requestParcel.request().user_id());
-			fmt::print("session id[{}] user_id: {} logged in\n", session->getSessionId(), requestParcel.request().user_id());
+
+			UserAuthenticator authenticator;
+			auto r = authenticator.DoAuth(requestParcel.request().user_id(), requestParcel.request().password());
+			if (r.has_value())
+			{
+				std::string user_id_name = requestParcel.request().user_id();
+				queue.enqueue(0, [this, session, responser, user_id_name, r]() {
+					torikime::auth::login::Response response;
+
+					std::shared_ptr<potato::User> user;
+					auto& user_index = _idMapper.get<user_id>();
+					auto binderIt = user_index.find(r.value());
+					if (binderIt != user_index.end())
+					{
+						// rebind session
+						user_index.replace(binderIt, { r.value(), session->getSessionId(), binderIt->unitId });
+						user = _userRegistory->find(r.value());
+					}
+					else
+					{
+						// new session
+						_idMapper.insert({ r.value(), session->getSessionId(), UnitId(0) });
+						user = _userRegistory->registerUser(r.value());
+					}
+					user->setSession(session);
+					user->setUnitId(binderIt->unitId);
+
+					fmt::print("session id[{}] user_id: {}({}) logged in\n", session->getSessionId(), r.value(), user_id_name);
+					response.set_ok(true);
+					responser->send(true, std::move(response));
+				});
+			}
+			else
+			{
+				torikime::auth::login::Response response;
+				response.set_ok(false);
+				responser->send(false, std::move(response));
+			}
 			});
 	_nerworkServiceProvider.lock()->registerRpc(authLogin);
 
 	auto chat = std::make_shared<torikime::chat::send_message::Rpc>(session);
 	std::weak_ptr<torikime::chat::send_message::Rpc> weak_chat = chat;
-	chat->subscribeRequest([this, weak_chat, session](const torikime::chat::send_message::RequestParcel& requestParcel, std::shared_ptr<torikime::chat::send_message::Responser>& responser)
+	chat->subscribeRequest([this, weak_chat, weakSession](const torikime::chat::send_message::RequestParcel& requestParcel, std::shared_ptr<torikime::chat::send_message::Responser>& responser)
 		{
+			auto session = weakSession.lock();
+			assert(session);
+
 			//std::cout << "receive RequestParcel\n";
 			const auto message = requestParcel.request().message();
 			torikime::chat::send_message::Response response;
@@ -171,7 +235,7 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 			torikime::chat::send_message::Notification notification;
 			notification.set_message(message);
 			notification.set_message_id(messageId);
-			notification.set_from(std::to_string(session->getSessionId()));
+			notification.set_from(fmt::to_string(session->getSessionId()));
 			_nerworkServiceProvider.lock()->sendBroadcast(session->getSessionId(), weak_chat.lock()->serializeNotification(notification)); });
 	_nerworkServiceProvider.lock()->registerRpc(chat);
 
@@ -184,8 +248,11 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 	_nerworkServiceProvider.lock()->registerRpc(diagnosis);
 
 	auto pingPong = std::make_shared<torikime::diagnosis::ping_pong::Rpc>(session);
-	pingPong->subscribeRequest([this, pingPong, session](const torikime::diagnosis::ping_pong::RequestParcel& requestParcel, std::shared_ptr<torikime::diagnosis::ping_pong::Responser>& responser)
+	pingPong->subscribeRequest([this, pingPong, weakSession](const torikime::diagnosis::ping_pong::RequestParcel& requestParcel, std::shared_ptr<torikime::diagnosis::ping_pong::Responser>& responser)
 		{
+			auto session = weakSession.lock();
+			assert(session);
+
 			auto& units = _unitRegistory->getUnits();
 			auto unit = std::find_if(units.begin(), units.end(), [this, &units, &pingPong, requestParcel](auto& u) {
 				return pingPong->getSession()->getSessionId() == u->getSessionId();
@@ -204,10 +271,32 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 	_nerworkServiceProvider.lock()->registerRpc(pingPong);
 
 	auto unitSpawnReady = std::make_shared<torikime::unit::spawn_ready::Rpc>(session);
-	unitSpawnReady->subscribeRequest([this, session](const auto& request, auto& responser)
+	unitSpawnReady->subscribeRequest([this, weakSession](const auto& request, auto& responser)
 		{
-			auto newUnit = _unitRegistory->createUnit(session->getSessionId());
+			auto session = weakSession.lock();
+			assert(session);
+
+			std::shared_ptr<Unit> newUnit;
+			auto& session_index = _idMapper.get<potato::net::session_id>();
+			auto binderIt = session_index.find(session->getSessionId());
+			if (binderIt != session_index.end() && binderIt->unitId != UnitId(0))
+			{
+				newUnit = _unitRegistory->findUnitByUnitId(binderIt->unitId);
+				newUnit->setSessionId(session->getSessionId());
+			}
+			else
+			{
+				newUnit = _unitRegistory->createUnit(session->getSessionId());
+			}
 			newUnit->setDisplayName(session->getDisplayName());
+
+			// update unit id
+			if (binderIt != session_index.end())
+			{
+				session_index.replace(binderIt, { binderIt->userId, binderIt->sessionId, newUnit->getUnitId() });
+				auto user = _userRegistory->find(binderIt->userId);
+				user->setUnitId(newUnit->getUnitId());
+			}
 
 			const auto areaId = static_cast<AreaId>(request.request().area_id());
 			// response
@@ -225,13 +314,13 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 				area->enter(newUnit);
 
 				torikime::unit::spawn_ready::Response response;
-				response.set_session_id(session->getSessionId());
-				response.set_unit_id(newUnit->getUnitId());
+				response.set_session_id(session->getSessionId().value_of());
+				response.set_unit_id(newUnit->getUnitId().value_of());
 				auto position = new potato::Vector3();
-				position->set_x(0);
-				position->set_y(0);
-				position->set_z(0);
-				response.set_allocated_position(new potato::Vector3());
+				position->set_x(newUnit->getPosition().x());
+				position->set_y(newUnit->getPosition().y());
+				position->set_z(newUnit->getPosition().z());
+				response.set_allocated_position(position);
 				response.set_direction(potato::UNIT_DIRECTION_DOWN);
 				auto individuality = new potato::Individuality();
 				individuality->set_type(potato::UNIT_TYPE_PLAYER);
@@ -248,8 +337,11 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 	_nerworkServiceProvider.lock()->registerRpc(unitSpawnReady);
 
 	auto unitMove = std::make_shared<torikime::unit::move::Rpc>(session);
-	unitMove->subscribeRequest([this, session](const auto& requestParcel, auto& responser)
+	unitMove->subscribeRequest([this, weakSession](const auto& requestParcel, auto& responser)
 		{
+			auto session = weakSession.lock();
+			assert(session);
+
 			{
 				torikime::unit::move::Response response;
 				response.set_ok(true);
@@ -258,7 +350,7 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 
 			const auto& units = _unitRegistory->getUnits();
 			auto unit = std::find_if(units.begin(), units.end(), [requestParcel](auto& u) {
-				return requestParcel.request().unit_id() == u->getUnitId();
+				return requestParcel.request().unit_id() == u->getUnitId().value_of();
 				});
 			if (unit != units.end())
 			{
@@ -293,8 +385,11 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 	_nerworkServiceProvider.lock()->registerRpc(unitMove);
 
 	auto unitStop = std::make_shared<torikime::unit::stop::Rpc>(session);
-	unitStop->subscribeRequest([this, session](const auto& requestParcel, auto& responser)
+	unitStop->subscribeRequest([this, weakSession](const auto& requestParcel, auto& responser)
 		{
+			auto session = weakSession.lock();
+			assert(session);
+
 			{
 				torikime::unit::stop::Response response;
 				response.set_ok(true);
@@ -303,7 +398,7 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 
 			const auto& units = _unitRegistory->getUnits();
 			auto unit = std::find_if(units.begin(), units.end(), [requestParcel](auto& u) {
-				return requestParcel.request().unit_id() == u->getUnitId();
+				return requestParcel.request().unit_id() == u->getUnitId().value_of();
 				});
 			if (unit != units.end())
 			{
@@ -328,9 +423,12 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 
 	{
 		auto battleSkillCast = std::make_shared<torikime::battle::skill_cast::Rpc>(session);
-		battleSkillCast->subscribeRequest([this, session](const auto& requestParcel, auto& responser)
+		battleSkillCast->subscribeRequest([this, weakSession](const auto& requestParcel, auto& responser)
 			{
 				using namespace torikime::battle::skill_cast;
+
+				auto session = weakSession.lock();
+				assert(session);
 
 				uint64_t attackId = ++_attackId;
 				uint32_t skillId = requestParcel.request().skill_id();
@@ -350,7 +448,7 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 						fmt::print("attack reveived caster:{} trigger_time:{} skill_id:{} attack_id:{}\n", casterUnit->getUnitId(), triggerTime, skillId, attackId);
 
 						Notification notification;
-						notification.set_caster_unit_id(casterUnit->getUnitId());
+						notification.set_caster_unit_id(casterUnit->getUnitId().value_of());
 						notification.set_trigger_time(triggerTime);
 						notification.set_skill_id(skillId);
 						notification.set_attack_id(attackId);
@@ -374,7 +472,7 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 
 								fmt::print("cast skill hit {} to {}\n", casterUnit->getUnitId(), unit->getUnitId());
 								auto result = notification.add_results();
-								result->set_receiver_unit_id(unit->getUnitId());
+								result->set_receiver_unit_id(unit->getUnitId().value_of());
 								result->set_damage(100);
 								result->set_heal(0);
 								result->set_miss(false);
@@ -395,7 +493,7 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 
 								{
 									torikime::unit::knockback::Notification notification;
-									notification.set_unit_id(unit->getUnitId());
+									notification.set_unit_id(unit->getUnitId().value_of());
 									notification.set_start_time(knockbackCommand->startTime);
 									notification.set_end_time(knockbackCommand->endTime);
 									auto from = new potato::Vector3();
@@ -422,7 +520,7 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 
 								{
 									torikime::unit::stop::Notification notification;
-									notification.set_unit_id(unit->getUnitId());
+									notification.set_unit_id(unit->getUnitId().value_of());
 									notification.set_time(knockbackCommand->endTime);
 									notification.set_stop_time(knockbackCommand->endTime);
 									notification.set_direction(knockbackCommand->direction);
@@ -432,10 +530,10 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 							}
 						}
 						// TODO: change to sendAreacast
-						_nerworkServiceProvider.lock()->sendBroadcast(0, Rpc::serializeNotification(notification));
+						_nerworkServiceProvider.lock()->sendBroadcast(potato::net::SessionId(0), Rpc::serializeNotification(notification));
 						for (auto& payload : knockbackPayloads)
 						{
-							_nerworkServiceProvider.lock()->sendBroadcast(0, payload);
+							_nerworkServiceProvider.lock()->sendBroadcast(potato::net::SessionId(0), payload);
 						}
 					}
 
@@ -451,16 +549,15 @@ void GameServiceProvider::onSessionStarted(std::shared_ptr<potato::net::session>
 
 void GameServiceProvider::onDisconnected(std::shared_ptr<potato::net::session> session)
 {
-	auto unit = _unitRegistory->findUnitBySessionId(session->getSessionId());
-	sendDespawn(session->getSessionId(), unit);
-
-	auto areaId = unit->getAreaId();
-	auto areaIt = std::find_if(_areas.begin(), _areas.end(), [areaId](auto& area) { return area->getAreaId() == areaId; });
-	if (areaIt != _areas.end())
+	// update user id
+	auto& session_index = _idMapper.get<potato::net::session_id>();
+	auto binderIt = session_index.find(session->getSessionId());
+	if (binderIt != session_index.end())
 	{
-		(*areaIt)->leave(unit);
+		session_index.replace(binderIt, { binderIt->userId, potato::net::SessionId(0), binderIt->unitId });
+		auto user = _userRegistory->find(binderIt->userId);
+		user->clearSession();
 	}
-	_unitRegistory->unregisterUnit(unit);
 }
 
 // TODO: move to message service
@@ -471,7 +568,7 @@ void GameServiceProvider::sendSystemMessage(const std::string& message)
 	notification.set_message_id(++messageId);
 	notification.set_from("system");
 	// session id 0 is system
-	_nerworkServiceProvider.lock()->sendBroadcast(0, torikime::chat::send_message::Rpc::serializeNotification(notification));
+	_nerworkServiceProvider.lock()->sendBroadcast(potato::net::SessionId(0), torikime::chat::send_message::Rpc::serializeNotification(notification));
 }
 
 void GameServiceProvider::sendSpawnUnit(potato::net::SessionId sessionId, std::shared_ptr<Unit> spawnUnit)
@@ -479,8 +576,8 @@ void GameServiceProvider::sendSpawnUnit(potato::net::SessionId sessionId, std::s
 	{
 		// broadcast spawn to neighbors
 		torikime::unit::spawn::Notification notification;
-		notification.set_session_id(sessionId);
-		notification.set_unit_id(spawnUnit->getUnitId());
+		notification.set_session_id(sessionId.value_of());
+		notification.set_unit_id(spawnUnit->getUnitId().value_of());
 		notification.set_area_id(spawnUnit->getAreaId());
 		auto position = new potato::Vector3();
 		position->set_x(0);
@@ -506,8 +603,8 @@ void GameServiceProvider::sendSpawnUnit(potato::net::SessionId sessionId, std::s
 			// spawn
 			{
 				torikime::unit::spawn::Notification notification;
-				notification.set_session_id(unit->getSessionId());
-				notification.set_unit_id(unit->getUnitId());
+				notification.set_session_id(unit->getSessionId().value_of());
+				notification.set_unit_id(unit->getUnitId().value_of());
 				notification.set_area_id(unit->getAreaId());
 				auto position = new potato::Vector3();
 				auto& unitPosition = unit->getPosition();
@@ -533,7 +630,7 @@ void GameServiceProvider::sendSpawnUnit(potato::net::SessionId sessionId, std::s
 				if (moveCommand != nullptr)
 				{
 					torikime::unit::move::Notification notification;
-					notification.set_unit_id(unit->getUnitId());
+					notification.set_unit_id(unit->getUnitId().value_of());
 					notification.set_time(moveCommand->startTime);
 					auto from = new potato::Vector3();
 					from->set_x(moveCommand->from[0]);
@@ -555,7 +652,7 @@ void GameServiceProvider::sendSpawnUnit(potato::net::SessionId sessionId, std::s
 				if (stopCommand != nullptr)
 				{
 					torikime::unit::stop::Notification notification;
-					notification.set_unit_id(unit->getUnitId());
+					notification.set_unit_id(unit->getUnitId().value_of());
 					auto lastMoveCommand = stopCommand->lastMoveCommand.lock();
 					auto lastMoveTime = lastMoveCommand != nullptr ? lastMoveCommand->startTime : 0;
 					notification.set_time(lastMoveTime);
@@ -580,8 +677,8 @@ void GameServiceProvider::sendDespawn(potato::net::SessionId sessionId, std::sha
 	}
 	auto unitDespawn = std::make_shared<torikime::unit::despawn::Rpc>(std::shared_ptr<potato::net::session>());
 	torikime::unit::despawn::Notification notification;
-	notification.set_session_id(sessionId);
-	notification.set_unit_id(despawnUnit->getUnitId());
+	notification.set_session_id(sessionId.value_of());
+	notification.set_unit_id(despawnUnit->getUnitId().value_of());
 	_nerworkServiceProvider.lock()->sendBroadcast(sessionId, torikime::unit::despawn::Rpc::serializeNotification(notification));
 }
 
@@ -590,7 +687,7 @@ void GameServiceProvider::sendMove(potato::net::SessionId sessionId, std::shared
 	if (moveCommand != nullptr)
 	{
 		torikime::unit::move::Notification notification;
-		notification.set_unit_id(unit->getUnitId());
+		notification.set_unit_id(unit->getUnitId().value_of());
 		notification.set_time(moveCommand->startTime);
 		auto from = new potato::Vector3();
 		from->set_x(moveCommand->from[0]);
@@ -614,7 +711,7 @@ void GameServiceProvider::sendStop(potato::net::SessionId sessionId, std::shared
 	if (stopCommand != nullptr)
 	{
 		torikime::unit::stop::Notification notification;
-		notification.set_unit_id(unit->getUnitId());
+		notification.set_unit_id(unit->getUnitId().value_of());
 		auto lastMoveCommand = stopCommand->lastMoveCommand.lock();
 		auto lastMoveTime = lastMoveCommand != nullptr ? lastMoveCommand->startTime : 0;
 		notification.set_time(lastMoveTime);
@@ -663,6 +760,10 @@ void GameServiceProvider::main()
 		_service->getQueue().process();
 
 		sendSystemMessage("hey");
+
+		{
+			_userRegistory->update(nowUpdate);
+		}
 
 		{
 			fps++;

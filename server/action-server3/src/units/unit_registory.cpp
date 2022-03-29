@@ -42,6 +42,16 @@ namespace potato
 		return *unitIt;
 	}
 
+	const std::shared_ptr<Unit> UnitRegistory::findUnitByUnitId(UnitId unitId) const
+	{
+		auto unitIt = std::find_if(units.begin(), units.end(), [unitId](auto& unit) { return unit->getUnitId() == unitId; });
+		if (unitIt == units.end())
+		{
+			return nullptr;
+		}
+		return *unitIt;
+	}
+
 	UnitId UnitRegistory::generateUnitId()
 	{
 		return ++currentUnitId;

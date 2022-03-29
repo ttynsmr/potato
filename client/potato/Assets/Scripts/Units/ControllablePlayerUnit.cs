@@ -32,6 +32,7 @@ public class ControllablePlayerUnit : IUnit
     {
         _networkService = networkService;
         UnitId = unitId;
+        Position = position;
         Direction = direction;
         this.avatar = avatar;
     }
