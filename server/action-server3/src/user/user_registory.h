@@ -26,8 +26,12 @@ namespace potato
 
 		void update(int64_t now);
 
+		using OnUnregisterUserDelegate = std::function<void(std::shared_ptr<User>)>;
+		void setOnUnregisterUser(OnUnregisterUserDelegate onUnregisterUser);
+
 	private:
 		std::list<std::shared_ptr<User>> _users;
 		std::atomic<uint64_t> _currentUserId = 0;
+		OnUnregisterUserDelegate _onUnregisterUser;
 	};
 }

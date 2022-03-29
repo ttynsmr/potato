@@ -48,9 +48,14 @@ namespace potato
 
 		potato::net::SessionId getSessionId() const;
 		void setSession(std::shared_ptr<potato::net::session> session);
+		void clearSession();
 
 		UnitId getUnitId() const;
 		void setUnitId(UnitId unitId);
+
+		void update(int64_t now);
+
+		bool isExpired(int64_t now) const;
 
 	private:
 		UserId _userId;

@@ -29,6 +29,11 @@ namespace potato
 		_session = session;
 	}
 
+	void User::clearSession()
+	{
+		_session.reset();
+	}
+
 	UnitId User::getUnitId() const
 	{
 		return _unitId;
@@ -37,5 +42,23 @@ namespace potato
 	void User::setUnitId(UnitId unitId)
 	{
 		_unitId = unitId;
+	}
+
+	void User::update(int64_t now)
+	{
+		fmt::print("unit[{}] ref: {}\n", getUnitId(), _session.use_count());
+		if (!_session.expired())
+		{
+			lastConnectedTime = now;
+		}
+	}
+
+	bool User::isExpired(int64_t now) const
+	{
+		if (lastConnectedTime == 0)
+		{
+			return false;
+		}
+		return now > lastConnectedTime + 30 * 1000;
 	}
 }

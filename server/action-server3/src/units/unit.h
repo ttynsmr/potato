@@ -138,6 +138,11 @@ public:
 		return _unitId;
 	}
 
+	void setSessionId(potato::net::SessionId sessionId)
+	{
+		_sessionId = sessionId;
+	}
+
 	potato::net::SessionId getSessionId() const
 	{
 		return _sessionId;

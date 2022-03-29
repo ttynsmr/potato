@@ -125,9 +125,10 @@ void NetworkServiceProvider::do_accept()
 		if (!ec)
 		{
 			auto session = std::make_shared<potato::net::session>(std::move(socket), potato::net::SessionId(++_sessionIdGenerateCounter));
-			session->subscribeDisconnect([this, session](potato::net::SessionId sessionId)
+			session->subscribeDisconnect([this, session](potato::net::SessionId sessionId) mutable
 				{
 					_disconnectedDelegate(session);
+					session.reset();
 
 					auto r = std::remove_if(_rpcs.begin(), _rpcs.end(), [sessionId](auto& rpc) { return rpc->getSession()->getSessionId() == sessionId; });
 					_rpcs.erase(r, _rpcs.end());
@@ -137,8 +138,10 @@ void NetworkServiceProvider::do_accept()
 
 			_acceptedDelegate(session);
 
-			session->subscribeReceivePayload([this, session](const potato::net::protocol::Payload& payload) {
+			std::weak_ptr<potato::net::session> weakSession = session;
+			session->subscribeReceivePayload([this, weakSession](const potato::net::protocol::Payload& payload) {
 				_receiveCount++;
+				std::shared_ptr<potato::net::session> session = weakSession.lock();
 				auto rpc = std::find_if(_rpcs.begin(), _rpcs.end(), [session, &payload](auto& rpc) {
 					return rpc->getSession()->getSessionId() == session->getSessionId()
 						&& rpc->getContractId() == payload.getHeader().contract_id

@@ -12,17 +12,23 @@ namespace potato
 
 	std::shared_ptr<User> UserRegistory::registerUser(UserId userId)
 	{
-		return std::make_shared<User>(userId);
+		return _users.emplace_back(std::make_shared<User>(userId));
 	}
 
 	void UserRegistory::unregisterUser(std::shared_ptr<User> user)
 	{
+		_onUnregisterUser(user);
 		_users.remove(user);
 	}
 
 	void UserRegistory::unregisterUserByUserId(UserId userId)
 	{
-		_users.remove_if([userId](auto& user) { return user->getUserId() == userId; });
+		// 💩
+		auto user = find(userId);
+		if (user)
+		{
+			unregisterUser(user);
+		}
 	}
 
 	std::shared_ptr<User> UserRegistory::find(UserId userId)
@@ -37,5 +43,22 @@ namespace potato
 
 	void UserRegistory::update(int64_t now)
 	{
+		for (auto& user : _users)
+		{
+			user->update(now);
+		}
+
+		// 💩
+		std::vector<std::shared_ptr<User>> removeUsers;
+		std::copy_if(_users.begin(), _users.end(), std::back_inserter(removeUsers), [now](auto& user) { return user->isExpired(now); });
+		for (auto& user : removeUsers)
+		{
+			unregisterUser(user);
+		}
+	}
+
+	void UserRegistory::setOnUnregisterUser(OnUnregisterUserDelegate onUnregisterUser)
+	{
+		_onUnregisterUser = onUnregisterUser;
 	}
 }
