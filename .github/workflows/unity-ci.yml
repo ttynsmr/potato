@@ -98,7 +98,6 @@ jobs:
         with:
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           projectPath: client/potato
-          allowDirtyBuild: true
 
       # Build
       - name: Build project
@@ -110,12 +109,11 @@ jobs:
         with:
           targetPlatform: ${{ matrix.target }}
           projectPath: client/potato
-          buildsPath: builds/${{ matrix.target }}
           allowDirtyBuild: true
 
       # Output
       - uses: actions/upload-artifact@v2
-        if: ${{ inputs.artifact_windows == 'true' }}
+        if: ${{ workflow_dispatch.inputs.artifact_windows == 'true' }}
         with:
           name: potato-${{ matrix.target }}
           path: builds/${{ matrix.target }}
