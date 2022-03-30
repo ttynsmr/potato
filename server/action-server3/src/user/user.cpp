@@ -46,7 +46,7 @@ namespace potato
 
 	void User::update(int64_t now)
 	{
-		fmt::print("unit[{}] ref: {}\n", getUnitId(), _session.use_count());
+		//fmt::print("unit[{}] ref: {}\n", getUnitId(), _session.use_count());
 		if (!_session.expired())
 		{
 			lastConnectedTime = now;
