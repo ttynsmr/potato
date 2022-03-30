@@ -5,6 +5,9 @@
 #include <fmt/ranges.h>
 #include <random>
 
+#include "core/configured_eigen.h"
+#include "utility/vector_utility.h"
+
 #include "session/session.h"
 #include "services/network_service_provider.h"
 
@@ -316,11 +319,7 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 				torikime::unit::spawn_ready::Response response;
 				response.set_session_id(session->getSessionId().value_of());
 				response.set_unit_id(newUnit->getUnitId().value_of());
-				auto position = new potato::Vector3();
-				position->set_x(newUnit->getPosition().x());
-				position->set_y(newUnit->getPosition().y());
-				position->set_z(newUnit->getPosition().z());
-				response.set_allocated_position(position);
+				response.set_allocated_position(newVector3(newUnit->getPosition()));
 				response.set_direction(potato::UNIT_DIRECTION_DOWN);
 				auto individuality = new potato::Individuality();
 				individuality->set_type(potato::UNIT_TYPE_PLAYER);
@@ -356,10 +355,8 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 			{
 				auto moveCommand = std::make_shared<MoveCommand>();
 				moveCommand->startTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-				const auto& from = requestParcel.request().from();
-				const auto& to = requestParcel.request().to();
-				moveCommand->from = { from.x(), from.y(), from.z() };
-				moveCommand->to = { to.x(), to.y(), to.z() };
+				moveCommand->from = toVector3f(requestParcel.request().from());
+				moveCommand->to = toVector3f(requestParcel.request().to());
 				moveCommand->speed = requestParcel.request().speed();
 				moveCommand->direction = requestParcel.request().direction();
 				moveCommand->moveId = requestParcel.request().move_id();
@@ -496,16 +493,8 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 									notification.set_unit_id(unit->getUnitId().value_of());
 									notification.set_start_time(knockbackCommand->startTime);
 									notification.set_end_time(knockbackCommand->endTime);
-									auto from = new potato::Vector3();
-									from->set_x(knockbackCommand->from[0]);
-									from->set_y(knockbackCommand->from[1]);
-									from->set_z(knockbackCommand->from[2]);
-									auto to = new potato::Vector3();
-									to->set_x(knockbackCommand->to[0]);
-									to->set_y(knockbackCommand->to[1]);
-									to->set_z(knockbackCommand->to[2]);
-									notification.set_allocated_from(from);
-									notification.set_allocated_to(to);
+									notification.set_allocated_from(newVector3(knockbackCommand->from));
+									notification.set_allocated_to(newVector3(knockbackCommand->to));
 									notification.set_speed(knockbackCommand->speed);
 									notification.set_direction(knockbackCommand->direction);
 									notification.set_move_id(knockbackCommand->moveId);
@@ -579,11 +568,7 @@ void GameServiceProvider::sendSpawnUnit(potato::net::SessionId sessionId, std::s
 		notification.set_session_id(sessionId.value_of());
 		notification.set_unit_id(spawnUnit->getUnitId().value_of());
 		notification.set_area_id(spawnUnit->getAreaId());
-		auto position = new potato::Vector3();
-		position->set_x(0);
-		position->set_y(0);
-		position->set_z(0);
-		notification.set_allocated_position(new potato::Vector3());
+		notification.set_allocated_position(newVector3({ 0, 0, 0 }));
 		notification.set_direction(potato::UNIT_DIRECTION_DOWN);
 		auto individuality = new potato::Individuality();
 		individuality->set_type(potato::UNIT_TYPE_PLAYER);
@@ -606,12 +591,7 @@ void GameServiceProvider::sendSpawnUnit(potato::net::SessionId sessionId, std::s
 				notification.set_session_id(unit->getSessionId().value_of());
 				notification.set_unit_id(unit->getUnitId().value_of());
 				notification.set_area_id(unit->getAreaId());
-				auto position = new potato::Vector3();
-				auto& unitPosition = unit->getPosition();
-				position->set_x(unitPosition[0]);
-				position->set_y(unitPosition[1]);
-				position->set_z(unitPosition[2]);
-				notification.set_allocated_position(new potato::Vector3());
+				notification.set_allocated_position(newVector3(unit->getPosition()));
 				notification.set_direction(potato::UNIT_DIRECTION_DOWN);
 				auto individuality = new potato::Individuality();
 				individuality->set_type(potato::UNIT_TYPE_PLAYER);
@@ -632,16 +612,8 @@ void GameServiceProvider::sendSpawnUnit(potato::net::SessionId sessionId, std::s
 					torikime::unit::move::Notification notification;
 					notification.set_unit_id(unit->getUnitId().value_of());
 					notification.set_time(moveCommand->startTime);
-					auto from = new potato::Vector3();
-					from->set_x(moveCommand->from[0]);
-					from->set_y(moveCommand->from[1]);
-					from->set_z(moveCommand->from[2]);
-					auto to = new potato::Vector3();
-					to->set_x(moveCommand->to[0]);
-					to->set_y(moveCommand->to[1]);
-					to->set_z(moveCommand->to[2]);
-					notification.set_allocated_from(from);
-					notification.set_allocated_to(to);
+					notification.set_allocated_from(newVector3(moveCommand->from));
+					notification.set_allocated_to(newVector3(moveCommand->to));
 					notification.set_speed(moveCommand->speed);
 					notification.set_direction(moveCommand->direction);
 					notification.set_move_id(moveCommand->moveId);
@@ -689,16 +661,8 @@ void GameServiceProvider::sendMove(potato::net::SessionId sessionId, std::shared
 		torikime::unit::move::Notification notification;
 		notification.set_unit_id(unit->getUnitId().value_of());
 		notification.set_time(moveCommand->startTime);
-		auto from = new potato::Vector3();
-		from->set_x(moveCommand->from[0]);
-		from->set_y(moveCommand->from[1]);
-		from->set_z(moveCommand->from[2]);
-		auto to = new potato::Vector3();
-		to->set_x(moveCommand->to[0]);
-		to->set_y(moveCommand->to[1]);
-		to->set_z(moveCommand->to[2]);
-		notification.set_allocated_from(from);
-		notification.set_allocated_to(to);
+		notification.set_allocated_from(newVector3(moveCommand->from));
+		notification.set_allocated_to(newVector3(moveCommand->to));
 		notification.set_speed(moveCommand->speed);
 		notification.set_direction(moveCommand->direction);
 		notification.set_move_id(moveCommand->moveId);
