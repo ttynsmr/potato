@@ -157,7 +157,7 @@ void GameServiceProvider::initialize()
 					unit->inputCommand(stopCommand);
 					sendStop(potato::net::SessionId(0), unit, stopCommand);
 
-					const auto expectStop = moveCommand->getPosition(stopCommand->stopTime);
+					//const auto expectStop = moveCommand->getPosition(stopCommand->stopTime);
 					//fmt::print("from: {}, {}, {}  to:{}, {}, {}  expectStop:{}, {}, {}\n",
 					//	from.x(), from.y(), from.z(),
 					//	to.x(), to.y(), to.z(),
