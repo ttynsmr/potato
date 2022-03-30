@@ -113,7 +113,7 @@ jobs:
 
       # Output
       - uses: actions/upload-artifact@v2
-        if: ${{ workflow_dispatch.inputs.artifact_windows == 'true' }}
+        if: ${{ github.event.inputs.artifact_windows == 'true' }}
         with:
           name: potato-${{ matrix.target }}
           path: builds/${{ matrix.target }}
