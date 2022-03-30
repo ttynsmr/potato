@@ -15,11 +15,34 @@ on:
       - "client/**"
       - "server/action-server3/torikime/**"
       - "server/action-server3/rpc/**"
+  workflow_dispatch:
+    inputs:
+      artifact_windows:
+        required: true
+        type: boolean
+        description: "Artifact Windows"
+      artifact_osx:
+        required: true
+        type: boolean
+        description: "Artifact macOS"
+      artifact_ios:
+        required: true
+        type: boolean
+        description: "Artifact iOS"
+      artifact_android:
+        required: true
+        type: boolean
+        description: "Artifact Android"
 
 jobs:
   build:
     name: ✨Build my project
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        target: [StandaloneWindows64]
+
     steps:
       # Checkout
       - name: Checkout repository
@@ -85,13 +108,14 @@ jobs:
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
-          targetPlatform: StandaloneWindows64
+          targetPlatform: ${{ matrix.node }}
           projectPath: client/potato
+          buildsPath: builds/${{ matrix.node }}
           allowDirtyBuild: true
 
       # Output
-#       - uses: actions/upload-artifact@v2
-#         if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
-#         with:
-#           name: potato
-#           path: build
+      - uses: actions/upload-artifact@v2
+        if: ${{ inputs.artifact_windows == 'true' }}
+        with:
+          name: potato-${{ matrix.node }}
+          path: builds/${{ matrix.node }}
