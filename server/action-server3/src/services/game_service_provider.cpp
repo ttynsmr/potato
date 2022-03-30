@@ -179,13 +179,11 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 			auto session = weakSession.lock();
 			assert(session);
 
-			session->setDisplayName(requestParcel.request().user_id());
-
 			UserAuthenticator authenticator;
 			auto r = authenticator.DoAuth(requestParcel.request().user_id(), requestParcel.request().password());
 			if (r.has_value())
 			{
-				std::string user_id_name = requestParcel.request().user_id();
+				const std::string user_id_name = requestParcel.request().user_id();
 				queue.enqueue(0, [this, session, responser, user_id_name, r]() {
 					torikime::auth::login::Response response;
 
@@ -206,6 +204,7 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 					}
 					user->setSession(session);
 					user->setUnitId(binderIt->unitId);
+					user->setDisplayName(user_id_name);
 
 					fmt::print("session id[{}] user_id: {}({}) logged in\n", session->getSessionId(), r.value(), user_id_name);
 					response.set_ok(true);
@@ -291,7 +290,9 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 			{
 				newUnit = _unitRegistory->createUnit(session->getSessionId());
 			}
-			newUnit->setDisplayName(session->getDisplayName());
+
+			auto user = _userRegistory->find(binderIt->userId);
+			newUnit->setDisplayName(user->getDisplayName());
 
 			// update unit id
 			if (binderIt != session_index.end())
@@ -326,7 +327,7 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 				response.set_allocated_individuality(individuality);
 				response.set_cause(potato::UNIT_SPAWN_CAUSE_LOGGEDIN);
 				auto avatar = new potato::Avatar();
-				avatar->set_name(session->getDisplayName());
+				avatar->set_name(user->getDisplayName());
 				response.set_allocated_avatar(avatar);
 				responser->send(true, std::move(response));
 			}
