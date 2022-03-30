@@ -116,4 +116,4 @@ jobs:
         if: ${{ github.event.inputs.artifact_windows == 'true' }}
         with:
           name: potato-${{ matrix.target }}
-          path: builds/${{ matrix.target }}
+          path: builds/
