@@ -73,11 +73,6 @@ void Unit::interveneHistory(std::shared_ptr<ICommand> interveneCommand)
 	//}
 }
 
-Eigen::Vector3f lerp(const Eigen::Vector3f& from, const Eigen::Vector3f& to, float progress)
-{
-	return (to - from) * progress + from;
-}
-
 void Unit::update(int64_t now)
 {
 	auto updatePosition = [this](std::shared_ptr<MoveCommand> currentMove, int64_t now) {
