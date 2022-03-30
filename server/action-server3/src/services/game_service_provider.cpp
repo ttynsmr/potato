@@ -321,7 +321,7 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 				response.set_session_id(session->getSessionId().value_of());
 				response.set_unit_id(newUnit->getUnitId().value_of());
 				response.set_allocated_position(newVector3(newUnit->getPosition()));
-				response.set_direction(potato::UNIT_DIRECTION_DOWN);
+				response.set_direction(newUnit->getDirection());
 				auto individuality = new potato::Individuality();
 				individuality->set_type(potato::UNIT_TYPE_PLAYER);
 				response.set_allocated_individuality(individuality);
