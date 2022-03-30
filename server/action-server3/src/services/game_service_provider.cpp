@@ -278,6 +278,7 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 			auto session = weakSession.lock();
 			assert(session);
 
+			bool rebind = false;
 			std::shared_ptr<Unit> newUnit;
 			auto& session_index = _idMapper.get<potato::net::session_id>();
 			auto binderIt = session_index.find(session->getSessionId());
@@ -285,6 +286,7 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 			{
 				newUnit = _unitRegistory->findUnitByUnitId(binderIt->unitId);
 				newUnit->setSessionId(session->getSessionId());
+				rebind = true;
 			}
 			else
 			{
@@ -332,7 +334,10 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 				responser->send(true, std::move(response));
 			}
 
-			sendSpawnUnit(session->getSessionId(), newUnit);
+			if (!rebind)
+			{
+				sendSpawnUnit(session->getSessionId(), newUnit);
+			}
 		});
 	_nerworkServiceProvider.lock()->registerRpc(unitSpawnReady);
 
