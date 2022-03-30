@@ -44,6 +44,16 @@ namespace potato
 		_unitId = unitId;
 	}
 
+	std::string User::getDisplayName() const
+	{
+		return _displayName;
+	}
+
+	void User::setDisplayName(const std::string& name)
+	{
+		_displayName = name;
+	}
+
 	void User::update(int64_t now)
 	{
 		//fmt::print("unit[{}] ref: {}\n", getUnitId(), _session.use_count());

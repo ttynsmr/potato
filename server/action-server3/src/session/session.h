@@ -40,9 +40,6 @@ namespace potato::net
 
 		static constexpr SessionId getSystemSessionId() { return SessionId(0); }
 
-		void setDisplayName(const std::string& displayName) { _displayName = displayName; }
-		const std::string& getDisplayName() const { return _displayName; }
-
 	private:
 		void readHeader();
 		void readPercel(const protocol::PayloadHeader& header);
@@ -51,7 +48,6 @@ namespace potato::net
 		boost::asio::ip::tcp::socket _socket;
 		SessionId _sessionId;
 		uint64_t _lastReceivedTick = 0;
-		std::string _displayName; // あとでセッションとアカウントを紐づける何かを作る
 
 		boost::asio::streambuf _receive_buffer;
 

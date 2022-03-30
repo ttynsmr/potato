@@ -12,6 +12,8 @@
 #include "session/session_types.h"
 #include "area/area_types.h"
 
+#include "utility/vector_utility.h"
+
 enum class CommandType
 {
 	Stop,
@@ -52,11 +54,6 @@ public:
 	}
 
 	virtual int64_t getGoalTime() const { return ((to - from).norm() / speed) + startTime; }
-
-	Eigen::Vector3f lerp(const Eigen::Vector3f& from, const Eigen::Vector3f& to, float progress)
-	{
-		return (to - from) * progress + from;
-	}
 
 	Eigen::Vector3f getPosition(int64_t now)
 	{

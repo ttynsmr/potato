@@ -53,6 +53,9 @@ namespace potato
 		UnitId getUnitId() const;
 		void setUnitId(UnitId unitId);
 
+		std::string getDisplayName() const;
+		void setDisplayName(const std::string& name);
+
 		void update(int64_t now);
 
 		bool isExpired(int64_t now) const;
@@ -61,6 +64,7 @@ namespace potato
 		UserId _userId;
 		std::weak_ptr<potato::net::session> _session;
 		UnitId _unitId;
+		std::string _displayName;
 		int64_t lastConnectedTime = 0;
 	};
 }
