@@ -146,11 +146,7 @@ void GameServiceProvider::initialize()
 		sendDespawn(potato::net::SessionId(0), unit);
 
 		auto areaId = unit->getAreaId();
-		auto areaIt = std::find_if(_areas.begin(), _areas.end(), [areaId](auto& area) { return area->getAreaId() == areaId; });
-		if (areaIt != _areas.end())
-		{
-			(*areaIt)->leave(unit);
-		}
+		auto area = getArea(areaId);
 
 		_unitRegistory->unregisterUnit(unit);
 
@@ -161,15 +157,10 @@ void GameServiceProvider::initialize()
 
 	{
 		auto addToArea = [this](AreaId areaId, std::shared_ptr<Unit> newUnit) {
-			std::shared_ptr<potato::Area> area;
-			auto areaIt = std::find_if(_areas.begin(), _areas.end(), [areaId](auto& area) { return area->getAreaId() == areaId; });
-			if (areaIt == _areas.end())
+			std::shared_ptr<potato::Area> area = getArea(areaId);
+			if (!area)
 			{
 				area = _areas.emplace_back(std::make_shared<potato::Area>(areaId));
-			}
-			else
-			{
-				area = *areaIt;
 			}
 			area->enter(newUnit);
 		};
@@ -796,4 +787,15 @@ void GameServiceProvider::stop()
 std::default_random_engine& GameServiceProvider::getRandomEngine()
 {
 	return _randomEngine;
+}
+
+std::shared_ptr<potato::Area> GameServiceProvider::getArea(AreaId areaId)
+{
+	auto areaIt = std::find_if(_areas.begin(), _areas.end(), [areaId](auto& area) { return area->getAreaId() == areaId; });
+	if (areaIt == _areas.end())
+	{
+		return nullptr;
+	}
+
+	return *areaIt;
 }

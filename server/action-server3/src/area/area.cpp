@@ -13,14 +13,21 @@ namespace potato
 	{
 		unit->setAreaId(getAreaId());
 		_units.push_back(unit);
+		_sessionIds.emplace(unit->getSessionId());
 	}
 
 	void Area::leave(std::shared_ptr<Unit> unit)
 	{
+		_sessionIds.erase(unit->getSessionId());
 		_units.remove_if([unit](auto& u) { return unit->getUnitId() == u.lock()->getUnitId(); });
 	}
 
 	void Area::update()
 	{
+	}
+
+	const std::set<potato::net::SessionId> Area::getSessionIds() const
+	{
+		return _sessionIds;
 	}
 }
