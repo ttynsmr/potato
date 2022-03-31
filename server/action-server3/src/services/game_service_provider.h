@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <iostream>
+#include <random>
 
 #include "service.h"
 #include "service_provider.h"
@@ -44,6 +45,7 @@ public:
 
 	void sendSystemMessage(const std::string& message);
 
+	void sendBroadcastSpawnUnit(potato::net::SessionId sessionId, std::shared_ptr<Unit> spawnUnit);
 	void sendSpawnUnit(potato::net::SessionId sessionId, std::shared_ptr<Unit> spawnUnit);
 	void sendDespawn(potato::net::SessionId sessionId, std::shared_ptr<Unit> despaenUnit);
 
@@ -55,6 +57,8 @@ public:
 	void start() override;
 
 	void stop() override;
+
+	std::default_random_engine& getRandomEngine();
 
 private:
 	GameServiceProvider() = default;
@@ -68,6 +72,7 @@ private:
 	std::thread _thread;
 	eventpp::EventQueue<int, void(std::function<void()>)> queue;
 	IdLookupContainer _idMapper;
-
+	std::random_device _randomDevice;
+	std::default_random_engine _randomEngine;
 	uint64_t _attackId = 0;
 };
