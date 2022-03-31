@@ -19,3 +19,9 @@ contracts:
         results:
           container: array
           type: potato.SkillResult
+    sync_parameters:
+      imports:
+        - "battle"
+      notification:
+        unit_id: uint64
+        parameters: potato.CharacterStatus

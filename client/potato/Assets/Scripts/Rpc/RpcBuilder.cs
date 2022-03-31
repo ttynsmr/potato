@@ -22,6 +22,7 @@ namespace Torikime
                 new Chat.SendMessage.Rpc(session),
                 new Chat.SendStamp.Rpc(session),
                 new Battle.SkillCast.Rpc(session),
+                new Battle.SyncParameters.Rpc(session),
                 new Diagnosis.SeverSessions.Rpc(session),
                 new Diagnosis.PingPong.Rpc(session),
                 new Diagnosis.Gizmo.Rpc(session),

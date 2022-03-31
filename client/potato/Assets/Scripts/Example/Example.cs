@@ -166,6 +166,11 @@ namespace Potato
                 battleSkillCast.OnNotification += unitService.OnReceiveSkillCast;
             }
 
+            {
+                var syncCharacterStatus = Torikime.RpcHolder.GetRpc<Torikime.Battle.SyncParameters.Rpc>();
+                syncCharacterStatus.OnNotification += unitService.OnReceiveCharacterStatus;
+            }
+
             networkService.StartReceive();
             StartCoroutine(DoPingPong());
 

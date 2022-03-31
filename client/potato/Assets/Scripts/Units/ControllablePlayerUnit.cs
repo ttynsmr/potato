@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading;
 using UnityEngine;
 
-public class ControllablePlayerUnit : IUnit
+public class ControllablePlayerUnit : IUnit, IHasStatus
 {
     public UnitView Appearance { get; set; }
 
@@ -27,6 +27,7 @@ public class ControllablePlayerUnit : IUnit
     public UnitId UnitId { get; private set; }
     public UnitService UnitService { get; set; }
     public Potato.UnitDirection Direction { get; set; }
+    public Potato.CharacterStatus CharacterStatus { get; set; }
 
     public ControllablePlayerUnit(Potato.Network.NetworkService networkService, UnitId unitId, Vector3 position, Potato.UnitDirection direction, Potato.Avatar avatar)
     {
