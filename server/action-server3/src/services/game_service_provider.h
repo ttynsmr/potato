@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <iostream>
+#include <random>
 
 #include "service.h"
 #include "service_provider.h"
@@ -57,6 +58,8 @@ public:
 
 	void stop() override;
 
+	std::default_random_engine& getRandomEngine();
+
 private:
 	GameServiceProvider() = default;
 	std::shared_ptr<Service> _service;
@@ -69,6 +72,7 @@ private:
 	std::thread _thread;
 	eventpp::EventQueue<int, void(std::function<void()>)> queue;
 	IdLookupContainer _idMapper;
-
+	std::random_device _randomDevice;
+	std::default_random_engine _randomEngine;
 	uint64_t _attackId = 0;
 };

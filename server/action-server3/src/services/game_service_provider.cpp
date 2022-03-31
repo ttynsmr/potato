@@ -3,7 +3,6 @@
 #include <memory>
 #include <fmt/core.h>
 #include <fmt/ranges.h>
-#include <random>
 
 #include "core/configured_eigen.h"
 #include "utility/vector_utility.h"
@@ -50,7 +49,12 @@
 class NpcComponent : public IComponent
 {
 public:
-	NpcComponent(std::shared_ptr<GameServiceProvider> gameServiceProvider) : _gameServiceProvider(gameServiceProvider) {}
+	NpcComponent(std::shared_ptr<GameServiceProvider> gameServiceProvider) : _gameServiceProvider(gameServiceProvider)
+	{
+		std::uniform_int_distribution<int64_t> dist(0, 5000);
+		_timeScattering = dist(_gameServiceProvider.lock()->getRandomEngine());
+	}
+
 	virtual ~NpcComponent() {}
 
 	void update(std::shared_ptr<Unit> unit, int64_t now)
@@ -66,19 +70,18 @@ public:
 			}
 		};
 
-		if (!unit->isMoving() && ((now / 1000) % 5) == 0)
+		auto gameServiceProvider = _gameServiceProvider.lock();
+		if (!unit->isMoving() && (((now + _timeScattering) / 1000) % 5) == 0)
 		{
 			auto moveCommand = std::make_shared<MoveCommand>();
 			moveCommand->startTime = now;
 			const auto from = unit->getTrackbackPosition(now);
 			Eigen::Vector3f randomDirection;
 
-			if (((now / 1000) % 15) != 0)
+			if ((((now + _timeScattering) / 1000) % 15) != 0)
 			{
-				std::random_device rd;
-				std::default_random_engine eng(rd());
 				std::uniform_real_distribution<float> distr(-1, 1);
-				randomDirection << distr(eng), distr(eng), 0;
+				randomDirection << distr(gameServiceProvider->getRandomEngine()), distr(gameServiceProvider->getRandomEngine()), 0;
 				randomDirection.normalize();
 			}
 			else
@@ -93,14 +96,14 @@ public:
 			moveCommand->direction = getMoveDirection(randomDirection);
 			moveCommand->moveId = 0;
 			unit->inputCommand(moveCommand);
-			_gameServiceProvider.lock()->sendMove(potato::net::SessionId(0), unit, moveCommand);
+			gameServiceProvider->sendMove(potato::net::SessionId(0), unit, moveCommand);
 
 			auto stopCommand = std::make_shared<StopCommand>();
 			stopCommand->stopTime = now + 2000;
 			stopCommand->direction = moveCommand->direction;
 			stopCommand->moveId = 0;
 			unit->inputCommand(stopCommand);
-			_gameServiceProvider.lock()->sendStop(potato::net::SessionId(0), unit, stopCommand);
+			gameServiceProvider->sendStop(potato::net::SessionId(0), unit, stopCommand);
 
 			//const auto expectStop = moveCommand->getPosition(stopCommand->stopTime);
 			//fmt::print("from: {}, {}, {}  to:{}, {}, {}  expectStop:{}, {}, {}\n",
@@ -112,13 +115,16 @@ public:
 	}
 private:
 	std::weak_ptr<GameServiceProvider> _gameServiceProvider;
+	int64_t _timeScattering = 0;
 };
 
 GameServiceProvider::GameServiceProvider(std::shared_ptr<Service> service)
 	: _service(service)
 	, _userRegistory(std::make_shared<potato::UserRegistory>())
 	, _unitRegistory(std::make_shared<potato::UnitRegistory>())
-{}
+	, _randomEngine(_randomDevice())
+{
+}
 
 bool GameServiceProvider::isRunning()
 {
@@ -785,4 +791,9 @@ void GameServiceProvider::stop()
 {
 	_running = false;
 	_thread.join();
+}
+
+std::default_random_engine& GameServiceProvider::getRandomEngine()
+{
+	return _randomEngine;
 }
