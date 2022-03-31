@@ -175,9 +175,9 @@ void Unit::update(int64_t now)
 		}
 	}
 
-	if (_action)
+	for (auto& component : _components)
 	{
-		_action(shared_from_this(), simulatedNow);
+		component.second->update(shared_from_this(), simulatedNow);
 	}
 
 	while (history.size() > 2)
