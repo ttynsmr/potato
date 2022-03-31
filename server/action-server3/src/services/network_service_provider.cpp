@@ -70,10 +70,14 @@ void NetworkServiceProvider::sendMulticast(const std::vector<potato::net::Sessio
 	}
 }
 
-void NetworkServiceProvider::sendAreacast(const std::shared_ptr<potato::Area> targetArea, std::shared_ptr<potato::net::protocol::Payload> payload)
+void NetworkServiceProvider::sendAreacast(const potato::net::SessionId fromSessionId, const std::shared_ptr<potato::Area> targetArea, std::shared_ptr<potato::net::protocol::Payload> payload)
 {
 	for (auto sessionId : targetArea->getSessionIds())
 	{
+		if (fromSessionId == sessionId)
+		{
+			continue;
+		}
 		sendTo(sessionId, payload);
 	}
 }
