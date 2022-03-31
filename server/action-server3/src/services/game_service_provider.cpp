@@ -348,8 +348,9 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 
 			if (!rebind)
 			{
-				sendSpawnUnit(session->getSessionId(), newUnit);
+				sendBroadcastSpawnUnit(session->getSessionId(), newUnit);
 			}
+			sendSpawnUnit(session->getSessionId(), newUnit);
 		});
 	_nerworkServiceProvider.lock()->registerRpc(unitSpawnReady);
 
@@ -578,81 +579,82 @@ void GameServiceProvider::sendSystemMessage(const std::string& message)
 	_nerworkServiceProvider.lock()->sendBroadcast(potato::net::SessionId(0), torikime::chat::send_message::Rpc::serializeNotification(notification));
 }
 
+void GameServiceProvider::sendBroadcastSpawnUnit(potato::net::SessionId sessionId, std::shared_ptr<Unit> spawnUnit)
+{
+	// broadcast spawn to neighbors
+	torikime::unit::spawn::Notification notification;
+	notification.set_session_id(sessionId.value_of());
+	notification.set_unit_id(spawnUnit->getUnitId().value_of());
+	notification.set_area_id(spawnUnit->getAreaId());
+	notification.set_allocated_position(newVector3({ 0, 0, 0 }));
+	notification.set_direction(potato::UNIT_DIRECTION_DOWN);
+	auto individuality = new potato::Individuality();
+	individuality->set_type(potato::UNIT_TYPE_PLAYER);
+	notification.set_allocated_individuality(individuality);
+	notification.set_cause(potato::UNIT_SPAWN_CAUSE_LOGGEDIN);
+	auto avatar = new potato::Avatar();
+	avatar->set_name(spawnUnit->getDisplayName());
+	notification.set_allocated_avatar(avatar);
+	_nerworkServiceProvider.lock()->sendBroadcast(sessionId, torikime::unit::spawn::Rpc::serializeNotification(notification));
+}
+
 void GameServiceProvider::sendSpawnUnit(potato::net::SessionId sessionId, std::shared_ptr<Unit> spawnUnit)
 {
+	for (const auto unit : _unitRegistory->getUnits())
 	{
-		// broadcast spawn to neighbors
-		torikime::unit::spawn::Notification notification;
-		notification.set_session_id(sessionId.value_of());
-		notification.set_unit_id(spawnUnit->getUnitId().value_of());
-		notification.set_area_id(spawnUnit->getAreaId());
-		notification.set_allocated_position(newVector3({ 0, 0, 0 }));
-		notification.set_direction(potato::UNIT_DIRECTION_DOWN);
-		auto individuality = new potato::Individuality();
-		individuality->set_type(potato::UNIT_TYPE_PLAYER);
-		notification.set_allocated_individuality(individuality);
-		notification.set_cause(potato::UNIT_SPAWN_CAUSE_LOGGEDIN);
-		auto avatar = new potato::Avatar();
-		avatar->set_name(spawnUnit->getDisplayName());
-		notification.set_allocated_avatar(avatar);
-		_nerworkServiceProvider.lock()->sendBroadcast(sessionId, torikime::unit::spawn::Rpc::serializeNotification(notification));
-
-		for (const auto unit : _unitRegistory->getUnits())
+		if (unit->getUnitId() == spawnUnit->getUnitId())
 		{
-			if (unit->getUnitId() == spawnUnit->getUnitId())
+			continue;
+		}
+		// spawn
+		{
+			torikime::unit::spawn::Notification notification;
+			notification.set_session_id(unit->getSessionId().value_of());
+			notification.set_unit_id(unit->getUnitId().value_of());
+			notification.set_area_id(unit->getAreaId());
+			notification.set_allocated_position(newVector3(unit->getPosition()));
+			notification.set_direction(potato::UNIT_DIRECTION_DOWN);
+			auto individuality = new potato::Individuality();
+			individuality->set_type(potato::UNIT_TYPE_PLAYER);
+			notification.set_allocated_individuality(individuality);
+			notification.set_cause(potato::UNIT_SPAWN_CAUSE_ASIS);
+			auto avatar = new potato::Avatar();
+			avatar->set_name(unit->getDisplayName());
+			notification.set_allocated_avatar(avatar);
+			auto payload = torikime::unit::spawn::Rpc::serializeNotification(notification);
+			_nerworkServiceProvider.lock()->sendTo(sessionId, payload);
+		}
+
+		// current move state
+		{
+			auto moveCommand = unit->getLastMoveCommand();
+			if (moveCommand != nullptr)
 			{
-				continue;
-			}
-			// spawn
-			{
-				torikime::unit::spawn::Notification notification;
-				notification.set_session_id(unit->getSessionId().value_of());
+				torikime::unit::move::Notification notification;
 				notification.set_unit_id(unit->getUnitId().value_of());
-				notification.set_area_id(unit->getAreaId());
-				notification.set_allocated_position(newVector3(unit->getPosition()));
-				notification.set_direction(potato::UNIT_DIRECTION_DOWN);
-				auto individuality = new potato::Individuality();
-				individuality->set_type(potato::UNIT_TYPE_PLAYER);
-				notification.set_allocated_individuality(individuality);
-				notification.set_cause(potato::UNIT_SPAWN_CAUSE_ASIS);
-				auto avatar = new potato::Avatar();
-				avatar->set_name(unit->getDisplayName());
-				notification.set_allocated_avatar(avatar);
-				auto payload = torikime::unit::spawn::Rpc::serializeNotification(notification);
-				_nerworkServiceProvider.lock()->sendTo(sessionId, payload);
+				notification.set_time(moveCommand->startTime);
+				notification.set_allocated_from(newVector3(moveCommand->from));
+				notification.set_allocated_to(newVector3(moveCommand->to));
+				notification.set_speed(moveCommand->speed);
+				notification.set_direction(moveCommand->direction);
+				notification.set_move_id(moveCommand->moveId);
+				_nerworkServiceProvider.lock()->sendTo(sessionId, torikime::unit::move::Rpc::serializeNotification(notification));
 			}
 
-			// current move state
+			auto stopCommand = std::dynamic_pointer_cast<StopCommand>(unit->getLastCommand());
+			if (stopCommand != nullptr)
 			{
-				auto moveCommand = unit->getLastMoveCommand();
-				if (moveCommand != nullptr)
-				{
-					torikime::unit::move::Notification notification;
-					notification.set_unit_id(unit->getUnitId().value_of());
-					notification.set_time(moveCommand->startTime);
-					notification.set_allocated_from(newVector3(moveCommand->from));
-					notification.set_allocated_to(newVector3(moveCommand->to));
-					notification.set_speed(moveCommand->speed);
-					notification.set_direction(moveCommand->direction);
-					notification.set_move_id(moveCommand->moveId);
-					_nerworkServiceProvider.lock()->sendTo(sessionId, torikime::unit::move::Rpc::serializeNotification(notification));
-				}
+				torikime::unit::stop::Notification notification;
+				notification.set_unit_id(unit->getUnitId().value_of());
+				auto lastMoveCommand = stopCommand->lastMoveCommand.lock();
+				auto lastMoveTime = lastMoveCommand != nullptr ? lastMoveCommand->startTime : 0;
+				notification.set_time(lastMoveTime);
+				notification.set_stop_time(stopCommand->stopTime);
+				notification.set_direction(stopCommand->direction);
+				notification.set_move_id(stopCommand->moveId);
 
-				auto stopCommand = std::dynamic_pointer_cast<StopCommand>(unit->getLastCommand());
-				if (stopCommand != nullptr)
-				{
-					torikime::unit::stop::Notification notification;
-					notification.set_unit_id(unit->getUnitId().value_of());
-					auto lastMoveCommand = stopCommand->lastMoveCommand.lock();
-					auto lastMoveTime = lastMoveCommand != nullptr ? lastMoveCommand->startTime : 0;
-					notification.set_time(lastMoveTime);
-					notification.set_stop_time(stopCommand->stopTime);
-					notification.set_direction(stopCommand->direction);
-					notification.set_move_id(stopCommand->moveId);
-
-					auto payload = torikime::unit::stop::Rpc::serializeNotification(notification);
-					_nerworkServiceProvider.lock()->sendTo(sessionId, payload);
-				}
+				auto payload = torikime::unit::stop::Rpc::serializeNotification(notification);
+				_nerworkServiceProvider.lock()->sendTo(sessionId, payload);
 			}
 		}
 	}

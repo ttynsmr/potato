@@ -44,6 +44,7 @@ public:
 
 	void sendSystemMessage(const std::string& message);
 
+	void sendBroadcastSpawnUnit(potato::net::SessionId sessionId, std::shared_ptr<Unit> spawnUnit);
 	void sendSpawnUnit(potato::net::SessionId sessionId, std::shared_ptr<Unit> spawnUnit);
 	void sendDespawn(potato::net::SessionId sessionId, std::shared_ptr<Unit> despaenUnit);
 
