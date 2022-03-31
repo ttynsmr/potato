@@ -146,11 +146,7 @@ void GameServiceProvider::initialize()
 		sendDespawn(potato::net::SessionId(0), unit);
 
 		auto areaId = unit->getAreaId();
-		auto areaIt = std::find_if(_areas.begin(), _areas.end(), [areaId](auto& area) { return area->getAreaId() == areaId; });
-		if (areaIt != _areas.end())
-		{
-			(*areaIt)->leave(unit);
-		}
+		auto area = getArea(areaId);
 
 		_unitRegistory->unregisterUnit(unit);
 
@@ -161,15 +157,10 @@ void GameServiceProvider::initialize()
 
 	{
 		auto addToArea = [this](AreaId areaId, std::shared_ptr<Unit> newUnit) {
-			std::shared_ptr<potato::Area> area;
-			auto areaIt = std::find_if(_areas.begin(), _areas.end(), [areaId](auto& area) { return area->getAreaId() == areaId; });
-			if (areaIt == _areas.end())
+			std::shared_ptr<potato::Area> area = getArea(areaId);
+			if (!area)
 			{
 				area = _areas.emplace_back(std::make_shared<potato::Area>(areaId));
-			}
-			else
-			{
-				area = *areaIt;
 			}
 			area->enter(newUnit);
 		};
@@ -399,7 +390,7 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 				notification.set_speed(requestParcel.request().speed());
 				notification.set_direction(requestParcel.request().direction());
 				notification.set_move_id(requestParcel.request().move_id());
-				_nerworkServiceProvider.lock()->sendBroadcast(session->getSessionId(), torikime::unit::move::Rpc::serializeNotification(notification));
+				_nerworkServiceProvider.lock()->sendAreacast(session->getSessionId(), getArea((*unit)->getAreaId()), torikime::unit::move::Rpc::serializeNotification(notification));
 				notification.release_to();
 				notification.release_from();
 			}
@@ -438,7 +429,7 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 				notification.set_stop_time(requestParcel.request().stop_time());
 				notification.set_direction(requestParcel.request().direction());
 				notification.set_move_id(requestParcel.request().move_id());
-				_nerworkServiceProvider.lock()->sendBroadcast(session->getSessionId(), torikime::unit::stop::Rpc::serializeNotification(notification));
+				_nerworkServiceProvider.lock()->sendAreacast(session->getSessionId(), getArea((*unit)->getAreaId()), torikime::unit::stop::Rpc::serializeNotification(notification));
 			}
 		});
 	_nerworkServiceProvider.lock()->registerRpc(unitStop);
@@ -543,11 +534,10 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 								}
 							}
 						}
-						// TODO: change to sendAreacast
-						_nerworkServiceProvider.lock()->sendBroadcast(potato::net::SessionId(0), Rpc::serializeNotification(notification));
+						_nerworkServiceProvider.lock()->sendAreacast(potato::net::SessionId(0), getArea(casterUnit->getAreaId()), Rpc::serializeNotification(notification));
 						for (auto& payload : knockbackPayloads)
 						{
-							_nerworkServiceProvider.lock()->sendBroadcast(potato::net::SessionId(0), payload);
+							_nerworkServiceProvider.lock()->sendAreacast(potato::net::SessionId(0), getArea(casterUnit->getAreaId()), payload);
 						}
 					}
 
@@ -601,7 +591,7 @@ void GameServiceProvider::sendBroadcastSpawnUnit(potato::net::SessionId sessionI
 	auto avatar = new potato::Avatar();
 	avatar->set_name(spawnUnit->getDisplayName());
 	notification.set_allocated_avatar(avatar);
-	_nerworkServiceProvider.lock()->sendBroadcast(sessionId, torikime::unit::spawn::Rpc::serializeNotification(notification));
+	_nerworkServiceProvider.lock()->sendAreacast(sessionId, getArea(spawnUnit->getAreaId()), torikime::unit::spawn::Rpc::serializeNotification(notification));
 }
 
 void GameServiceProvider::sendSpawnUnit(potato::net::SessionId sessionId, std::shared_ptr<Unit> spawnUnit)
@@ -677,7 +667,7 @@ void GameServiceProvider::sendDespawn(potato::net::SessionId sessionId, std::sha
 	torikime::unit::despawn::Notification notification;
 	notification.set_session_id(sessionId.value_of());
 	notification.set_unit_id(despawnUnit->getUnitId().value_of());
-	_nerworkServiceProvider.lock()->sendBroadcast(sessionId, torikime::unit::despawn::Rpc::serializeNotification(notification));
+	_nerworkServiceProvider.lock()->sendAreacast(sessionId, getArea(despawnUnit->getAreaId()), torikime::unit::despawn::Rpc::serializeNotification(notification));
 }
 
 void GameServiceProvider::sendMove(potato::net::SessionId sessionId, std::shared_ptr<Unit> unit, std::shared_ptr<MoveCommand> moveCommand)
@@ -692,7 +682,7 @@ void GameServiceProvider::sendMove(potato::net::SessionId sessionId, std::shared
 		notification.set_speed(moveCommand->speed);
 		notification.set_direction(moveCommand->direction);
 		notification.set_move_id(moveCommand->moveId);
-		_nerworkServiceProvider.lock()->sendBroadcast(sessionId, torikime::unit::move::Rpc::serializeNotification(notification));
+		_nerworkServiceProvider.lock()->sendAreacast(sessionId, getArea(unit->getAreaId()), torikime::unit::move::Rpc::serializeNotification(notification));
 	}
 }
 
@@ -710,7 +700,7 @@ void GameServiceProvider::sendStop(potato::net::SessionId sessionId, std::shared
 		notification.set_move_id(stopCommand->moveId);
 
 		auto payload = torikime::unit::stop::Rpc::serializeNotification(notification);
-		_nerworkServiceProvider.lock()->sendBroadcast(sessionId, payload);
+		_nerworkServiceProvider.lock()->sendAreacast(sessionId, getArea(unit->getAreaId()), payload);
 	}
 }
 
@@ -796,4 +786,15 @@ void GameServiceProvider::stop()
 std::default_random_engine& GameServiceProvider::getRandomEngine()
 {
 	return _randomEngine;
+}
+
+std::shared_ptr<potato::Area> GameServiceProvider::getArea(AreaId areaId)
+{
+	auto areaIt = std::find_if(_areas.begin(), _areas.end(), [areaId](auto& area) { return area->getAreaId() == areaId; });
+	if (areaIt == _areas.end())
+	{
+		return nullptr;
+	}
+
+	return *areaIt;
 }

@@ -12,6 +12,8 @@
 #include "proto/unit_despawn.pb.h"
 #include "generated/cpp/unit_despawn.h"
 
+#include "area/area.h"
+
 NetworkServiceProvider::NetworkServiceProvider(uint16_t port, std::shared_ptr<Service> service)
 	: _acceptor(boost::asio::ip::tcp::acceptor(_io_context, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port))), _service(service)
 {
@@ -64,6 +66,18 @@ void NetworkServiceProvider::sendMulticast(const std::vector<potato::net::Sessio
 {
 	for (auto sessionId : sessionIds)
 	{
+		sendTo(sessionId, payload);
+	}
+}
+
+void NetworkServiceProvider::sendAreacast(const potato::net::SessionId fromSessionId, const std::shared_ptr<potato::Area> targetArea, std::shared_ptr<potato::net::protocol::Payload> payload)
+{
+	for (auto sessionId : targetArea->getSessionIds())
+	{
+		if (fromSessionId == sessionId)
+		{
+			continue;
+		}
 		sendTo(sessionId, payload);
 	}
 }

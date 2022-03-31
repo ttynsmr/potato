@@ -11,6 +11,8 @@
 #include "user/user.h"
 #include "user/user_registory.h"
 
+#include "area/area_types.h"
+
 namespace potato
 {
 	class UserRegistory;
@@ -59,6 +61,8 @@ public:
 	void stop() override;
 
 	std::default_random_engine& getRandomEngine();
+
+	std::shared_ptr<potato::Area> getArea(AreaId areaId);
 
 private:
 	GameServiceProvider() = default;
