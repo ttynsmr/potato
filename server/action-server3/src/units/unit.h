@@ -115,7 +115,18 @@ public:
 	potato::UnitDirection direction = potato::UnitDirection::UNIT_DIRECTION_DOWN;
 	uint64_t moveId = 0;
 };
-	
+
+class Unit;
+
+class IComponent
+{
+public:
+	IComponent() {}
+	virtual ~IComponent() {}
+
+	virtual void update(std::shared_ptr<Unit> /*unit*/, int64_t /*now*/) {}
+};
+
 class Unit
 	: public std::enable_shared_from_this<Unit>
 {
@@ -186,8 +197,37 @@ public:
 	void setDisplayName(const std::string& displayName) { _displayName = displayName; }
 	const std::string& getDisplayName() const { return _displayName; }
 
-	using UnitAction = std::function<void(std::shared_ptr<Unit> unit, int64_t now)>;
-	void setUnitAction(UnitAction unitAction) { _action = unitAction; }
+	template<typename T, class... Args>
+	std::shared_ptr<T> addComponent(Args... args)
+	{
+		std::pair<std::unordered_map<std::size_t, std::shared_ptr<IComponent>>::iterator, bool> result = _components.emplace(typeid(T).hash_code(), std::make_shared<T>(args...));
+		if (!result.second)
+		{
+			return nullptr;
+		}
+
+		std::shared_ptr<IComponent> i = result.first->second;
+
+		return std::dynamic_pointer_cast<T>(i);
+	}
+
+	template<typename T>
+	std::shared_ptr<T> getComponent()
+	{
+		auto found = _components.find(typeid(T).hash_code());
+		if (found == _components.end())
+		{
+			return nullptr;
+		}
+
+		return *found;
+	}
+
+	template<typename T>
+	void removeComponent()
+	{
+		_components.erase(typeid(T).hash_code());
+	}
 
 private:
 	const UnitId _unitId = UnitId(0);
@@ -202,5 +242,5 @@ private:
 	potato::UnitDirection _direction = potato::UNIT_DIRECTION_DOWN;
 	bool _isMoving = false;
 	std::string _displayName;
-	UnitAction _action;
+	std::unordered_map<std::size_t, std::shared_ptr<IComponent>> _components;
 };
