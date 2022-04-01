@@ -9,6 +9,7 @@
 #include "proto/message.pb.h"
 
 #include "unit_types.h"
+#include "units/components/component_types.h"
 #include "session/session_types.h"
 #include "area/area_types.h"
 
@@ -114,17 +115,6 @@ public:
 	long stopTime = 0;
 	potato::UnitDirection direction = potato::UnitDirection::UNIT_DIRECTION_DOWN;
 	uint64_t moveId = 0;
-};
-
-class Unit;
-
-class IComponent
-{
-public:
-	IComponent() {}
-	virtual ~IComponent() {}
-
-	virtual void update(std::shared_ptr<Unit> /*unit*/, int64_t /*now*/) {}
 };
 
 class Unit
