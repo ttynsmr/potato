@@ -73,8 +73,45 @@ void Unit::interveneHistory(std::shared_ptr<ICommand> interveneCommand)
 	//}
 }
 
+void Unit::onSpawn(int64_t now)
+{
+	for (auto& component : _components)
+	{
+		component.second->onSpawn(shared_from_this(), now);
+	}
+}
+
+void Unit::onDespawn(int64_t now)
+{
+	for (auto& component : _components)
+	{
+		component.second->onDespawn(shared_from_this(), now);
+	}
+}
+
+void Unit::onConnected(int64_t now)
+{
+	for (auto& component : _components)
+	{
+		component.second->onConnected(shared_from_this(), now);
+	}
+}
+
+void Unit::onDisconnected(int64_t now)
+{
+	for (auto& component : _components)
+	{
+		component.second->onDisconnected(shared_from_this(), now);
+	}
+}
+
 void Unit::update(int64_t now)
 {
+	for (auto& component : _components)
+	{
+		component.second->preUpdate(shared_from_this(), now);
+	}
+
 	auto updatePosition = [this](std::shared_ptr<MoveCommand> currentMove, int64_t now) {
 		auto distance = (currentMove->to - currentMove->from).norm();
 		auto progress = std::min(1.0f, (now - currentMove->startTime) / (distance / currentMove->speed));
@@ -177,7 +214,7 @@ void Unit::update(int64_t now)
 
 	for (auto& component : _components)
 	{
-		component.second->update(shared_from_this(), simulatedNow);
+		component.second->update(shared_from_this(), now);
 	}
 
 	while (history.size() > 2)

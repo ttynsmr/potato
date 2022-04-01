@@ -136,4 +136,19 @@ public class UnitService : MonoBehaviour
             }
         }
     }
+
+    public void OnReceiveCharacterStatus(Torikime.Battle.SyncParameters.Notification notification)
+    {
+        var unitId = new UnitId(notification.UnitId);
+        var unit = units.Find((u) => { return u.UnitId.Equals(unitId); });
+        if (unit == null)
+        {
+            return;
+        }
+        if (unit is IHasStatus)
+        {
+            var iunit = unit as IHasStatus;
+            iunit.CharacterStatus = notification.Parameters;
+        }
+    }
 }

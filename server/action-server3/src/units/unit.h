@@ -9,6 +9,7 @@
 #include "proto/message.pb.h"
 
 #include "unit_types.h"
+#include "units/components/component_types.h"
 #include "session/session_types.h"
 #include "area/area_types.h"
 
@@ -116,17 +117,6 @@ public:
 	uint64_t moveId = 0;
 };
 
-class Unit;
-
-class IComponent
-{
-public:
-	IComponent() {}
-	virtual ~IComponent() {}
-
-	virtual void update(std::shared_ptr<Unit> /*unit*/, int64_t /*now*/) {}
-};
-
 class Unit
 	: public std::enable_shared_from_this<Unit>
 {
@@ -135,6 +125,12 @@ public:
 
 	void inputCommand(std::shared_ptr<ICommand> command);
 	void interveneHistory(std::shared_ptr<ICommand> command);
+
+
+	void onSpawn(int64_t now);
+	void onDespawn(int64_t now);
+	void onConnected(int64_t now);
+	void onDisconnected(int64_t now);
 	void update(int64_t now);
 
 	std::shared_ptr<ICommand> getLastCommand();

@@ -5,7 +5,7 @@ using System.Linq;
 using UnityEngine;
 using Vector3 = UnityEngine.Vector3;
 
-public class PlayerUnit : IUnit
+public class PlayerUnit : IUnit, IHasStatus
 {
     public UnitView Appearance { get; set; }
 
@@ -20,6 +20,7 @@ public class PlayerUnit : IUnit
     public UnitId UnitId { get; private set; }
     public UnitService UnitService { get; set; }
     public Potato.UnitDirection Direction { get; set; }
+    public Potato.CharacterStatus CharacterStatus { get; set; }
 
     public ICommand GetLastCommand { get { return history.Count > 0 ? history.Last() : null; } }
 
