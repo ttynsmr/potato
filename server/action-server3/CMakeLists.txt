@@ -65,7 +65,9 @@ add_executable (action-server3  ${ALL_SOURCES}
   "src/session/session.h" "src/session/session.cpp" "src/session/session_types.h"
   "src/units/unit.cpp" "src/units/unit.h" "src/units/unit_types.h"
   "src/units/unit_registory.cpp" "src/units/unit_registory.h"
+  "src/units/components/component_types.h"
   "src/units/components/npc_component.cpp" "src/units/components/npc_component.h"
+  "src/units/components/status_component.cpp" "src/units/components/status_component.h"
   "src/core/core.h"
   "src/core/configured_eigen.h"
   "src/services/service.cpp" "src/services/service.h"
@@ -77,7 +79,7 @@ add_executable (action-server3  ${ALL_SOURCES}
   "src/user/user.cpp" "src/user/user.h" "src/user/user_types.h"
   "src/user/user_registory.h" "src/user/user_registory.cpp"
   "src/utility/vector_utility.h" "src/utility/vector_utility.cpp"
-   "src/units/components/component_types.h")
+  )
 
 find_package (Threads REQUIRED)
 

@@ -4,15 +4,14 @@
 
 class GameServiceProvider;
 
-class NpcComponent : public IComponent
+class StatusComponent : public IComponent
 {
 public:
-	NpcComponent(std::shared_ptr<GameServiceProvider> gameServiceProvider);
-	virtual ~NpcComponent();
+	StatusComponent(std::shared_ptr<GameServiceProvider> gameServiceProvider);
+	virtual ~StatusComponent();
 
 	void update(std::shared_ptr<Unit> unit, int64_t now);
 
 private:
 	std::weak_ptr<GameServiceProvider> _gameServiceProvider;
-	int64_t _timeScattering = 0;
 };
