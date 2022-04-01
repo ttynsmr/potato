@@ -125,6 +125,12 @@ public:
 
 	void inputCommand(std::shared_ptr<ICommand> command);
 	void interveneHistory(std::shared_ptr<ICommand> command);
+
+
+	void onSpawn(int64_t now);
+	void onDespawn(int64_t now);
+	void onConnected(int64_t now);
+	void onDisconnected(int64_t now);
 	void update(int64_t now);
 
 	std::shared_ptr<ICommand> getLastCommand();
