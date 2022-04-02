@@ -27,7 +27,7 @@ RUN cd /opt/app/action-server3 \
 RUN cd /opt/app/action-server3 \
     && mkdir -p build.docker \
     && cmake -DCMAKE_BUILD_TYPE=Release -S . -H. -Bbuild.docker -GNinja \
-    && cmake -DCMAKE_BUILD_TYPE=Release -S . --build build.docker/ --target all || cmake -DCMAKE_BUILD_TYPE=Release -S . --build build.docker/ --target all
+    && cmake -DCMAKE_BUILD_TYPE=Release -S . --build build.docker/ -GNinja --target all || cmake -DCMAKE_BUILD_TYPE=Release -S . --build build.docker/ -GNinja --target all
 
 FROM ubuntu:latest AS action_server3_application
 COPY --from=action_server3_build /opt/app/action-server3/build.docker/action-server3 ./
