@@ -22,10 +22,19 @@ namespace potato::net
 		return shared_from_this();
 	}
 
+	void session::disconnect()
+	{
+		_socket.close();
+	}
+
 	void session::sendPayload(std::shared_ptr<potato::net::protocol::Payload> payload)
 	{
-		auto self(shared_from_this());
+		if (!_socket.is_open())
+		{
+			return;
+		}
 
+		auto self(shared_from_this());
 		_socket.async_write_some(boost::asio::buffer(payload->getBuffer()),
 			[this, self, payload](boost::system::error_code /*ec*/, std::size_t /*length*/) {
 				//fmt::print("async_write_some result: ec:{}, sent length:{} payload size:{}\n", ec.value() , length, payload->getBuffer().size());
