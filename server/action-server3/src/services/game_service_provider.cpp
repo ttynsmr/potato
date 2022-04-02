@@ -136,6 +136,12 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 					auto binderIt = user_index.find(r.value());
 					if (binderIt != user_index.end())
 					{
+						if (potato::net::SessionId(0) != binderIt->sessionId)
+						{
+							// disconnect old session
+							_nerworkServiceProvider.lock()->disconnectSession(binderIt->sessionId);
+						}
+
 						// rebind session
 						user_index.replace(binderIt, { r.value(), session->getSessionId(), binderIt->unitId });
 						user = _userRegistory->find(r.value());
@@ -489,22 +495,24 @@ void GameServiceProvider::onSessionStarted(std::shared_ptr<potato::net::session>
 
 void GameServiceProvider::onDisconnected(std::shared_ptr<potato::net::session> session)
 {
-	// update user id
-	auto& session_index = _idMapper.get<potato::net::session_id>();
-	auto binderIt = session_index.find(session->getSessionId());
-	if (binderIt != session_index.end())
-	{
-		session_index.replace(binderIt, { binderIt->userId, potato::net::SessionId(0), binderIt->unitId });
-		auto user = _userRegistory->find(binderIt->userId);
-		user->clearSession();
-
-		const auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-		auto unit = _unitRegistory->findUnitByUnitId(user->getUnitId());
-		if (unit)
+	queue.enqueue(0, [this, session]() {
+		// update user id
+		auto& session_index = _idMapper.get<potato::net::session_id>();
+		auto binderIt = session_index.find(session->getSessionId());
+		if (binderIt != session_index.end())
 		{
-			unit->onDisconnected(now);
+			session_index.replace(binderIt, { binderIt->userId, potato::net::SessionId(0), binderIt->unitId });
+			auto user = _userRegistory->find(binderIt->userId);
+			user->clearSession();
+
+			const auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+			auto unit = _unitRegistory->findUnitByUnitId(user->getUnitId());
+			if (unit)
+			{
+				unit->onDisconnected(now);
+			}
 		}
-	}
+	});
 }
 
 // TODO: move to message service

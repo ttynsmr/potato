@@ -130,6 +130,18 @@ void NetworkServiceProvider::visitSessions(std::function<void(std::shared_ptr<po
 	}
 }
 
+void NetworkServiceProvider::disconnectSession(const potato::net::SessionId sessionId)
+{
+	auto session = _sessions.find(sessionId);
+	if (session == _sessions.end())
+	{
+		return;
+	}
+
+	(*session).second->disconnect();
+}
+
+
 void NetworkServiceProvider::do_accept()
 {
 	_acceptor.async_accept([this](boost::system::error_code ec, boost::asio::ip::tcp::socket socket) {

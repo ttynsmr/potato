@@ -63,6 +63,8 @@ public:
 
 	void visitSessions(std::function<void(std::shared_ptr<potato::net::session>)> processor);
 
+	void disconnectSession(const potato::net::SessionId sessionId);
+
 private:
 	void do_accept();
 

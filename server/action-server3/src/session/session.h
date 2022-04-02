@@ -21,6 +21,7 @@ namespace potato::net
 		session(boost::asio::ip::tcp::socket socket, SessionId sessionId);
 
 		std::shared_ptr<session> start();
+		void disconnect();
 
 		void sendPayload(std::shared_ptr<potato::net::protocol::Payload> payload);
 
