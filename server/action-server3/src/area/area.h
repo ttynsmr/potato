@@ -26,6 +26,9 @@ namespace potato
 
 		const std::set<potato::net::SessionId> getSessionIds() const;
 
+		using Processor = std::function<void(std::weak_ptr<Unit> weakUnit)>;
+		void process(Processor processor);
+
 	private:
 		const AreaId _areaId;
 		std::list<std::weak_ptr<Unit>> _units;
