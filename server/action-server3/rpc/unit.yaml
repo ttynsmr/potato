@@ -51,6 +51,7 @@ contracts:
         ok: bool
       notification:
         unit_id: uint64
+        area_id: uint32
         time: int64 # 移動開始時間
         from: potato.Vector3
         to: potato.Vector3
@@ -70,6 +71,7 @@ contracts:
         ok: bool
       notification:
         unit_id: uint64
+        area_id: uint32
         time: int64 # 移動開始時間
         stop_time: int64 # 移動停止時間
         direction: potato.UnitDirection
@@ -79,6 +81,7 @@ contracts:
         - "message"
       notification:
         unit_id: uint64
+        area_id: uint32
         start_time: int64
         end_time: int64
         from: potato.Vector3
