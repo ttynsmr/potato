@@ -590,8 +590,18 @@ void GameServiceProvider::sendSpawnUnit(potato::net::SessionId sessionId, std::s
 				notification.set_move_id(moveCommand->moveId);
 				_nerworkServiceProvider.lock()->sendTo(sessionId, torikime::unit::move::Rpc::serializeNotification(notification));
 			}
+			else
+			{
+				fmt::print("session[{}] unit[{}] call sendSpawnUnit(Send MoveCommand) but MoveCommand is null\n", sessionId, unit->getUnitId());
+				unit->dump(now);
+				assert(false);
+			}
 
 			auto stopCommand = std::dynamic_pointer_cast<StopCommand>(unit->getLastCommand());
+			if (stopCommand == nullptr)
+			{
+				stopCommand = unit->getFirstStopCommandFromQueue();
+			}
 			if (stopCommand != nullptr)
 			{
 				torikime::unit::stop::Notification notification;
@@ -605,6 +615,12 @@ void GameServiceProvider::sendSpawnUnit(potato::net::SessionId sessionId, std::s
 
 				auto payload = torikime::unit::stop::Rpc::serializeNotification(notification);
 				_nerworkServiceProvider.lock()->sendTo(sessionId, payload);
+			}
+			else
+			{
+				fmt::print("session[{}] unit[{}] call sendSpawnUnit(Send StopCommand) but StopCommand is null\n", sessionId, unit->getUnitId());
+				unit->dump(now);
+				assert(false);
 			}
 		}
 	}

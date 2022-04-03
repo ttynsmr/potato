@@ -35,6 +35,24 @@ const std::shared_ptr<MoveCommand> Unit::getLastMoveCommand() const
 	return getLastMoveCommand();
 }
 
+std::shared_ptr<StopCommand> Unit::getFirstStopCommandFromQueue()
+{
+	for (auto& input : inputQueue)
+	{
+		if (input->getCommandType() == CommandType::Stop)
+		{
+			return std::dynamic_pointer_cast<StopCommand>(input);
+		}
+	}
+
+	return nullptr;
+}
+
+const std::shared_ptr<StopCommand> Unit::getFirstStopCommandFromQueue() const
+{
+	return getFirstStopCommandFromQueue();
+}
+
 void Unit::inputCommand(std::shared_ptr<ICommand> command)
 {
 	auto stopCommand = std::dynamic_pointer_cast<StopCommand>(command);
@@ -43,7 +61,7 @@ void Unit::inputCommand(std::shared_ptr<ICommand> command)
 		stopCommand->lastMoveCommand = std::dynamic_pointer_cast<MoveCommand>(getLastCommand());
 	}
 
-	inputQueue.emplace(command);
+	inputQueue.emplace_back(command);
 
 	if (command->getCommandType() == CommandType::KnockBack)
 	{
@@ -170,7 +188,7 @@ void Unit::update(int64_t now)
 					break;
 				}
 			}
-			inputQueue.pop();
+			inputQueue.pop_front();
 
 			switch (command->getCommandType())
 			{
@@ -300,4 +318,12 @@ void Unit::setPosition(const Eigen::Vector3f& position)
 	history.emplace_back(stopCommand);
 
 	currentMove.reset();
+}
+
+void Unit::dump(int64_t now) const
+{
+	for (auto& command : history)
+	{
+		fmt::print("CommandType: {}, Expired: {}, ActionTime: {}\n", static_cast<int32_t>(command->getCommandType()), command->isExpired(now), command->getActionTime());
+	}
 }
