@@ -547,13 +547,26 @@ void GameServiceProvider::sendBroadcastSpawnUnit(potato::net::SessionId sessionI
 
 void GameServiceProvider::sendSpawnUnit(potato::net::SessionId sessionId, std::shared_ptr<Unit> spawnUnit)
 {
+	auto area = getArea(spawnUnit->getAreaId());
+	assert(area);
+
+	auto nerworkServiceProvider = _nerworkServiceProvider.lock();
+	assert(nerworkServiceProvider);
+
 	const auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-	for (const auto unit : _unitRegistory->getUnits())
+	area->process([nerworkServiceProvider, now, sessionId, spawnUnit](auto weakUnit)
 	{
+		auto unit = weakUnit.lock();
+		if (!unit)
+		{
+			return;
+		}
+
 		if (unit->getUnitId() == spawnUnit->getUnitId())
 		{
-			continue;
+			return;
 		}
+
 		// spawn
 		{
 			torikime::unit::spawn::Notification notification;
@@ -570,7 +583,7 @@ void GameServiceProvider::sendSpawnUnit(potato::net::SessionId sessionId, std::s
 			avatar->set_name(unit->getDisplayName());
 			notification.set_allocated_avatar(avatar);
 			auto payload = torikime::unit::spawn::Rpc::serializeNotification(notification);
-			_nerworkServiceProvider.lock()->sendTo(sessionId, payload);
+			nerworkServiceProvider->sendTo(sessionId, payload);
 		}
 
 		unit->onSpawn(now);
@@ -588,7 +601,7 @@ void GameServiceProvider::sendSpawnUnit(potato::net::SessionId sessionId, std::s
 				notification.set_speed(moveCommand->speed);
 				notification.set_direction(moveCommand->direction);
 				notification.set_move_id(moveCommand->moveId);
-				_nerworkServiceProvider.lock()->sendTo(sessionId, torikime::unit::move::Rpc::serializeNotification(notification));
+				nerworkServiceProvider->sendTo(sessionId, torikime::unit::move::Rpc::serializeNotification(notification));
 			}
 			else
 			{
@@ -614,7 +627,7 @@ void GameServiceProvider::sendSpawnUnit(potato::net::SessionId sessionId, std::s
 				notification.set_move_id(stopCommand->moveId);
 
 				auto payload = torikime::unit::stop::Rpc::serializeNotification(notification);
-				_nerworkServiceProvider.lock()->sendTo(sessionId, payload);
+				nerworkServiceProvider->sendTo(sessionId, payload);
 			}
 			else
 			{
@@ -623,7 +636,7 @@ void GameServiceProvider::sendSpawnUnit(potato::net::SessionId sessionId, std::s
 				assert(false);
 			}
 		}
-	}
+	});
 }
 
 void GameServiceProvider::sendDespawn(potato::net::SessionId sessionId, std::shared_ptr<Unit> despawnUnit)
