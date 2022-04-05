@@ -1182,7 +1182,7 @@ namespace Terminal.Gui {
 		public bool IsWinPlatform { get; }
 		public bool AlwaysSetPosition { get; set; }
 		public override IClipboard Clipboard { get; }
-		internal override int [,,] Contents => contents;
+		public override int [,,] Contents => contents;
 
 		int largestWindowHeight;
 
