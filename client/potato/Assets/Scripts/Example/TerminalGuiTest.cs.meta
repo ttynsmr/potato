@@ -3,7 +3,13 @@ guid: 5a95b36c98d3aad459e56754c713dea9
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - canvas: {instanceID: 0}
+  - text: {instanceID: 0}
+  - button: {instanceID: 0}
+  - eventSystem: {instanceID: 0}
+  - charForeground: {fileID: 4116660690938848204, guid: 587f0ca35929f4f44951062fe414bd14, type: 3}
+  - charBackground: {fileID: 7044132058769827927, guid: df3ffc96409a10c4db4bc95b526243fa, type: 3}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 
