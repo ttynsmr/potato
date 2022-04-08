@@ -257,8 +257,7 @@ public class TerminalGuiTest : MonoBehaviour
                         await UniTask.SwitchToThreadPool();
                     });
                     bool wait = true;
-                    c.ContinueWith(() => { wait = false; }).Forget();
-                    while (wait) { }
+                    c.AsTask().Wait();
                     });
             }
             catch (Exception e)
