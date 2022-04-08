@@ -22,6 +22,12 @@ public static class KeyCodeExtension
         KeyCode.UpArrow => ConsoleKey.UpArrow,
         KeyCode.DownArrow => ConsoleKey.DownArrow,
         KeyCode.Space => ConsoleKey.Spacebar,
+        KeyCode.PageDown => ConsoleKey.PageDown,
+        KeyCode.PageUp => ConsoleKey.PageUp,
+        KeyCode.Home => ConsoleKey.Home,
+        KeyCode.End => ConsoleKey.End,
+        KeyCode.Insert => ConsoleKey.Insert,
+        KeyCode.Delete => ConsoleKey.Delete,
         KeyCode.A => ConsoleKey.A,
         KeyCode.B => ConsoleKey.B,
         KeyCode.C => ConsoleKey.C,
@@ -64,6 +70,14 @@ public static class KeyCodeExtension
     };
 }
 
+public static class TerminalTransform
+{
+    public static Vector3 GetTerminalCursorPosition(int x, int y)
+    {
+        return new Vector3(-1920 / 2 + x * (1920 / 120), 1080 - (1080 / 2 + y * (1080 / 30)));
+    }
+}
+
 public class TerminalGuiTest : MonoBehaviour
 {
     public Canvas canvas;
@@ -82,85 +96,31 @@ public class TerminalGuiTest : MonoBehaviour
     private CharForeground[,] foregrounds;
     private CharBackground[,] backgrounds;
 
+    private CharBackground Caret;
+
     private bool ignoreDirtyFlag = true;
 
     private int[,,] diff;
 
-    // Start is called before the first frame update
-    void Start()
+    void StartApp()
     {
-        if (System.Diagnostics.Debugger.IsAttached)
+        var top = Terminal.Gui.Application.Top;
+
+        // Creates the top-level window to show
+        var win = new Window("MyApp")
         {
-            System.Globalization.CultureInfo.DefaultThreadCurrentUICulture = System.Globalization.CultureInfo.GetCultureInfo("en-US");
-        }
+            X = 0,
+            Y = 1, // Leave one row for the toplevel menu
 
-        UnityDriver.UnityConsole = new UnityConsole();
-        Terminal.Gui.Application.Init(UnityDriver, UnityMainLoop);
-        Terminal.Gui.Application.HeightAsBuffer = true;
+            // By using Dim.Fill(), it will automatically resize without manual intervention
+            Width = Dim.Fill(),
+            Height = Dim.Fill()
+        };
 
-        //Button[] buttons = new Button[] {
-        //    new Button(ustring.Make("OK")),
-        //    new Button(ustring.Make("Cancel")),
-        //};
-        //var dialog = new Dialog(ustring.Make("Authentication"), 50, 10, buttons);
-        //Terminal.Gui.Application.Top.Add(dialog);
+        top.Add(win);
 
-        //var login = new Label("Login: ") { X = 3, Y = 6 };
-        //var password = new Label("Password: ")
-        //{
-        //    X = Pos.Left(login),
-        //    Y = Pos.Bottom(login) + 1
-        //};
-        //var loginText = new TextField("")
-        //{
-        //    X = Pos.Right(password),
-        //    Y = Pos.Top(login),
-        //    Width = 40
-        //};
-
-        //var passText = new TextField("")
-        //{
-        //    Secret = true,
-        //    X = Pos.Left(loginText),
-        //    Y = Pos.Top(password),
-        //    Width = Dim.Width(loginText)
-        //};
-
-        //dialog.Add(login, loginText, password, passText);
-
-        //buttons[0].Clicked += () => {
-        //    Debug.Log("Click OK");
-        //};
-        //buttons[0].MouseClick += (e) => {
-        //    Debug.Log($"Click OK {e.MouseEvent}");
-        //};
-
-        //buttons[1].Clicked += () => {
-        //    Debug.Log("Click Cancel");
-        //};
-
-        //dialog.KeyDown += (k) => {
-        //    Debug.Log(k);
-        //};
-
-        {
-            var top = Terminal.Gui.Application.Top;
-
-            // Creates the top-level window to show
-            var win = new Window("MyApp")
-            {
-                X = 0,
-                Y = 1, // Leave one row for the toplevel menu
-
-                // By using Dim.Fill(), it will automatically resize without manual intervention
-                Width = Dim.Fill(),
-                Height = Dim.Fill()
-            };
-
-            top.Add(win);
-
-            // Creates a menubar, the item "New" has a help menu.
-            var menu = new MenuBar(new MenuBarItem[] {
+        // Creates a menubar, the item "New" has a help menu.
+        var menu = new MenuBar(new MenuBarItem[] {
                 new MenuBarItem ("_File", new MenuItem [] {
                     new MenuItem ("_New", "Creates new file", null),
                     new MenuItem ("_Close", "",null),
@@ -172,77 +132,140 @@ public class TerminalGuiTest : MonoBehaviour
                     new MenuItem ("_Paste", "", null)
                 })
             });
-            top.Add(menu);
+        top.Add(menu);
 
-            static bool Quit()
-            {
-                var n = MessageBox.Query(50, 7, "Quit Demo", "Are you sure you want to quit this demo?", "Yes", "No");
-                return n == 0;
-            }
-
-            var login = new Label("Login: ") { X = 3, Y = 2 };
-            var password = new Label("Password: ")
-            {
-                X = Pos.Left(login),
-                Y = Pos.Top(login) + 1
-            };
-            var loginText = new TextField("")
-            {
-                X = Pos.Right(password),
-                Y = Pos.Top(login),
-                Width = 40
-            };
-            var passText = new TextField("")
-            {
-                Secret = true,
-                X = Pos.Left(loginText),
-                Y = Pos.Top(password),
-                Width = Dim.Width(loginText)
-            };
-
-            // Add some controls,
-            win.Add(
-                // The ones with my favorite layout system, Computed
-                login, password, loginText, passText,
-
-                // The ones laid out like an australopithecus, with Absolute positions:
-                new CheckBox(3, 6, "Remember me"),
-                new RadioGroup(3, 8, new ustring[] { "_Personal", "_Company" }, 0),
-                new Button(3, 14, "Ok"),
-                new Button(10, 14, "Cancel"),
-                new Label(3, 18, "Press F9 or ESC plus 9 to activate the menubar")
-            );
-        }
-
-        diff = new int[UnityDriver.Rows, UnityDriver.Cols, 2];
-        foregrounds = new CharForeground[UnityDriver.Rows, UnityDriver.Cols];
-        backgrounds = new CharBackground[UnityDriver.Rows, UnityDriver.Cols];
-        for (int y = 0; y < UnityDriver.Rows; y++)
+        static bool Quit()
         {
-            for (int x = 0; x < UnityDriver.Cols; x++)
-            {
-                backgrounds[y, x] = Instantiate(charBackground, canvas.transform).GetComponent<CharBackground>();
-                backgrounds[y, x].transform.localPosition = new Vector3(-1920 / 2 + x * (1920 / 120), 1080 - (1080 / 2 + y * (1080 / 30)));
-                backgrounds[y, x].Color = UnityEngine.Color.black;
-                foregrounds[y, x] = Instantiate(charForeground, canvas.transform).GetComponent<CharForeground>();
-                foregrounds[y, x].transform.localPosition = new Vector3(-1920 / 2 + x * (1920 / 120), 1080 - (1080 / 2 + y * (1080 / 30)));
-                foregrounds[y, x].Character = '*';
-                diff[y, x, 0] = '*';
-                diff[y, x, 1] = 0;
-            }
+            var n = MessageBox.Query(50, 7, "Quit Demo", "Are you sure you want to quit this demo?", "Yes", "No");
+            return n == 0;
         }
 
+        var login = new Label("Login: ") { X = 3, Y = 2 };
+        var password = new Label("Password: ")
+        {
+            X = Pos.Left(login),
+            Y = Pos.Top(login) + 1
+        };
+        var loginText = new TextField("")
+        {
+            X = Pos.Right(password),
+            Y = Pos.Top(login),
+            Width = 40
+        };
+        var passText = new TextField("")
+        {
+            Secret = true,
+            X = Pos.Left(loginText),
+            Y = Pos.Top(password),
+            Width = Dim.Width(loginText)
+        };
+
+        // Add some controls,
+        win.Add(
+            // The ones with my favorite layout system, Computed
+            login, password, loginText, passText,
+
+            // The ones laid out like an australopithecus, with Absolute positions:
+            new CheckBox(3, 6, "Remember me"),
+            new RadioGroup(3, 8, new ustring[] { "_Personal", "_Company" }, 0),
+            new Button(3, 14, "Ok"),
+            new Button(10, 14, "Cancel"),
+            new Label(3, 18, "Press F9 or ESC plus 9 to activate the menubar")
+        );
+    }
+
+    void StartApp2()
+    {
+    }
+
+    // Start is called before the first frame update
+    void Start()
+    {
+        if (System.Diagnostics.Debugger.IsAttached)
+        {
+            System.Globalization.CultureInfo.DefaultThreadCurrentUICulture = System.Globalization.CultureInfo.GetCultureInfo("en-US");
+        }
+
+        //applicationTask = UniTask.RunOnThreadPool(() =>
+        //{
+        //    try
+        //    {
+        //        Terminal.Gui.Application.Run();
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        Debug.LogException(e);
+        //    }
+        //}, true, applicationCancellationTokenSource.Token).ContinueWith(() => {
+        //    UnityDriver.SetWindowSize(UnityDriver.Cols, UnityDriver.Rows);
+        //});
         applicationTask = UniTask.RunOnThreadPool(() =>
         {
             try
             {
-                Terminal.Gui.Application.Run();
+                UICatalog.UICatalogApp.Main(()=> {
+                    var c = UniTask.RunOnThreadPool(async () =>
+                    {
+
+                        await UniTask.SwitchToMainThread();
+                        UnityDriver.UnityConsole = new UnityConsole();
+                        Terminal.Gui.Application.Init(UnityDriver, UnityMainLoop);
+                        Terminal.Gui.Application.HeightAsBuffer = true;
+
+                        if (foregrounds != null)
+                        {
+                            for (int y = 0; y < UnityDriver.Rows; y++)
+                            {
+                                for (int x = 0; x < UnityDriver.Cols; x++)
+                                {
+                                    GameObject.Destroy(backgrounds[y, x].gameObject);
+                                    GameObject.Destroy(foregrounds[y, x].gameObject);
+                                }
+                            }
+                        }
+                        if (Caret)
+                        {
+                            GameObject.Destroy(Caret.gameObject);
+                        }
+
+                        diff = new int[UnityDriver.Rows, UnityDriver.Cols, 2];
+                        foregrounds = new CharForeground[UnityDriver.Rows, UnityDriver.Cols];
+                        backgrounds = new CharBackground[UnityDriver.Rows, UnityDriver.Cols];
+                        for (int y = 0; y < UnityDriver.Rows; y++)
+                        {
+                            for (int x = 0; x < UnityDriver.Cols; x++)
+                            {
+                                backgrounds[y, x] = Instantiate(charBackground, canvas.transform).GetComponent<CharBackground>();
+                                backgrounds[y, x].transform.localPosition = TerminalTransform.GetTerminalCursorPosition(x, y);
+                                backgrounds[y, x].Color = UnityEngine.Color.black;
+                            }
+                        }
+                        for (int y = 0; y < UnityDriver.Rows; y++)
+                        {
+                            for (int x = 0; x < UnityDriver.Cols; x++)
+                            {
+                                foregrounds[y, x] = Instantiate(charForeground, canvas.transform).GetComponent<CharForeground>();
+                                foregrounds[y, x].transform.localPosition = TerminalTransform.GetTerminalCursorPosition(x, y);
+                                foregrounds[y, x].Character = '*';
+                                diff[y, x, 0] = '*';
+                                diff[y, x, 1] = 0;
+                            }
+                        }
+                        Caret = Instantiate(charBackground, canvas.transform).GetComponent<CharBackground>();
+                        Caret.transform.localPosition = TerminalTransform.GetTerminalCursorPosition(0, 0);
+                        Caret.Color = UnityEngine.Color.black;
+                        await UniTask.SwitchToThreadPool();
+                    });
+                    bool wait = true;
+                    c.ContinueWith(() => { wait = false; }).Forget();
+                    while (wait) { }
+                    });
             }
             catch (Exception e)
             {
                 Debug.LogException(e);
             }
-        }, true, applicationCancellationTokenSource.Token).ContinueWith(()=> {
+        }, true, applicationCancellationTokenSource.Token).ContinueWith(() => {
             UnityDriver.SetWindowSize(UnityDriver.Cols, UnityDriver.Rows);
         });
     }
@@ -262,8 +285,7 @@ public class TerminalGuiTest : MonoBehaviour
             };
             //Debug.Log(mouseEvent);
 
-            UnityDriver.mouseHandler(mouseEvent);
-            (Terminal.Gui.Application.MainLoop.Driver as UnityMainLoop)?.InputQueue.Add(true);
+            (Terminal.Gui.Application.MainLoop.Driver as UnityMainLoop)?.InputQueue.Add(() => { UnityDriver.mouseHandler(mouseEvent); });
         }
         if (Input.GetMouseButtonDown(1))
         {
@@ -278,9 +300,24 @@ public class TerminalGuiTest : MonoBehaviour
             };
             //Debug.Log(mouseEvent);
 
-            UnityDriver.mouseHandler(mouseEvent);
-            (Terminal.Gui.Application.MainLoop.Driver as UnityMainLoop)?.InputQueue.Add(true);
+            (Terminal.Gui.Application.MainLoop.Driver as UnityMainLoop)?.InputQueue.Add(()=> { UnityDriver.mouseHandler(mouseEvent); });
         }
+    }
+
+    public void OnMouseDrag()
+    {
+        var mouseEvent = new MouseEvent
+        {
+            Flags = MouseFlags.ReportMousePosition,
+            OfX = 0,
+            OfY = 0,
+            View = null,
+            X = (int)((Input.mousePosition.x / Screen.width) * UnityDriver.Cols),
+            Y = (int)(((Screen.height - Input.mousePosition.y) / Screen.height) * UnityDriver.Rows),
+        };
+        //Debug.Log(mouseEvent);
+
+        (Terminal.Gui.Application.MainLoop.Driver as UnityMainLoop)?.InputQueue.Add(() => { UnityDriver.mouseHandler(mouseEvent); });
     }
 
     public void OnMouseUp()
@@ -298,8 +335,7 @@ public class TerminalGuiTest : MonoBehaviour
             };
             //Debug.Log(mouseEvent);
 
-            UnityDriver.mouseHandler(mouseEvent);
-            (Terminal.Gui.Application.MainLoop.Driver as UnityMainLoop)?.InputQueue.Add(true);
+            (Terminal.Gui.Application.MainLoop.Driver as UnityMainLoop)?.InputQueue.Add(() => { UnityDriver.mouseHandler(mouseEvent); });
         }
         if (Input.GetMouseButtonUp(1))
         {
@@ -314,8 +350,7 @@ public class TerminalGuiTest : MonoBehaviour
             };
             //Debug.Log(mouseEvent);
 
-            UnityDriver.mouseHandler(mouseEvent);
-            (Terminal.Gui.Application.MainLoop.Driver as UnityMainLoop)?.InputQueue.Add(true);
+            (Terminal.Gui.Application.MainLoop.Driver as UnityMainLoop)?.InputQueue.Add(() => { UnityDriver.mouseHandler(mouseEvent); });
         }
     }
 
@@ -353,12 +388,30 @@ public class TerminalGuiTest : MonoBehaviour
         {
             if (cv != CursorVisibility.Invisible && ((int)(Time.realtimeSinceStartup * 2) & 1) == 0)
             {
-                backgrounds[UnityDriver.UnityConsole.CursorTop, UnityDriver.UnityConsole.CursorLeft].Color = UnityEngine.Color.black;
+                Caret.transform.localPosition = TerminalTransform.GetTerminalCursorPosition(UnityDriver.UnityConsole.CursorLeft, UnityDriver.UnityConsole.CursorTop);
+                Caret.gameObject.SetActive(true);
             }
             else
             {
-                UnityDriver.GetColors(v[UnityDriver.UnityConsole.CursorTop, UnityDriver.UnityConsole.CursorLeft, 1], out Terminal.Gui.Color _, out Terminal.Gui.Color bc);
-                backgrounds[UnityDriver.UnityConsole.CursorTop, UnityDriver.UnityConsole.CursorLeft].Color = UnityDriver.colorMap2[bc];
+                Caret.gameObject.SetActive(false);
+            }
+        }
+
+        {
+            if (Input.mouseScrollDelta.y != 0)
+            {
+                var mouseEvent = new MouseEvent
+                {
+                    Flags = Input.mouseScrollDelta.y < 0 ? MouseFlags.WheeledDown : MouseFlags.WheeledUp,
+                    OfX = 0,
+                    OfY = 0,
+                    View = null,
+                    X = (int)((Input.mousePosition.x / Screen.width) * UnityDriver.Cols),
+                    Y = (int)(((Screen.height - Input.mousePosition.y) / Screen.height) * UnityDriver.Rows),
+                };
+                //Debug.Log(mouseEvent);
+
+                (Terminal.Gui.Application.MainLoop.Driver as UnityMainLoop)?.InputQueue.Add(() => { UnityDriver.mouseHandler(mouseEvent); });
             }
         }
 
@@ -369,13 +422,25 @@ public class TerminalGuiTest : MonoBehaviour
             {
                 try
                 {
-                    var consoleKey = keyCode.ToConsoleKey();
-                    Terminal.Gui.Application.Driver.SendKeys(inputString.FirstOrDefault(), consoleKey, Input.GetKey(KeyCode.LeftShift), Input.GetKey(KeyCode.LeftAlt), Input.GetKey(KeyCode.LeftControl));
-                    (Terminal.Gui.Application.MainLoop.Driver as UnityMainLoop)?.InputQueue.Add(true);
+                    ConsoleKey consoleKey = ConsoleKey.NoName;
+                    try
+                    {
+                        consoleKey = keyCode.ToConsoleKey();
+                    }
+                    catch (Exception)
+                    {
+                    }
+                    char c = inputString.FirstOrDefault();
+                    bool shift = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+                    bool alt = Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt);
+                    bool ctrl = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
+                    (Terminal.Gui.Application.MainLoop.Driver as UnityMainLoop)?.InputQueue.Add(()=> {
+                        Terminal.Gui.Application.Driver.SendKeys(c, consoleKey, shift, alt, ctrl);
+                    });
                 }
                 catch (Exception e)
                 {
-                    //Debug.LogException(e);
+                    Debug.LogException(e);
                 }
             }
         }
