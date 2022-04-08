@@ -13,26 +13,28 @@ namespace Terminal.Gui
 {
     public class UnityClipboard : IClipboard
     {
-        public bool IsSupported => false;
+        public bool IsSupported => true;
 
         public string GetClipboardData()
         {
-            throw new NotImplementedException();
+            return GUIUtility.systemCopyBuffer;
         }
 
         public void SetClipboardData(string text)
         {
-            throw new NotImplementedException();
+            GUIUtility.systemCopyBuffer = text;
         }
 
         public bool TryGetClipboardData(out string result)
         {
-            throw new NotImplementedException();
+            result = GUIUtility.systemCopyBuffer;
+            return true;
         }
 
         public bool TrySetClipboardData(string text)
         {
-            throw new NotImplementedException();
+            GUIUtility.systemCopyBuffer = text;
+            return true;
         }
     }
 
