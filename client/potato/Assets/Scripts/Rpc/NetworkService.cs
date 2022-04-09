@@ -13,12 +13,19 @@ namespace Potato
             public Session Connect(string ip, int port)
             {
                 session = new Session(new TcpClient(ip, port));
+                session.OnDisconnectedCallback += OnDisconnected;
                 return session;
             }
 
             public void StartReceive()
             {
                 session.Start();
+            }
+
+            private void OnDisconnected(Session session)
+            {
+                OnDisconnectedCallback?.Invoke(session);
+                this.session = null;
             }
 
             public Session Session => session;
@@ -40,6 +47,7 @@ namespace Potato
 
             public long Now => (long)(DateTime.UtcNow - UnixEpoch).TotalMilliseconds + ServerTimeDifference;
             public long ServerTimeDifference { get; set; }
+            public Action<Session> OnDisconnectedCallback { get; set; }
 
             public readonly DateTime UnixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, 0);
             private Session session;

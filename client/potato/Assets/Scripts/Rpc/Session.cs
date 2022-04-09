@@ -1,12 +1,9 @@
-using System.Collections;
-using System.Collections.Generic;
 using Potato.Network.Protocol;
 using UnityEngine;
 using System.Net.Sockets;
-using System.Collections.Concurrent;
-using System.Threading.Tasks;
-using System.Threading;
 using System;
+using Cysharp.Threading.Tasks;
+using System.Threading;
 
 namespace Potato
 {
@@ -15,11 +12,11 @@ namespace Potato
         public class Session
         {
 
-            public Action<Session> OnDisconnected { get; set; }
+            public Action<Session> OnDisconnectedCallback { get; set; }
             public Action<Payload> OnPayloadReceoved { get; set; }
 
             private CancellationTokenSource tokenSource = new CancellationTokenSource();
-            private Task receieverTask;
+            private UniTask receieverTask;
 
             private TcpClient client;
 
@@ -33,11 +30,10 @@ namespace Potato
             public void Disconnect()
             {
                 Debug.Log("disconnecting");
-                tokenSource?.Cancel();
-                receieverTask?.Wait();
-                client.Close();
-                client.Dispose();
+                tokenSource.Cancel();
+                Debug.Log(receieverTask.ToString());
                 Debug.Log("disconnected");
+                receieverTask.Forget();
             }
 
             public void SendPayload(Payload payload)
@@ -48,7 +44,7 @@ namespace Potato
 
             public void Start()
             {
-                receieverTask = Task.Run(() =>
+                receieverTask = UniTask.RunOnThreadPool(async () =>
                 {
                     while (!tokenSource.IsCancellationRequested)
                     {
@@ -56,14 +52,13 @@ namespace Potato
                         {
                             byte[] headerBuffer = new byte[PayloadHeader.Size];
                             //Debug.Log($"waiting read header {PayloadHeader.Size}bytes");
-                            var readHeaderSize = client.GetStream().ReadAsync(headerBuffer, 0, PayloadHeader.Size, tokenSource.Token);
-                            readHeaderSize.Wait(tokenSource.Token);
-                            if (!client.Connected || readHeaderSize.Result == 0)
+                            var readHeaderSize = await client.GetStream().ReadAsync(headerBuffer, 0, PayloadHeader.Size, tokenSource.Token);
+                            if (!client.Connected || readHeaderSize == 0 || tokenSource.IsCancellationRequested)
                             {
-                                tokenSource.Cancel();
+                                await OnDisconnect();
                                 break;
                             }
-                            Debug.Assert(readHeaderSize.Result == PayloadHeader.Size);
+                            Debug.Assert(readHeaderSize == PayloadHeader.Size);
 
                             Payload payload = new Payload
                             {
@@ -71,32 +66,39 @@ namespace Potato
                             };
                             payload.SetBufferSize(payload.Header.payloadSize);
                             //Debug.Log($"waiting rayload header {payload.Header.payloadSize}bytes");
-                            var readSize = client.GetStream().ReadAsync(payload.GetBuffer(), PayloadHeader.Size, payload.Header.payloadSize, tokenSource.Token);
-                            readSize.Wait(tokenSource.Token);
-                            if (!client.Connected || readSize.Result == 0)
+                            var readSize = await client.GetStream().ReadAsync(payload.GetBuffer(), PayloadHeader.Size, payload.Header.payloadSize, tokenSource.Token);
+                            if (!client.Connected || readSize == 0 || tokenSource.IsCancellationRequested)
                             {
-                                tokenSource.Cancel();
+                                await OnDisconnect();
                                 break;
                             }
-                            Debug.Assert(readSize.Result == payload.Header.payloadSize);
+                            Debug.Assert(readSize == payload.Header.payloadSize);
 
                             OnPayloadReceoved?.Invoke(payload);
                         }
-                        catch (Exception e)
+                        catch (OperationCanceledException e)
+                        {
+                            Debug.Log(e.ToString());
+                            Debug.Log($"receieverTask was {receieverTask.Status}");
+                            await OnDisconnect();
+                        }
+                        catch(Exception e)
                         {
                             Debug.LogException(e);
+                            Debug.Log($"receieverTask was {receieverTask.Status}");
+                            await OnDisconnect();
                         }
                     }
-                }, tokenSource.Token);
-                receieverTask.ContinueWith((task) => {
-                    Debug.Log($"receieverTask was {task.Status}");
-                    OnDisconnect();
                 });
             }
 
-            private void OnDisconnect()
+            private async UniTask OnDisconnect()
             {
-                OnDisconnected?.Invoke(this);
+                await UniTask.SwitchToMainThread();
+                OnDisconnectedCallback?.Invoke(this);
+                client.Close();
+                client.Dispose();
+                await UniTask.SwitchToThreadPool();
             }
 
             public void Update()

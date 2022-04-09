@@ -54,7 +54,8 @@ namespace Potato
                 hostInputField.text = web.downloadHandler.text;
             }
 
-            connectButton.onClick.AddListener(() => {
+            connectButton.onClick.AddListener(() =>
+            {
                 hostInputField.gameObject.SetActive(false);
                 nameInputField.gameObject.SetActive(false);
                 connectButton.gameObject.SetActive(false);
@@ -97,24 +98,7 @@ namespace Potato
             };
 
 
-            var context = SynchronizationContext.Current;
-            session.OnDisconnected += (_) =>
-            {
-                context.Post(_ =>
-                {
-                    Debug.LogWarning("Session disconnected.");
-
-                    Torikime.RpcHolder.Clear();
-                    unitService.Reset();
-
-                    hostInputField?.gameObject.SetActive(true);
-                    nameInputField.gameObject.SetActive(true);
-                    connectButton?.gameObject.SetActive(true);
-                    panel?.SetActive(true);
-
-                    StartCoroutine(LoginSequence());
-                }, null);
-            };
+            networkService.OnDisconnectedCallback += OnDisconnected;
 
             {
                 var sendMessage = Torikime.RpcHolder.GetRpc<Torikime.Chat.SendMessage.Rpc>();
@@ -179,18 +163,41 @@ namespace Potato
 
             yield return Torikime.RpcHolder.GetRpc<Torikime.Auth.Login.Rpc>().RequestCoroutine(
                 new Torikime.Auth.Login.Request { UserId = nameInputField.text, Password = "" },
-                (response) => {
+                (response) =>
+                {
                     Debug.Log($"Login response {response.Ok}, {response.Token}");
                 });
 
 
             {
                 var rpc = Torikime.RpcHolder.GetRpc<Torikime.Unit.SpawnReady.Rpc>();
-                yield return rpc.RequestCoroutine(new Torikime.Unit.SpawnReady.Request { AreaId = 0 }, (response) => {
+                yield return rpc.RequestCoroutine(new Torikime.Unit.SpawnReady.Request { AreaId = 0 }, (response) =>
+                {
                     var unit = new ControllablePlayerUnit(networkService, new UnitId(response.UnitId), response.Position.ToVector3(), response.Direction, response.Avatar);
                     unitService.Register(unit);
                 });
             }
+        }
+
+        private void OnDisconnected(Network.Session _)
+        {
+            networkService.OnDisconnectedCallback -= OnDisconnected;
+
+            Debug.LogWarning("Session disconnected.");
+            if (!Application.isPlaying)
+            {
+                return;
+            }
+
+            Torikime.RpcHolder.Clear();
+            unitService.Reset();
+
+            hostInputField?.gameObject.SetActive(true);
+            nameInputField.gameObject.SetActive(true);
+            connectButton?.gameObject.SetActive(true);
+            panel?.SetActive(true);
+
+            StartCoroutine(LoginSequence());
         }
 
         private bool timeSyncronized = false;
@@ -205,7 +212,7 @@ namespace Potato
 
         private IEnumerator DoPingPong()
         {
-            while (true)
+            while (networkService != null && networkService.Session != null)
             {
                 var pingpong = Torikime.RpcHolder.GetRpc<Torikime.Diagnosis.PingPong.Rpc>();
                 var request = new Torikime.Diagnosis.PingPong.Request();
@@ -258,7 +265,7 @@ namespace Potato
 
         private void LateUpdate()
         {
-            if (networkService == null)
+            if (networkService == null || networkService.Session == null)
             {
                 return;
             }
@@ -275,7 +282,6 @@ namespace Potato
 
         private void OnDestroy()
         {
-            networkService.Session.Disconnect();
         }
 
         private void OnDrawGizmos()
