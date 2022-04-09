@@ -420,29 +420,6 @@ namespace Terminal.Gui
 
         public UnityConsole UnityConsole;
 
-        void UpdateOffscreen()
-        {
-            lock (copyLock)
-            {
-                int cols = Cols;
-                int rows = Rows;
-
-                contents = new int[rows, cols, 3];
-                for (int r = 0; r < rows; r++)
-                {
-                    for (int c = 0; c < cols; c++)
-                    {
-                        contents[r, c, 0] = ' ';
-                        contents[r, c, 1] = MakeColor(ConsoleColor.Gray, ConsoleColor.Black);
-                        contents[r, c, 2] = 0;
-                    }
-                }
-                dirtyLine = new bool[rows];
-                for (int row = 0; row < rows; row++)
-                    dirtyLine[row] = true;
-            }
-        }
-
         static bool sync = false;
 
         public UnityDriver()
