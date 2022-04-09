@@ -253,7 +253,7 @@ public class TerminalGuiTest : MonoBehaviour
                         }
                         Caret = Instantiate(charBackground, canvas.transform).GetComponent<CharBackground>();
                         Caret.transform.localPosition = TerminalTransform.GetTerminalCursorPosition(0, 0);
-                        Caret.Color = UnityEngine.Color.black;
+                        Caret.Color = UnityEngine.Color.magenta;
                         await UniTask.SwitchToThreadPool();
                     });
                     bool wait = true;
@@ -271,11 +271,16 @@ public class TerminalGuiTest : MonoBehaviour
 
     public void OnMouseDown()
     {
+        bool shift = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+        bool alt = Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt);
+        bool ctrl = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
+        MouseFlags metas = (shift ? MouseFlags.ButtonShift : 0) | (alt ? MouseFlags.ButtonAlt : 0) | (ctrl ? MouseFlags.ButtonCtrl : 0);
+
         if (Input.GetMouseButtonDown(0))
         {
             var mouseEvent = new MouseEvent
             {
-                Flags = MouseFlags.Button1Pressed,
+                Flags = MouseFlags.Button1Pressed | metas,
                 OfX = 0,
                 OfY = 0,
                 View = null,
@@ -290,7 +295,7 @@ public class TerminalGuiTest : MonoBehaviour
         {
             var mouseEvent = new MouseEvent
             {
-                Flags = MouseFlags.Button2Pressed,
+                Flags = MouseFlags.Button2Pressed | metas,
                 OfX = 0,
                 OfY = 0,
                 View = null,
@@ -307,48 +312,54 @@ public class TerminalGuiTest : MonoBehaviour
     {
         var mouseEvent = new MouseEvent
         {
-            Flags = MouseFlags.ReportMousePosition,
+            Flags = MouseFlags.Button2Pressed | MouseFlags.ReportMousePosition,
             OfX = 0,
             OfY = 0,
             View = null,
             X = (int)((Input.mousePosition.x / Screen.width) * UnityDriver.Cols),
             Y = (int)(((Screen.height - Input.mousePosition.y) / Screen.height) * UnityDriver.Rows),
         };
-        //Debug.Log(mouseEvent);
 
         (Terminal.Gui.Application.MainLoop.Driver as UnityMainLoop)?.InputQueue.Add(() => { UnityDriver.mouseHandler(mouseEvent); });
     }
 
     public void OnMouseUp()
     {
+        bool shift = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+        bool alt = Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt);
+        bool ctrl = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
+        MouseFlags metas = (shift ? MouseFlags.ButtonShift : 0) | (alt ? MouseFlags.ButtonAlt : 0) | (ctrl ? MouseFlags.ButtonCtrl : 0);
+
         if (Input.GetMouseButtonUp(0))
         {
             var mouseEvent = new MouseEvent
             {
-                Flags = MouseFlags.Button1Released | MouseFlags.Button1Clicked,
+                Flags = MouseFlags.Button1Released | metas,
                 OfX = 0,
                 OfY = 0,
                 View = null,
                 X = (int)((Input.mousePosition.x / Screen.width) * UnityDriver.Cols),
                 Y = (int)(((Screen.height - Input.mousePosition.y) / Screen.height) * UnityDriver.Rows),
             };
-            //Debug.Log(mouseEvent);
+            (Terminal.Gui.Application.MainLoop.Driver as UnityMainLoop)?.InputQueue.Add(() => { UnityDriver.mouseHandler(mouseEvent); });
 
+            mouseEvent.Flags = MouseFlags.Button1Clicked | metas;
             (Terminal.Gui.Application.MainLoop.Driver as UnityMainLoop)?.InputQueue.Add(() => { UnityDriver.mouseHandler(mouseEvent); });
         }
         if (Input.GetMouseButtonUp(1))
         {
             var mouseEvent = new MouseEvent
             {
-                Flags = MouseFlags.Button2Released | MouseFlags.Button2Clicked,
+                Flags = MouseFlags.Button2Released | metas,
                 OfX = 0,
                 OfY = 0,
                 View = null,
                 X = (int)((Input.mousePosition.x / Screen.width) * UnityDriver.Cols),
                 Y = (int)(((Screen.height - Input.mousePosition.y) / Screen.height) * UnityDriver.Rows),
             };
-            //Debug.Log(mouseEvent);
+            (Terminal.Gui.Application.MainLoop.Driver as UnityMainLoop)?.InputQueue.Add(() => { UnityDriver.mouseHandler(mouseEvent); });
 
+            mouseEvent.Flags = MouseFlags.Button2Clicked | metas;
             (Terminal.Gui.Application.MainLoop.Driver as UnityMainLoop)?.InputQueue.Add(() => { UnityDriver.mouseHandler(mouseEvent); });
         }
     }
