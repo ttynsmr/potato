@@ -1,0 +1,23 @@
+fileFormatVersion: 2
+guid: 25a879393bab8cc48b28af2577c11132
+TrueTypeFontImporter:
+  externalObjects: {}
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontNames:
+  - FiraMono NF
+  fallbackFontReferences:
+  - {fileID: 12800000, guid: 53d3ead28390b7e41a308757d6d8dc82, type: 3}
+  - {fileID: 12800000, guid: 845a0f68efa040d489a89c6b540a9f81, type: 3}
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  useLegacyBoundsCalculation: 0
+  shouldRoundAdvanceValue: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
