@@ -31,11 +31,9 @@ namespace Potato
             {
                 Debug.Log("disconnecting");
                 tokenSource.Cancel();
-                //receieverTask.AsTask().Wait();
                 Debug.Log(receieverTask.ToString());
-                client.Close();
-                client.Dispose();
                 Debug.Log("disconnected");
+                receieverTask.Forget();
             }
 
             public void SendPayload(Payload payload)
@@ -57,7 +55,6 @@ namespace Potato
                             var readHeaderSize = await client.GetStream().ReadAsync(headerBuffer, 0, PayloadHeader.Size, tokenSource.Token);
                             if (!client.Connected || readHeaderSize == 0 || tokenSource.IsCancellationRequested)
                             {
-                                tokenSource.Cancel();
                                 await OnDisconnect();
                                 break;
                             }
@@ -72,7 +69,6 @@ namespace Potato
                             var readSize = await client.GetStream().ReadAsync(payload.GetBuffer(), PayloadHeader.Size, payload.Header.payloadSize, tokenSource.Token);
                             if (!client.Connected || readSize == 0 || tokenSource.IsCancellationRequested)
                             {
-                                tokenSource.Cancel();
                                 await OnDisconnect();
                                 break;
                             }
@@ -93,9 +89,6 @@ namespace Potato
                             await OnDisconnect();
                         }
                     }
-                }, true, tokenSource.Token).ContinueWith(async () => {
-                    Debug.Log($"receieverTask was {receieverTask.Status}");
-                    await OnDisconnect();
                 });
             }
 
@@ -103,6 +96,8 @@ namespace Potato
             {
                 await UniTask.SwitchToMainThread();
                 OnDisconnectedCallback?.Invoke(this);
+                client.Close();
+                client.Dispose();
                 await UniTask.SwitchToThreadPool();
             }
 
