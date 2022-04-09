@@ -242,6 +242,10 @@ public class PlayerUnit : IUnit, IHasStatus
 
     public void Destroy()
     {
+        if (!Appearance)
+        {
+            return;
+        }
         GameObject.Destroy(Appearance.gameObject);
     }
 }
