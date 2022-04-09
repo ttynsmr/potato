@@ -445,9 +445,22 @@ public class TerminalGuiTest : MonoBehaviour
                     bool shift = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
                     bool alt = Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt);
                     bool ctrl = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
-                    (Terminal.Gui.Application.MainLoop.Driver as UnityMainLoop)?.InputQueue.Add(()=> {
-                        Terminal.Gui.Application.Driver.SendKeys(c, consoleKey, shift, alt, ctrl);
-                    });
+                    if (c != '\0')
+                    {
+                        (Terminal.Gui.Application.MainLoop.Driver as UnityMainLoop)?.InputQueue.Add(() =>
+                        {
+                            Terminal.Gui.Application.Driver.SendKeys(c, consoleKey, false, alt, ctrl);
+                        });
+                        Debug.Log($"KeyCode:[{keyCode}] c:[{c}] shift:{shift} alt:{alt} ctrl:{ctrl}");
+                    }
+                    else
+                    {
+                        (Terminal.Gui.Application.MainLoop.Driver as UnityMainLoop)?.InputQueue.Add(() =>
+                        {
+                            Terminal.Gui.Application.Driver.SendKeys(c, consoleKey, shift, alt, ctrl);
+                        });
+                        Debug.Log($"KeyCode:[{keyCode}] c:[\\0] shift:{shift} alt:{alt} ctrl:{ctrl}");
+                    }
 
                     lastInputTime = Time.realtimeSinceStartup;
                 }
