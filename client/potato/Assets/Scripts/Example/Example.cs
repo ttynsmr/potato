@@ -282,7 +282,6 @@ namespace Potato
 
         private void OnDestroy()
         {
-            //networkService?.Session?.Disconnect();
         }
 
         private void OnDrawGizmos()
