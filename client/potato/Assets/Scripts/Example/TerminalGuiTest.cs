@@ -70,14 +70,6 @@ public static class KeyCodeExtension
     };
 }
 
-public static class TerminalTransform
-{
-    public static Vector3 GetTerminalCursorPosition(int x, int y)
-    {
-        return new Vector3(-1920 / 2 + x * (1920 / 120), 1080 - (1080 / 2 + y * (1080 / 30)));
-    }
-}
-
 public class TerminalGuiTest : MonoBehaviour
 {
     public Canvas canvas;
@@ -101,6 +93,14 @@ public class TerminalGuiTest : MonoBehaviour
     private bool ignoreDirtyFlag = true;
 
     private int[,,] diff;
+
+    public Vector3 GetTerminalCursorPosition(int x, int y)
+    {
+        return new Vector3(
+            -canvas.pixelRect.width / 2 + x * (canvas.pixelRect.width / 120),
+            canvas.pixelRect.height - (canvas.pixelRect.height / 2 + y * (1080 / 30))
+            );
+    }
 
     void StartApp()
     {
@@ -236,7 +236,7 @@ public class TerminalGuiTest : MonoBehaviour
                             for (int x = 0; x < UnityDriver.Cols; x++)
                             {
                                 backgrounds[y, x] = Instantiate(charBackground, canvas.transform).GetComponent<CharBackground>();
-                                backgrounds[y, x].transform.localPosition = TerminalTransform.GetTerminalCursorPosition(x, y);
+                                backgrounds[y, x].transform.localPosition = GetTerminalCursorPosition(x, y);
                                 backgrounds[y, x].Color = UnityEngine.Color.black;
                             }
                         }
@@ -245,14 +245,14 @@ public class TerminalGuiTest : MonoBehaviour
                             for (int x = 0; x < UnityDriver.Cols; x++)
                             {
                                 foregrounds[y, x] = Instantiate(charForeground, canvas.transform).GetComponent<CharForeground>();
-                                foregrounds[y, x].transform.localPosition = TerminalTransform.GetTerminalCursorPosition(x, y);
+                                foregrounds[y, x].transform.localPosition = GetTerminalCursorPosition(x, y);
                                 foregrounds[y, x].Character = '*';
                                 diff[y, x, 0] = '*';
                                 diff[y, x, 1] = 0;
                             }
                         }
                         Caret = Instantiate(charBackground, canvas.transform).GetComponent<CharBackground>();
-                        Caret.transform.localPosition = TerminalTransform.GetTerminalCursorPosition(0, 0);
+                        Caret.transform.localPosition = GetTerminalCursorPosition(0, 0);
                         Caret.Color = UnityEngine.Color.magenta;
                         await UniTask.SwitchToThreadPool();
                     });
@@ -399,7 +399,7 @@ public class TerminalGuiTest : MonoBehaviour
         {
             if (cv != CursorVisibility.Invisible && ((int)((Time.realtimeSinceStartup - lastInputTime) * 2) & 1) == 0)
             {
-                Caret.transform.localPosition = TerminalTransform.GetTerminalCursorPosition(UnityDriver.UnityConsole.CursorLeft, UnityDriver.UnityConsole.CursorTop);
+                Caret.transform.localPosition = GetTerminalCursorPosition(UnityDriver.UnityConsole.CursorLeft, UnityDriver.UnityConsole.CursorTop);
                 Caret.gameObject.SetActive(true);
             }
             else
@@ -451,7 +451,7 @@ public class TerminalGuiTest : MonoBehaviour
                         {
                             Terminal.Gui.Application.Driver.SendKeys(c, consoleKey, false, alt, ctrl);
                         });
-                        Debug.Log($"KeyCode:[{keyCode}] c:[{c}] shift:{shift} alt:{alt} ctrl:{ctrl}");
+                        Debug.Log($"KeyCode:[{keyCode}] ConsoleKey:[{consoleKey}] c:[{c}] shift:{shift} alt:{alt} ctrl:{ctrl}");
                     }
                     else
                     {
@@ -459,7 +459,7 @@ public class TerminalGuiTest : MonoBehaviour
                         {
                             Terminal.Gui.Application.Driver.SendKeys(c, consoleKey, shift, alt, ctrl);
                         });
-                        Debug.Log($"KeyCode:[{keyCode}] c:[\\0] shift:{shift} alt:{alt} ctrl:{ctrl}");
+                        Debug.Log($"KeyCode:[{keyCode}] ConsoleKey:[{consoleKey}] c:[\\0] shift:{shift} alt:{alt} ctrl:{ctrl}");
                     }
 
                     lastInputTime = Time.realtimeSinceStartup;
