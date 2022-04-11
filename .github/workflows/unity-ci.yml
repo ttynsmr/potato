@@ -112,7 +112,7 @@ jobs:
           allowDirtyBuild: true
 
       # Output
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         if: ${{ github.event.inputs.artifact_windows == 'true' }}
         with:
           name: potato-${{ matrix.target }}
