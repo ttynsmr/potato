@@ -24,7 +24,7 @@
 #include "proto/battle_skill_cast.pb.h"
 #include "proto/battle_sync_parameters.pb.h"
 
-#include "rpc.h"
+#include "rpc/rpc.h"
 #include "units/unit.h"
 #include "units/unit_registory.h"
 #include "units/components/npc_component.h"

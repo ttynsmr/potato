@@ -4,7 +4,7 @@
 
 #include "core/configured_eigen.h"
 
-#include "rpc.h"
+#include "rpc/rpc.h"
 #include "proto/battle_sync_parameters.pb.h"
 #include "generated/cpp/battle_sync_parameters.h"
 

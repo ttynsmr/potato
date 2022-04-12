@@ -1,4 +1,4 @@
-﻿# CMakeList.txt : action-server3 の CMake プロジェクト。ソースを含めて、次を定義します:
+# CMakeList.txt : action-server3 の CMake プロジェクト。ソースを含めて、次を定義します:
 # プロジェクト専用ロジックはこちらです。
 #
 cmake_minimum_required (VERSION 3.8)
@@ -61,7 +61,7 @@ message("ALL_SOURCES: ${ALL_SOURCES}")
 
 # ソースをこのプロジェクトの実行可能ファイルに追加します。
 add_executable (action-server3  ${ALL_SOURCES}
-  "src/Payload.h" "src/Payload.cpp" "src/rpc.h" "src/rpc.cpp"
+  "src/rpc/Payload.h" "src/rpc/Payload.cpp" "src/rpc/rpc.h" "src/rpc/rpc.cpp"
   "src/session/session.h" "src/session/session.cpp" "src/session/session_types.h"
   "src/units/unit.cpp" "src/units/unit.h" "src/units/unit_types.h"
   "src/units/unit_registory.cpp" "src/units/unit_registory.h"
