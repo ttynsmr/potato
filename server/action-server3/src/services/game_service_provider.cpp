@@ -742,8 +742,14 @@ void GameServiceProvider::main()
 			const auto now = std::chrono::high_resolution_clock::now();
 			if (now >= nextSecond)
 			{
-				fmt::print("fps: {}, microsec/frame: [{:5}]\n", fps, fmt::join(frameProcessingTime, ","));
+				auto nerworkServiceProvider = _nerworkServiceProvider.lock();
+				fmt::print("fps: {}, microsec/frame: [{:5}] S:{}/R:{}\n",
+					fps,
+					fmt::join(frameProcessingTime, ","),
+					nerworkServiceProvider->getSendCount(),
+					nerworkServiceProvider->getReceiveCount());
 				frameProcessingTime.clear();
+				nerworkServiceProvider->resetCounters();
 				fps = 0;
 				nextSecond = std::chrono::high_resolution_clock::now() + std::chrono::seconds(1);
 			}

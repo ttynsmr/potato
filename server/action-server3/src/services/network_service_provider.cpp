@@ -59,6 +59,7 @@ void NetworkServiceProvider::sendTo(potato::net::SessionId sessionId, std::share
 		}
 
 		session->second->sendPayload(payload);
+		++_sendCount;
 		});
 }
 
@@ -93,6 +94,7 @@ void NetworkServiceProvider::sendBroadcast(potato::net::SessionId fromSessionId,
 			}
 
 			sessionPair.second->sendPayload(payload);
+			++_sendCount;
 		}
 		});
 }
