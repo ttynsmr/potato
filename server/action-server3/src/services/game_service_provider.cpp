@@ -25,6 +25,7 @@
 #include "proto/battle_sync_parameters.pb.h"
 
 #include "rpc/rpc.h"
+
 #include "units/unit.h"
 #include "units/unit_registory.h"
 #include "units/components/npc_component.h"
@@ -49,6 +50,8 @@
 #include "generated/cpp/battle_skill_cast.h"
 #include "generated/cpp/battle_sync_parameters.h"
 
+#include "generated/cpp/rpc_builder.h"
+
 GameServiceProvider::GameServiceProvider(std::shared_ptr<Service> service)
 	: _service(service)
 	, _userRegistory(std::make_shared<potato::UserRegistory>())
@@ -71,6 +74,8 @@ void GameServiceProvider::initialize()
 	_nerworkServiceProvider.lock()->setAcceptedDelegate([this](auto _) { onAccepted(_); });
 	_nerworkServiceProvider.lock()->setSessionStartedDelegate([this](auto _) { onSessionStarted(_); });
 	_nerworkServiceProvider.lock()->setDisconnectedDelegate([this](auto _) { onDisconnected(_); });
+
+	_rpcBuilder = std::make_shared<RpcBuilder>();
 
 	_userRegistory->setOnUnregisterUser([this](auto user) {
 		auto unit = _unitRegistory->findUnitByUnitId(user->getUnitId());

@@ -97,6 +97,49 @@ def convert_rpc_to_cpp(env, out_dir, params, args):
     write_cache(cache_filename, rendered_s, args)
 
 
+def convert_rpc_builder_to_cpp(env, out_dir, all_params, args):
+    tmpl = env.get_template("rpc-builder-cpp.j2")
+
+    rendered_s = tmpl.render(all_params)
+
+    filename = f"cpp/rpc_builder.cpp"
+    out_filename = f"{out_dir}/{filename}"
+    cache_filename = f"{args.cache_dir}/{filename}.hash"
+    if is_cached(cache_filename, rendered_s, args):
+        print(out_filename)
+        return
+
+    if args.verbose:
+        print(f"output: {out_filename}")
+
+    os.makedirs(os.path.dirname(out_filename), exist_ok=True)
+    with open(out_filename, mode="w") as f:
+        f.write(rendered_s)
+
+    write_cache(cache_filename, rendered_s, args)
+
+
+def convert_rpc_builder_to_hpp(env, out_dir, all_params, args):
+    tmpl = env.get_template("rpc-builder-hpp.j2")
+
+    rendered_s = tmpl.render(all_params)
+
+    filename = f"cpp/rpc_builder.h"
+    out_filename = f"{out_dir}/{filename}"
+    cache_filename = f"{args.cache_dir}/{filename}.hash"
+    if is_cached(cache_filename, rendered_s, args):
+        return
+
+    if args.verbose:
+        print(f"output: {out_filename}")
+
+    os.makedirs(os.path.dirname(out_filename), exist_ok=True)
+    with open(out_filename, mode="w") as f:
+        f.write(rendered_s)
+
+    write_cache(cache_filename, rendered_s, args)
+
+
 def convert_rpc_to_csharp(env, out_dir, params, args):
     tmpl = env.get_template("rpc-csharp.j2")
 
@@ -120,6 +163,10 @@ def convert_rpc_to_csharp(env, out_dir, params, args):
 
 def camelize(input):
     return inflection.camelize(input)
+
+
+def lower_camelize(input):
+    return inflection.camelize(input, False)
 
 
 def params_to(inpit_params):
@@ -165,9 +212,13 @@ def main():
     env = Environment(loader=FileSystemLoader("./", encoding="utf8"))
 
     env.filters["camelize"] = camelize
+    env.filters["lower_camelize"] = lower_camelize
 
     tmpl = env.get_template("proto.j2")
 
+    all_params = {}
+    all_params["namespace"] = args.namespace
+    all_params["contracts"] = []
     rpc_files = sorted(glob.glob(args.input_dir + "/*.yaml"))
     for contract_idx, rpc_file in enumerate(rpc_files):
         if args.verbose:
@@ -184,6 +235,10 @@ def main():
             for contract in contracts:
                 # print(contract)
                 # print(contracts[contract])
+                c = {}
+                c["name"] = contract
+                c["names"] = []
+                all_params["contracts"].append(c)
                 for rpc_idx, rpc in enumerate(contracts[contract]):
                     # print(rpc)
                     # print(contracts[contract][rpc])
@@ -201,6 +256,9 @@ def main():
                         rpc_def["notification"] = params_to(
                             contracts[contract][rpc]["notification"]
                         )
+
+                    if "request" in contracts[contract][rpc]:
+                        c["names"].append(rpc)
 
                     params = {
                         "namespace": args.namespace,
@@ -233,6 +291,10 @@ def main():
                         print(
                             f'{args.out_dir}/{params["contract"]}/{params["contract"]}_{params["rpc"]}.proto'
                         )
+
+    print(all_params)
+    convert_rpc_builder_to_hpp(env, args.cpp_out_dir, all_params, args)
+    convert_rpc_builder_to_cpp(env, args.cpp_out_dir, all_params, args)
 
 
 if __name__ == "__main__":

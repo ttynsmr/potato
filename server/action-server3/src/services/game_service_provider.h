@@ -26,6 +26,7 @@ namespace potato
 }
 
 class NetworkServiceProvider;
+class RpcBuilder;
 class Unit;
 class MoveCommand;
 class StopCommand;
@@ -72,6 +73,7 @@ private:
 	std::list<std::shared_ptr<potato::Area>> _areas;
 	int64_t messageId = 0;
 	std::weak_ptr<NetworkServiceProvider> _nerworkServiceProvider;
+	std::shared_ptr<RpcBuilder> _rpcBuilder;
 	std::atomic<bool> _running = true;
 	std::thread _thread;
 	eventpp::EventQueue<int, void(std::function<void()>)> queue;
