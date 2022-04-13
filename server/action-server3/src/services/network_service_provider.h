@@ -65,6 +65,14 @@ public:
 
 	void disconnectSession(const potato::net::SessionId sessionId);
 
+	int32_t getSendCount() const { return _sendCount; }
+	int32_t getReceiveCount() const { return _receiveCount; }
+	void resetCounters()
+	{
+		_sendCount = 0;
+		_receiveCount = 0;
+	}
+
 private:
 	void do_accept();
 
