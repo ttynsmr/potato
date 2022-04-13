@@ -54,6 +54,8 @@ INCLUDE_DIRECTORIES(rpc)
 
 INCLUDE_DIRECTORIES(src)
 
+include_directories(${GENERATED_RPC_DIR})
+
 list(APPEND ALL_SOURCES ${SUB_SOURCES} ${GEN_SOURCES})
 list(APPEND ALL_SOURCES "action-server3.cpp")
 
@@ -61,7 +63,7 @@ message("ALL_SOURCES: ${ALL_SOURCES}")
 
 # ソースをこのプロジェクトの実行可能ファイルに追加します。
 add_executable (action-server3  ${ALL_SOURCES}
-  "src/Payload.h" "src/Payload.cpp" "src/rpc.h" "src/rpc.cpp"
+  "src/rpc/Payload.h" "src/rpc/Payload.cpp" "src/rpc/rpc.h" "src/rpc/rpc.cpp"
   "src/session/session.h" "src/session/session.cpp" "src/session/session_types.h"
   "src/units/unit.cpp" "src/units/unit.h" "src/units/unit_types.h"
   "src/units/unit_registory.cpp" "src/units/unit_registory.h"
@@ -86,7 +88,7 @@ find_package (Threads REQUIRED)
 INCLUDE(FindProtobuf)
 FIND_PACKAGE(Protobuf REQUIRED)
 
-target_link_libraries(action-server3 pthread eventpp fmt::fmt ${PROTOBUF_LIBRARY} proto rpc_contracts)
+target_link_libraries(action-server3 pthread eventpp fmt::fmt ${PROTOBUF_LIBRARY} rpc_contracts proto)
 
 set( BOOST_ROOT "/usr/lib/x86_64-linux-gnu/")
 

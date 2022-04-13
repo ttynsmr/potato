@@ -2,13 +2,11 @@
 
 #include <memory>
 #include <boost/asio.hpp>
-#include <eventpp/eventqueue.h>
 
-#include "service.h"
 #include "service_provider.h"
 #include "session/session_types.h"
 
-#include "Payload.h"
+#include "rpc/Payload.h"
 
 namespace potato
 {
@@ -23,6 +21,8 @@ namespace potato::net
 namespace torikime {
 	class RpcInterface;
 }
+
+class Service;
 
 class NetworkServiceProvider : public IServiceProvider, public std::enable_shared_from_this<NetworkServiceProvider>
 {
@@ -71,7 +71,6 @@ private:
 	std::thread _thread;
 	boost::asio::io_context _io_context;
 	boost::asio::ip::tcp::acceptor _acceptor;
-	eventpp::EventQueue<Send, void(std::vector<potato::net::SessionId>, std::shared_ptr<potato::net::protocol::Payload> payload)> _sendPayloadQueue;
 	std::atomic_int _sessionIdGenerateCounter = 0;
 	std::unordered_map<potato::net::SessionId, std::shared_ptr<potato::net::session>> _sessions;
 	std::vector<std::shared_ptr<torikime::RpcInterface>> _rpcs;
