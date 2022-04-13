@@ -60,7 +60,7 @@ def convert_rpc_to_hpp(env, out_dir, params, args):
 
     rendered_s = tmpl.render(params)
 
-    filename = f'cpp/{params["contract"]}_{params["name"]}.h'
+    filename = f'{params["contract"]}_{params["name"]}.h'
     out_filename = f"{out_dir}/{filename}"
     cache_filename = f"{args.cache_dir}/{filename}.hash"
     if is_cached(cache_filename, rendered_s, args):
@@ -81,7 +81,7 @@ def convert_rpc_to_cpp(env, out_dir, params, args):
 
     rendered_s = tmpl.render(params)
 
-    filename = f'cpp/{params["contract"]}_{params["name"]}.cpp'
+    filename = f'{params["contract"]}_{params["name"]}.cpp'
     out_filename = f"{out_dir}/{filename}"
     cache_filename = f"{args.cache_dir}/{filename}.hash"
     if is_cached(cache_filename, rendered_s, args):
@@ -102,11 +102,10 @@ def convert_rpc_builder_to_cpp(env, out_dir, all_params, args):
 
     rendered_s = tmpl.render(all_params)
 
-    filename = f"cpp/rpc_builder.cpp"
+    filename = f"rpc_builder.cpp"
     out_filename = f"{out_dir}/{filename}"
     cache_filename = f"{args.cache_dir}/{filename}.hash"
     if is_cached(cache_filename, rendered_s, args):
-        print(out_filename)
         return
 
     if args.verbose:
@@ -124,7 +123,7 @@ def convert_rpc_builder_to_hpp(env, out_dir, all_params, args):
 
     rendered_s = tmpl.render(all_params)
 
-    filename = f"cpp/rpc_builder.h"
+    filename = f"rpc_builder.h"
     out_filename = f"{out_dir}/{filename}"
     cache_filename = f"{args.cache_dir}/{filename}.hash"
     if is_cached(cache_filename, rendered_s, args):
@@ -205,9 +204,10 @@ def main():
     # parser.add_argument('-s', '--show_outputs', action='store_true')
     args = parser.parse_args()
 
-    # print(f'input_dir={args.input_dir}')
-    # print(f'proto_out_dir={args.proto_out_dir}')
-    # print(f'cpp_out_dir={args.cpp_out_dir}')
+    # if args.verbose:
+    #     print(f"input_dir={args.input_dir}")
+    #     print(f"proto_out_dir={args.proto_out_dir}")
+    #     print(f"cpp_out_dir={args.cpp_out_dir}")
 
     env = Environment(loader=FileSystemLoader("./", encoding="utf8"))
 
@@ -292,7 +292,6 @@ def main():
                             f'{args.out_dir}/{params["contract"]}/{params["contract"]}_{params["rpc"]}.proto'
                         )
 
-    print(all_params)
     convert_rpc_builder_to_hpp(env, args.cpp_out_dir, all_params, args)
     convert_rpc_builder_to_cpp(env, args.cpp_out_dir, all_params, args)
 

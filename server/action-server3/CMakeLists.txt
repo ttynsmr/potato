@@ -1,4 +1,4 @@
-# CMakeList.txt : action-server3 の CMake プロジェクト。ソースを含めて、次を定義します:
+﻿# CMakeList.txt : action-server3 の CMake プロジェクト。ソースを含めて、次を定義します:
 # プロジェクト専用ロジックはこちらです。
 #
 cmake_minimum_required (VERSION 3.8)
@@ -54,6 +54,8 @@ INCLUDE_DIRECTORIES(rpc)
 
 INCLUDE_DIRECTORIES(src)
 
+include_directories(${GENERATED_RPC_DIR})
+
 list(APPEND ALL_SOURCES ${SUB_SOURCES} ${GEN_SOURCES})
 list(APPEND ALL_SOURCES "action-server3.cpp")
 
@@ -86,7 +88,7 @@ find_package (Threads REQUIRED)
 INCLUDE(FindProtobuf)
 FIND_PACKAGE(Protobuf REQUIRED)
 
-target_link_libraries(action-server3 pthread eventpp fmt::fmt ${PROTOBUF_LIBRARY} proto rpc_contracts)
+target_link_libraries(action-server3 pthread eventpp fmt::fmt ${PROTOBUF_LIBRARY} rpc_contracts proto)
 
 set( BOOST_ROOT "/usr/lib/x86_64-linux-gnu/")
 

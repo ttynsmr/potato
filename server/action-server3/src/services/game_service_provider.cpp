@@ -36,21 +36,21 @@
 #include "user/user.h"
 #include "user/user_registory.h"
 
-#include "generated/cpp/auth_login.h"
-#include "generated/cpp/chat_send_message.h"
-#include "generated/cpp/diagnosis_sever_sessions.h"
-#include "generated/cpp/diagnosis_ping_pong.h"
-#include "generated/cpp/diagnosis_gizmo.h"
-#include "generated/cpp/unit_spawn_ready.h"
-#include "generated/cpp/unit_spawn.h"
-#include "generated/cpp/unit_despawn.h"
-#include "generated/cpp/unit_move.h"
-#include "generated/cpp/unit_stop.h"
-#include "generated/cpp/unit_knockback.h"
-#include "generated/cpp/battle_skill_cast.h"
-#include "generated/cpp/battle_sync_parameters.h"
+#include "auth_login.h"
+#include "chat_send_message.h"
+#include "diagnosis_sever_sessions.h"
+#include "diagnosis_ping_pong.h"
+#include "diagnosis_gizmo.h"
+#include "unit_spawn_ready.h"
+#include "unit_spawn.h"
+#include "unit_despawn.h"
+#include "unit_move.h"
+#include "unit_stop.h"
+#include "unit_knockback.h"
+#include "battle_skill_cast.h"
+#include "battle_sync_parameters.h"
 
-#include "generated/cpp/rpc_builder.h"
+#include "rpc_builder.h"
 
 GameServiceProvider::GameServiceProvider(std::shared_ptr<Service> service)
 	: _service(service)
@@ -71,9 +71,10 @@ void GameServiceProvider::initialize()
 		fmt::print("received queue {}:{}\n", s, b);
 		});
 
-	_nerworkServiceProvider.lock()->setAcceptedDelegate([this](auto _) { onAccepted(_); });
-	_nerworkServiceProvider.lock()->setSessionStartedDelegate([this](auto _) { onSessionStarted(_); });
-	_nerworkServiceProvider.lock()->setDisconnectedDelegate([this](auto _) { onDisconnected(_); });
+	auto nerworkServiceProvider = _nerworkServiceProvider.lock();
+	nerworkServiceProvider->setAcceptedDelegate([this](auto _) { onAccepted(_); });
+	nerworkServiceProvider->setSessionStartedDelegate([this](auto _) { onSessionStarted(_); });
+	nerworkServiceProvider->setDisconnectedDelegate([this](auto _) { onDisconnected(_); });
 
 	_rpcBuilder = std::make_shared<RpcBuilder>();
 
@@ -121,9 +122,10 @@ void GameServiceProvider::initialize()
 
 void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> session)
 {
-	auto authLogin = std::make_shared<torikime::auth::login::Rpc>(session);
+	_rpcBuilder->build(_nerworkServiceProvider.lock(), session);
+
 	auto weakSession = std::weak_ptr(session);
-	authLogin->subscribeRequest([this, weakSession](const auto& requestParcel, auto& responser)
+	_rpcBuilder->auth.login->subscribeRequest([this, weakSession](const auto& requestParcel, auto& responser)
 		{
 			auto session = weakSession.lock();
 			assert(session);
@@ -173,11 +175,9 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 				responser->send(false, std::move(response));
 			}
 			});
-	_nerworkServiceProvider.lock()->registerRpc(authLogin);
 
-	auto chat = std::make_shared<torikime::chat::send_message::Rpc>(session);
-	std::weak_ptr<torikime::chat::send_message::Rpc> weak_chat = chat;
-	chat->subscribeRequest([this, weak_chat, weakSession](const torikime::chat::send_message::RequestParcel& requestParcel, std::shared_ptr<torikime::chat::send_message::Responser>& responser)
+	std::weak_ptr<torikime::chat::send_message::Rpc> weak_chat = _rpcBuilder->chat.sendMessage;
+	_rpcBuilder->chat.sendMessage->subscribeRequest([this, weak_chat, weakSession](const torikime::chat::send_message::RequestParcel& requestParcel, std::shared_ptr<torikime::chat::send_message::Responser>& responser)
 		{
 			auto session = weakSession.lock();
 			assert(session);
@@ -194,17 +194,14 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 			notification.set_message_id(messageId);
 			notification.set_from(fmt::to_string(session->getSessionId()));
 			_nerworkServiceProvider.lock()->sendBroadcast(session->getSessionId(), weak_chat.lock()->serializeNotification(notification)); });
-	_nerworkServiceProvider.lock()->registerRpc(chat);
 
-	auto diagnosis = std::make_shared<torikime::diagnosis::sever_sessions::Rpc>(session);
-	diagnosis->subscribeRequest([this](const torikime::diagnosis::sever_sessions::RequestParcel&, std::shared_ptr<torikime::diagnosis::sever_sessions::Responser>& responser)
+	_rpcBuilder->diagnosis.severSessions->subscribeRequest([this](const torikime::diagnosis::sever_sessions::RequestParcel&, std::shared_ptr<torikime::diagnosis::sever_sessions::Responser>& responser)
 		{
 			torikime::diagnosis::sever_sessions::Response response;
 			response.set_session_count(_nerworkServiceProvider.lock()->getConnectionCount());
 			responser->send(true, std::move(response)); });
-	_nerworkServiceProvider.lock()->registerRpc(diagnosis);
 
-	auto pingPong = std::make_shared<torikime::diagnosis::ping_pong::Rpc>(session);
+	auto pingPong = _rpcBuilder->diagnosis.pingPong;
 	pingPong->subscribeRequest([this, pingPong, weakSession](const torikime::diagnosis::ping_pong::RequestParcel& requestParcel, std::shared_ptr<torikime::diagnosis::ping_pong::Responser>& responser)
 		{
 			auto session = weakSession.lock();
@@ -225,10 +222,8 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 			response.set_send_time(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
 			responser->send(true, std::move(response));
 		});
-	_nerworkServiceProvider.lock()->registerRpc(pingPong);
 
-	auto unitSpawnReady = std::make_shared<torikime::unit::spawn_ready::Rpc>(session);
-	unitSpawnReady->subscribeRequest([this, weakSession](const auto& request, auto& responser)
+	_rpcBuilder->unit.spawnReady->subscribeRequest([this, weakSession](const auto& request, auto& responser)
 		{
 			auto session = weakSession.lock();
 			assert(session);
@@ -296,10 +291,8 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 			}
 			sendSpawnUnit(session->getSessionId(), newUnit);
 		});
-	_nerworkServiceProvider.lock()->registerRpc(unitSpawnReady);
 
-	auto unitMove = std::make_shared<torikime::unit::move::Rpc>(session);
-	unitMove->subscribeRequest([this, weakSession](const auto& requestParcel, auto& responser)
+	_rpcBuilder->unit.move->subscribeRequest([this, weakSession](const auto& requestParcel, auto& responser)
 		{
 			auto session = weakSession.lock();
 			assert(session);
@@ -343,10 +336,8 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 				notification.release_from();
 			}
 		});
-	_nerworkServiceProvider.lock()->registerRpc(unitMove);
 
-	auto unitStop = std::make_shared<torikime::unit::stop::Rpc>(session);
-	unitStop->subscribeRequest([this, weakSession](const auto& requestParcel, auto& responser)
+	_rpcBuilder->unit.stop->subscribeRequest([this, weakSession](const auto& requestParcel, auto& responser)
 		{
 			auto session = weakSession.lock();
 			assert(session);
@@ -381,11 +372,9 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 				_nerworkServiceProvider.lock()->sendAreacast(session->getSessionId(), getArea((*unit)->getAreaId()), torikime::unit::stop::Rpc::serializeNotification(notification));
 			}
 		});
-	_nerworkServiceProvider.lock()->registerRpc(unitStop);
 
 	{
-		auto battleSkillCast = std::make_shared<torikime::battle::skill_cast::Rpc>(session);
-		battleSkillCast->subscribeRequest([this, weakSession](const auto& requestParcel, auto& responser)
+		_rpcBuilder->battle.skillCast->subscribeRequest([this, weakSession](const auto& requestParcel, auto& responser)
 			{
 				using namespace torikime::battle::skill_cast;
 
@@ -494,7 +483,6 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 
 					});
 			});
-		_nerworkServiceProvider.lock()->registerRpc(battleSkillCast);
 	}
 }
 

@@ -10,6 +10,8 @@ namespace potato {
 	}
 }
 
+class NetworkServiceProvider;
+
 {% for contract in contracts %}
 {%- for name in contract.names %}
 namespace {{ namespace }}::{{ contract.name }}::{{ name }} { class Rpc; }
@@ -22,7 +24,7 @@ public:
 	RpcBuilder();
 	~RpcBuilder();
 
-	void build(std::shared_ptr<potato::net::session> session);
+	void build(std::shared_ptr<NetworkServiceProvider> provider, std::shared_ptr<potato::net::session> session);
 
 {%- for contract in contracts %}
 	struct

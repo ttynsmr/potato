@@ -3,6 +3,7 @@
 
 #include "../../../src/rpc/rpc.h"
 #include "../../../src/session/session.h"
+#include "../../../src/services/network_service_provider.h"
 
 #include "proto/message.pb.h"
 
@@ -16,11 +17,12 @@
 RpcBuilder::RpcBuilder() {}
 RpcBuilder::~RpcBuilder() {}
 
-void RpcBuilder::build(std::shared_ptr<potato::net::session> session)
+void RpcBuilder::build(std::shared_ptr<NetworkServiceProvider> provider, std::shared_ptr<potato::net::session> session)
 {
 {% for contract in contracts %}
 {%- for name in contract.names %}
 	{{ contract.name }}.{{ name | lower_camelize }} = std::make_shared<{{ namespace }}::{{ contract.name }}::{{ name }}::Rpc>(session);
+	provider->registerRpc({{ contract.name }}.{{ name | lower_camelize }});
 {%- endfor %}
 {%- endfor %}
 }

@@ -10,7 +10,7 @@
 #include "rpc/rpc.h"
 #include "proto/message.pb.h"
 #include "proto/unit_despawn.pb.h"
-#include "generated/cpp/unit_despawn.h"
+#include "unit_despawn.h"
 
 #include "area/area.h"
 
