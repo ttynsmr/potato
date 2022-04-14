@@ -27,19 +27,19 @@ elseif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
 endif()
 
 # eventpp
-ADD_SUBDIRECTORY(externals/eventpp)
+add_subdirectory(externals/eventpp)
 
 # fmt
-ADD_SUBDIRECTORY(externals/fmt)
+add_subdirectory(externals/fmt)
 
 # strong_type
-ADD_SUBDIRECTORY(externals/strong_type)
+add_subdirectory(externals/strong_type)
 
 # add protocol buffer settings
-ADD_SUBDIRECTORY(proto)
+add_subdirectory(proto)
 
-ADD_SUBDIRECTORY(rpc)
-ADD_SUBDIRECTORY(rpc/generated)
+add_subdirectory(rpc)
+add_subdirectory(rpc/generated)
 
 # ソースをこのプロジェクトの実行可能ファイルに追加します。
 add_executable (action-server3
@@ -66,8 +66,8 @@ add_executable (action-server3
 
 find_package (Threads REQUIRED)
 
-INCLUDE(FindProtobuf)
-FIND_PACKAGE(Protobuf REQUIRED)
+include(FindProtobuf)
+find_package(Protobuf REQUIRED)
 
 target_link_libraries(action-server3 pthread eventpp fmt::fmt ${PROTOBUF_LIBRARY} rpc_contracts proto)
 
