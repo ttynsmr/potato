@@ -18,7 +18,7 @@ namespace potato::net
 
 	std::shared_ptr<Session> Session::start()
 	{
-		do_read();
+		doRead();
 		return shared_from_this();
 	}
 
@@ -62,7 +62,7 @@ namespace potato::net
 					if (!ec)
 					{
 						readPercel(header);
-						do_read();
+						doRead();
 					}
 					else
 					{
@@ -74,7 +74,7 @@ namespace potato::net
 		else
 		{
 			readPercel(header);
-			do_read();
+			doRead();
 		}
 	}
 
@@ -90,7 +90,7 @@ namespace potato::net
 		_receivePayloadDelegate(payload);
 	}
 
-	void Session::do_read()
+	void Session::doRead()
 	{
 		auto self(shared_from_this());
 

@@ -74,7 +74,7 @@ public:
 	}
 
 private:
-	void do_accept();
+	void doAccept();
 
 	std::thread _thread;
 	boost::asio::io_context _io_context;

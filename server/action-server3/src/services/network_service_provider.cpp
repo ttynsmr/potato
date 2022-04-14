@@ -28,7 +28,7 @@ void NetworkServiceProvider::start()
 {
 	_thread = std::thread([this]() {
 		fmt::print("action server bootup\n");
-		do_accept();
+		doAccept();
 		_io_context.run();
 		});
 }
@@ -144,7 +144,7 @@ void NetworkServiceProvider::disconnectSession(const potato::net::SessionId sess
 }
 
 
-void NetworkServiceProvider::do_accept()
+void NetworkServiceProvider::doAccept()
 {
 	_acceptor.async_accept([this](boost::system::error_code ec, boost::asio::ip::tcp::socket socket) {
 		fmt::print("async_accept\n");
@@ -188,6 +188,6 @@ void NetworkServiceProvider::do_accept()
 			_sessionStartedDelegate(session);
 		}
 
-		do_accept();
+		doAccept();
 		});
 }

@@ -44,7 +44,7 @@ namespace potato::net
 	private:
 		void readHeader();
 		void readPercel(const protocol::PayloadHeader& header);
-		void do_read();
+		void doRead();
 
 		boost::asio::ip::tcp::socket _socket;
 		SessionId _sessionId;
