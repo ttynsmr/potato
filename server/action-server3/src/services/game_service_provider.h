@@ -21,7 +21,7 @@ namespace potato
 
 	namespace net
 	{
-		class session;
+		class Session;
 	}
 }
 
@@ -40,11 +40,11 @@ public:
 
 	void initialize();
 
-	void onAccepted(std::shared_ptr<potato::net::session> session);
+	void onAccepted(std::shared_ptr<potato::net::Session> session);
 
-	void onSessionStarted(std::shared_ptr<potato::net::session> session);
+	void onSessionStarted(std::shared_ptr<potato::net::Session> session);
 
-	void onDisconnected(std::shared_ptr<potato::net::session> session);
+	void onDisconnected(std::shared_ptr<potato::net::Session> session);
 
 	void sendSystemMessage(const std::string& message);
 

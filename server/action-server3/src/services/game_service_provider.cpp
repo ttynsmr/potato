@@ -110,7 +110,7 @@ void GameServiceProvider::initialize()
 		for (float p = -20; p < 20; p += 3.0f)
 		//float p = 0;
 		{
-			auto newUnit = _unitRegistory->createUnit(potato::net::session::getSystemSessionId());
+			auto newUnit = _unitRegistory->createUnit(potato::net::Session::getSystemSessionId());
 			newUnit->setPosition({ p, 0, 0 });
 			newUnit->setDisplayName(fmt::format("NONAME{}", newUnit->getUnitId()));
 			newUnit->addComponent<NpcComponent>(shared_from_this());
@@ -120,7 +120,7 @@ void GameServiceProvider::initialize()
 	}
 }
 
-void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> session)
+void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::Session> session)
 {
 	_rpcBuilder->build(_nerworkServiceProvider.lock(), session);
 
@@ -486,11 +486,11 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::session> sessi
 	}
 }
 
-void GameServiceProvider::onSessionStarted(std::shared_ptr<potato::net::session>)
+void GameServiceProvider::onSessionStarted(std::shared_ptr<potato::net::Session>)
 {
 }
 
-void GameServiceProvider::onDisconnected(std::shared_ptr<potato::net::session> session)
+void GameServiceProvider::onDisconnected(std::shared_ptr<potato::net::Session> session)
 {
 	queue.enqueue(0, [this, session]() {
 		// update user id
@@ -645,7 +645,7 @@ void GameServiceProvider::sendDespawn(potato::net::SessionId sessionId, std::sha
 		fmt::print("session[{}] call sendDespawn but unit is null\n", sessionId);
 		return;
 	}
-	auto unitDespawn = std::make_shared<torikime::unit::despawn::Rpc>(std::shared_ptr<potato::net::session>());
+	auto unitDespawn = std::make_shared<torikime::unit::despawn::Rpc>(std::shared_ptr<potato::net::Session>());
 	torikime::unit::despawn::Notification notification;
 	notification.set_session_id(sessionId.value_of());
 	notification.set_unit_id(despawnUnit->getUnitId().value_of());

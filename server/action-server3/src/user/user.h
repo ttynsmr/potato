@@ -36,7 +36,7 @@ namespace potato
 {
 	namespace net
 	{
-		class session;
+		class Session;
 	}
 
 	class User
@@ -47,7 +47,7 @@ namespace potato
 		UserId getUserId() const;
 
 		potato::net::SessionId getSessionId() const;
-		void setSession(std::shared_ptr<potato::net::session> session);
+		void setSession(std::shared_ptr<potato::net::Session> session);
 		void clearSession();
 
 		UnitId getUnitId() const;
@@ -62,7 +62,7 @@ namespace potato
 
 	private:
 		UserId _userId;
-		std::weak_ptr<potato::net::session> _session;
+		std::weak_ptr<potato::net::Session> _session;
 		UnitId _unitId;
 		std::string _displayName;
 		int64_t lastConnectedTime = 0;

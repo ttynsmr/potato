@@ -14,13 +14,13 @@ namespace potato::net::protocol
 
 namespace potato::net
 {
-	class session
-		: public std::enable_shared_from_this<session>
+	class Session
+		: public std::enable_shared_from_this<Session>
 	{
 	public:
-		session(boost::asio::ip::tcp::socket socket, SessionId sessionId);
+		Session(boost::asio::ip::tcp::socket socket, SessionId sessionId);
 
-		std::shared_ptr<session> start();
+		std::shared_ptr<Session> start();
 		void disconnect();
 
 		void sendPayload(std::shared_ptr<potato::net::protocol::Payload> payload);

@@ -46,7 +46,7 @@ enum class Send
 
 void NetworkServiceProvider::sendTo(potato::net::SessionId sessionId, std::shared_ptr<potato::net::protocol::Payload> payload)
 {
-	if (potato::net::session::getSystemSessionId() == sessionId)
+	if (potato::net::Session::getSystemSessionId() == sessionId)
 	{
 		return;
 	}
@@ -124,7 +124,7 @@ int32_t NetworkServiceProvider::getConnectionCount() const
 	return _sessions.size();
 }
 
-void NetworkServiceProvider::visitSessions(std::function<void(std::shared_ptr<potato::net::session>)> processor)
+void NetworkServiceProvider::visitSessions(std::function<void(std::shared_ptr<potato::net::Session>)> processor)
 {
 	for (auto& other : _sessions)
 	{
@@ -152,7 +152,7 @@ void NetworkServiceProvider::do_accept()
 		socket.set_option(boost::asio::socket_base::send_buffer_size(128 * 1024));
 		if (!ec)
 		{
-			auto session = std::make_shared<potato::net::session>(std::move(socket), potato::net::SessionId(++_sessionIdGenerateCounter));
+			auto session = std::make_shared<potato::net::Session>(std::move(socket), potato::net::SessionId(++_sessionIdGenerateCounter));
 			session->subscribeDisconnect([this, session](potato::net::SessionId sessionId) mutable
 				{
 					_disconnectedDelegate(session);
@@ -166,10 +166,10 @@ void NetworkServiceProvider::do_accept()
 
 			_acceptedDelegate(session);
 
-			std::weak_ptr<potato::net::session> weakSession = session;
+			std::weak_ptr<potato::net::Session> weakSession = session;
 			session->subscribeReceivePayload([this, weakSession](const potato::net::protocol::Payload& payload) {
 				_receiveCount++;
-				std::shared_ptr<potato::net::session> session = weakSession.lock();
+				std::shared_ptr<potato::net::Session> session = weakSession.lock();
 				auto rpc = std::find_if(_rpcs.begin(), _rpcs.end(), [session, &payload](auto& rpc) {
 					return rpc->getSession()->getSessionId() == session->getSessionId()
 						&& rpc->getContractId() == payload.getHeader().contract_id

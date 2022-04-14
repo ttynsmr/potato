@@ -17,7 +17,7 @@
 RpcBuilder::RpcBuilder() {}
 RpcBuilder::~RpcBuilder() {}
 
-void RpcBuilder::build(std::shared_ptr<NetworkServiceProvider> provider, std::shared_ptr<potato::net::session> session)
+void RpcBuilder::build(std::shared_ptr<NetworkServiceProvider> provider, std::shared_ptr<potato::net::Session> session)
 {
 {% for contract in contracts %}
 {%- for name in contract.names %}

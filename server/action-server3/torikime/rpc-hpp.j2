@@ -12,7 +12,7 @@ namespace potato::net::protocol
 }
 namespace potato::net
 {
-	class session;
+	class Session;
 }
 
 namespace {{ namespace }}::{{ contract }}::{{ name }}
@@ -21,13 +21,13 @@ namespace {{ namespace }}::{{ contract }}::{{ name }}
 	class Responser final
 	{
 	public:
-		Responser(std::shared_ptr<potato::net::session>& session, std::uint32_t requestId) : _session(session), _requestId(requestId) {}
+		Responser(std::shared_ptr<potato::net::Session>& session, std::uint32_t requestId) : _session(session), _requestId(requestId) {}
 		~Responser();
 
 		void send(bool success, {{ namespace }}::{{ contract }}::{{ name }}::Response&& response);
 
 	private:
-		std::shared_ptr<potato::net::session> _session;
+		std::shared_ptr<potato::net::Session> _session;
 		std::uint32_t _requestId = 0;
 		bool respond = false;
 	};
@@ -38,9 +38,9 @@ namespace {{ namespace }}::{{ contract }}::{{ name }}
 	public:
 		std::uint32_t getContractId() const override { return {{ contract_id }}; };
 		std::uint32_t getRpcId() const override { return {{ rpc_id }}; };
-		std::shared_ptr<potato::net::session> getSession() override { return _session; };
+		std::shared_ptr<potato::net::Session> getSession() override { return _session; };
 
-		Rpc(std::shared_ptr<potato::net::session> session);
+		Rpc(std::shared_ptr<potato::net::Session> session);
 
 {%- if "request" in rpc %}
 		using RequestDelegate = std::function<void(const {{ namespace }}::{{ contract }}::{{ name }}::RequestParcel& request, std::shared_ptr<Responser>& responser)>;
@@ -62,7 +62,7 @@ namespace {{ namespace }}::{{ contract }}::{{ name }}
 
 		RequestDelegate _requestDelegate = [](const {{ namespace }}::{{ contract }}::{{ name }}::RequestParcel&, std::shared_ptr<Responser>&) {};
 {% endif %}
-		std::shared_ptr<potato::net::session> _session;
+		std::shared_ptr<potato::net::Session> _session;
 {% if "notification" in rpc %}
 		static std::atomic<std::uint32_t> _notificationId;
 {% endif %}
