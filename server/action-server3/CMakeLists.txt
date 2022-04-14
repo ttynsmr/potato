@@ -52,13 +52,9 @@ INCLUDE_DIRECTORIES(src)
 
 include_directories(${GENERATED_RPC_DIR})
 
-list(APPEND ALL_SOURCES ${SUB_SOURCES} ${GEN_SOURCES})
-list(APPEND ALL_SOURCES "action-server3.cpp")
-
-message("ALL_SOURCES: ${ALL_SOURCES}")
-
 # ソースをこのプロジェクトの実行可能ファイルに追加します。
-add_executable (action-server3  ${ALL_SOURCES}
+add_executable (action-server3
+  "action-server3.cpp"
   "src/rpc/payload.h" "src/rpc/payload.cpp" "src/rpc/rpc.h" "src/rpc/rpc.cpp"
   "src/session/session.h" "src/session/session.cpp" "src/session/session_types.h"
   "src/units/unit.cpp" "src/units/unit.h" "src/units/unit_types.h"
