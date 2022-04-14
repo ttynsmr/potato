@@ -7,7 +7,7 @@
 
 #include "core/configured_eigen.h"
 
-#include "proto/message.pb.h"
+#include "message.pb.h"
 
 #include "unit_types.h"
 #include "units/components/component_types.h"

@@ -5,11 +5,11 @@
 #include "../../../src/session/session.h"
 #include "../../../src/services/network_service_provider.h"
 
-#include "proto/message.pb.h"
+#include "message.pb.h"
 
 {% for contract in contracts %}
 {%- for name in contract.names %}
-#include "proto/{{ contract.name }}_{{ name }}.pb.h"
+#include "{{ contract.name }}_{{ name }}.pb.h"
 #include "{{ contract.name }}_{{ name }}.h"
 {%- endfor %}
 {%- endfor %}

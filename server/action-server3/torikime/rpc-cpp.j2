@@ -5,10 +5,10 @@
 #include "../../../src/rpc/payload.h"
 #include "{{ contract }}_{{ name }}.h"
 
-#include "proto/{{ contract }}_{{ name }}.pb.h"
+#include "{{ contract }}_{{ name }}.pb.h"
 {% if "imports" in rpc -%}
 {%- for import in imports %}
-#include "proto/{{ import }}.pb.h"
+#include "{{ import }}.pb.h"
 {%- endfor %}
 {% endif %}
 

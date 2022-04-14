@@ -40,10 +40,9 @@ INCLUDE_DIRECTORIES(externals/fmt/include)
 ADD_SUBDIRECTORY(externals/strong_type)
 INCLUDE_DIRECTORIES(externals/strong_type/include)
 
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
-
 # add protocol buffer settings
 ADD_SUBDIRECTORY(proto)
+include_directories(${GENERATED_PROTO_DIR})
 
 ADD_SUBDIRECTORY(rpc)
 ADD_SUBDIRECTORY(rpc/generated)
