@@ -1,6 +1,3 @@
-# CMakeList.txt : action-server3 の CMake プロジェクト。ソースを含めて、次を定義します:
-# プロジェクト専用ロジックはこちらです。
-#
 cmake_minimum_required (VERSION 3.8)
 
 set_property(GLOBAL PROPERTY GLOBAL_DEPENDS_DEBUG_MODE 1)
