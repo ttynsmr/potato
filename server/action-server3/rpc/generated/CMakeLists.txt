@@ -8,6 +8,6 @@ add_dependencies(rpc_contracts rpc_generate proto)
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/../)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
-target_include_directories(rpc_contracts PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../src)
+target_include_directories(rpc_contracts PRIVATE ${CMAKE_SOURCE_DIR}/src)
 
 set(GENERATED_RPC_DIR ${CMAKE_CURRENT_BINARY_DIR} PARENT_SCOPE)
