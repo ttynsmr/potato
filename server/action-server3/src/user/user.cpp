@@ -24,7 +24,7 @@ namespace potato
 		}
 	}
 
-	void User::setSession(std::shared_ptr<potato::net::session> session)
+	void User::setSession(std::shared_ptr<potato::net::Session> session)
 	{
 		_session = session;
 	}

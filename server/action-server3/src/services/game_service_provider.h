@@ -4,7 +4,7 @@
 #include <iostream>
 #include <random>
 
-#include "service.h"
+#include "service_registry.h"
 #include "service_provider.h"
 #include "session/session_types.h"
 
@@ -21,7 +21,7 @@ namespace potato
 
 	namespace net
 	{
-		class session;
+		class Session;
 	}
 }
 
@@ -34,17 +34,17 @@ class StopCommand;
 class GameServiceProvider : public IServiceProvider, public std::enable_shared_from_this<GameServiceProvider>
 {
 public:
-	GameServiceProvider(std::shared_ptr<Service> service);
+	GameServiceProvider(std::shared_ptr<ServiceRegistry> service);
 
 	bool isRunning() override;
 
 	void initialize();
 
-	void onAccepted(std::shared_ptr<potato::net::session> session);
+	void onAccepted(std::shared_ptr<potato::net::Session> session);
 
-	void onSessionStarted(std::shared_ptr<potato::net::session> session);
+	void onSessionStarted(std::shared_ptr<potato::net::Session> session);
 
-	void onDisconnected(std::shared_ptr<potato::net::session> session);
+	void onDisconnected(std::shared_ptr<potato::net::Session> session);
 
 	void sendSystemMessage(const std::string& message);
 
@@ -67,7 +67,7 @@ public:
 
 private:
 	GameServiceProvider() = default;
-	std::shared_ptr<Service> _service;
+	std::shared_ptr<ServiceRegistry> _service;
 	std::shared_ptr<potato::UserRegistory> _userRegistory;
 	std::shared_ptr<potato::UnitRegistory> _unitRegistory;
 	std::list<std::shared_ptr<potato::Area>> _areas;

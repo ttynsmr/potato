@@ -6,7 +6,7 @@
 #include "service_provider.h"
 #include "session/session_types.h"
 
-#include "rpc/Payload.h"
+#include "rpc/payload.h"
 
 namespace potato
 {
@@ -15,19 +15,19 @@ namespace potato
 
 namespace potato::net
 {
-	class session;
+	class Session;
 }
 
 namespace torikime {
 	class RpcInterface;
 }
 
-class Service;
+class ServiceRegistry;
 
 class NetworkServiceProvider : public IServiceProvider, public std::enable_shared_from_this<NetworkServiceProvider>
 {
 public:
-	NetworkServiceProvider(uint16_t port, std::shared_ptr<Service> service);
+	NetworkServiceProvider(uint16_t port, std::shared_ptr<ServiceRegistry> service);
 
 	bool isRunning() override;
 	void start() override;
@@ -48,20 +48,20 @@ public:
 
 	void sendBroadcast(potato::net::SessionId fromSessionId, std::shared_ptr<potato::net::protocol::Payload> payload);
 
-	using AcceptedDelegate = std::function<void(std::shared_ptr<potato::net::session>)>;
+	using AcceptedDelegate = std::function<void(std::shared_ptr<potato::net::Session>)>;
 	void setAcceptedDelegate(AcceptedDelegate callback);
 
-	using DisconnectDelegate = std::function<void(std::shared_ptr<potato::net::session>)>;
+	using DisconnectDelegate = std::function<void(std::shared_ptr<potato::net::Session>)>;
 	void setDisconnectedDelegate(DisconnectDelegate callback);
 
-	using SessionStartedDelegate = std::function<void(std::shared_ptr<potato::net::session>)>;
+	using SessionStartedDelegate = std::function<void(std::shared_ptr<potato::net::Session>)>;
 	void setSessionStartedDelegate(SessionStartedDelegate callback);
 
 	void registerRpc(std::shared_ptr<torikime::RpcInterface> rpc);
 
 	int32_t getConnectionCount() const;
 
-	void visitSessions(std::function<void(std::shared_ptr<potato::net::session>)> processor);
+	void visitSessions(std::function<void(std::shared_ptr<potato::net::Session>)> processor);
 
 	void disconnectSession(const potato::net::SessionId sessionId);
 
@@ -74,15 +74,15 @@ public:
 	}
 
 private:
-	void do_accept();
+	void doAccept();
 
 	std::thread _thread;
 	boost::asio::io_context _io_context;
 	boost::asio::ip::tcp::acceptor _acceptor;
 	std::atomic_int _sessionIdGenerateCounter = 0;
-	std::unordered_map<potato::net::SessionId, std::shared_ptr<potato::net::session>> _sessions;
+	std::unordered_map<potato::net::SessionId, std::shared_ptr<potato::net::Session>> _sessions;
 	std::vector<std::shared_ptr<torikime::RpcInterface>> _rpcs;
-	std::shared_ptr<Service> _service;
+	std::shared_ptr<ServiceRegistry> _service;
 	std::atomic<int32_t> _sendCount = 0;
 	std::atomic<int32_t> _receiveCount = 0;
 	AcceptedDelegate _acceptedDelegate;

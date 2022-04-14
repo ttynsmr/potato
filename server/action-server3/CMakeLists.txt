@@ -1,4 +1,4 @@
-﻿# CMakeList.txt : action-server3 の CMake プロジェクト。ソースを含めて、次を定義します:
+# CMakeList.txt : action-server3 の CMake プロジェクト。ソースを含めて、次を定義します:
 # プロジェクト専用ロジックはこちらです。
 #
 cmake_minimum_required (VERSION 3.8)
@@ -63,7 +63,7 @@ message("ALL_SOURCES: ${ALL_SOURCES}")
 
 # ソースをこのプロジェクトの実行可能ファイルに追加します。
 add_executable (action-server3  ${ALL_SOURCES}
-  "src/rpc/Payload.h" "src/rpc/Payload.cpp" "src/rpc/rpc.h" "src/rpc/rpc.cpp"
+  "src/rpc/payload.h" "src/rpc/payload.cpp" "src/rpc/rpc.h" "src/rpc/rpc.cpp"
   "src/session/session.h" "src/session/session.cpp" "src/session/session_types.h"
   "src/units/unit.cpp" "src/units/unit.h" "src/units/unit_types.h"
   "src/units/unit_registory.cpp" "src/units/unit_registory.h"
@@ -72,7 +72,7 @@ add_executable (action-server3  ${ALL_SOURCES}
   "src/units/components/status_component.cpp" "src/units/components/status_component.h"
   "src/core/core.h"
   "src/core/configured_eigen.h"
-  "src/services/service.cpp" "src/services/service.h"
+  "src/services/service_registry.cpp" "src/services/service_registry.h"
   "src/services/service_provider.h"
   "src/services/game_service_provider.cpp" "src/services/game_service_provider.h"
   "src/services/network_service_provider.cpp" "src/services/network_service_provider.h"

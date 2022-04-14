@@ -2,7 +2,7 @@
 #include "../../../src/rpc/rpc.h"
 
 #include "../../../src/session/session.h"
-#include "../../../src/rpc/Payload.h"
+#include "../../../src/rpc/payload.h"
 #include "{{ contract }}_{{ name }}.h"
 
 #include "proto/{{ contract }}_{{ name }}.pb.h"
@@ -50,7 +50,7 @@ namespace {{ namespace }}::{{ contract }}::{{ name }}
 	std::atomic<std::uint32_t> Rpc::_notificationId = 0;
 {% endif %}
 
-	Rpc::Rpc(std::shared_ptr<potato::net::session> session) : _session(session)
+	Rpc::Rpc(std::shared_ptr<potato::net::Session> session) : _session(session)
 	{
 	}
 
