@@ -22,12 +22,12 @@ namespace torikime {
 	class RpcInterface;
 }
 
-class Service;
+class ServiceRegistry;
 
 class NetworkServiceProvider : public IServiceProvider, public std::enable_shared_from_this<NetworkServiceProvider>
 {
 public:
-	NetworkServiceProvider(uint16_t port, std::shared_ptr<Service> service);
+	NetworkServiceProvider(uint16_t port, std::shared_ptr<ServiceRegistry> service);
 
 	bool isRunning() override;
 	void start() override;
@@ -82,7 +82,7 @@ private:
 	std::atomic_int _sessionIdGenerateCounter = 0;
 	std::unordered_map<potato::net::SessionId, std::shared_ptr<potato::net::session>> _sessions;
 	std::vector<std::shared_ptr<torikime::RpcInterface>> _rpcs;
-	std::shared_ptr<Service> _service;
+	std::shared_ptr<ServiceRegistry> _service;
 	std::atomic<int32_t> _sendCount = 0;
 	std::atomic<int32_t> _receiveCount = 0;
 	AcceptedDelegate _acceptedDelegate;

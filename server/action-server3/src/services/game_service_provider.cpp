@@ -52,7 +52,7 @@
 
 #include "rpc_builder.h"
 
-GameServiceProvider::GameServiceProvider(std::shared_ptr<Service> service)
+GameServiceProvider::GameServiceProvider(std::shared_ptr<ServiceRegistry> service)
 	: _service(service)
 	, _userRegistory(std::make_shared<potato::UserRegistory>())
 	, _unitRegistory(std::make_shared<potato::UnitRegistory>())

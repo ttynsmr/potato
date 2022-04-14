@@ -4,7 +4,7 @@
 #include <iostream>
 #include <random>
 
-#include "service.h"
+#include "service_registry.h"
 #include "service_provider.h"
 #include "session/session_types.h"
 
@@ -34,7 +34,7 @@ class StopCommand;
 class GameServiceProvider : public IServiceProvider, public std::enable_shared_from_this<GameServiceProvider>
 {
 public:
-	GameServiceProvider(std::shared_ptr<Service> service);
+	GameServiceProvider(std::shared_ptr<ServiceRegistry> service);
 
 	bool isRunning() override;
 
@@ -67,7 +67,7 @@ public:
 
 private:
 	GameServiceProvider() = default;
-	std::shared_ptr<Service> _service;
+	std::shared_ptr<ServiceRegistry> _service;
 	std::shared_ptr<potato::UserRegistory> _userRegistory;
 	std::shared_ptr<potato::UnitRegistory> _unitRegistory;
 	std::list<std::shared_ptr<potato::Area>> _areas;

@@ -1,4 +1,4 @@
-﻿# CMakeList.txt : action-server3 の CMake プロジェクト。ソースを含めて、次を定義します:
+# CMakeList.txt : action-server3 の CMake プロジェクト。ソースを含めて、次を定義します:
 # プロジェクト専用ロジックはこちらです。
 #
 cmake_minimum_required (VERSION 3.8)
@@ -72,7 +72,7 @@ add_executable (action-server3  ${ALL_SOURCES}
   "src/units/components/status_component.cpp" "src/units/components/status_component.h"
   "src/core/core.h"
   "src/core/configured_eigen.h"
-  "src/services/service.cpp" "src/services/service.h"
+  "src/services/service_registry.cpp" "src/services/service_registry.h"
   "src/services/service_provider.h"
   "src/services/game_service_provider.cpp" "src/services/game_service_provider.h"
   "src/services/network_service_provider.cpp" "src/services/network_service_provider.h"

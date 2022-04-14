@@ -1,6 +1,6 @@
 #include "serialize_service_provider.h"
 
-SerializeServiceProvider::SerializeServiceProvider(std::shared_ptr<Service> service) : _service(service)
+SerializeServiceProvider::SerializeServiceProvider(std::shared_ptr<ServiceRegistry> service) : _service(service)
 {
 }
 

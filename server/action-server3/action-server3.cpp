@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "src/services/service.h"
+#include "src/services/service_registry.h"
 #include "src/services/network_service_provider.h"
 #include "src/services/game_service_provider.h"
 #include "src/services/serialize_service_provider.h"
@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
 			portNumber = std::atoi(argv[1]);
 		}
 
-		std::shared_ptr<Service> service = std::make_shared<Service>();
+		std::shared_ptr<ServiceRegistry> service = std::make_shared<ServiceRegistry>();
 		auto network = service->registerServiceProvider(std::make_shared<NetworkServiceProvider>(portNumber, service));
 		auto game = service->registerServiceProvider(std::make_shared<GameServiceProvider>(service));
 		auto serialize = service->registerServiceProvider(std::make_shared<SerializeServiceProvider>(service));

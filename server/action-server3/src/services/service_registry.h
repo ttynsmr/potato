@@ -11,7 +11,7 @@ enum class ServiceProviderType
 	Game,
 };
 
-class Service
+class ServiceRegistry
 {
 public:
 	template <typename T>
