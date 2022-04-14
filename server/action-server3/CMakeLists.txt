@@ -80,7 +80,7 @@ target_include_directories(rpc_contracts PUBLIC externals/fmt/include)
 target_include_directories(action-server3 PRIVATE externals/strong_type/include)
 target_include_directories(rpc_contracts PUBLIC externals/strong_type/include)
 
-target_include_directories(action-server3 PRIVATE "rpc" "src" ${GENERATED_PROTO_DIR} ${GENERATED_RPC_DIR})
+target_include_directories(action-server3 PRIVATE "rpc" "src")
 
 set(BOOST_ROOT "/usr/lib/x86_64-linux-gnu/")
 

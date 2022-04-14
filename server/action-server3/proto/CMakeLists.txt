@@ -29,3 +29,4 @@ target_include_directories(proto PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 add_dependencies(proto rpc_generate)
 
 set(GENERATED_PROTO_DIR ${CMAKE_CURRENT_BINARY_DIR} PARENT_SCOPE)
+set_target_properties(proto PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_BINARY_DIR})
