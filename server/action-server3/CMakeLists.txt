@@ -72,12 +72,12 @@ find_package(Protobuf REQUIRED)
 target_link_libraries(action-server3 pthread eventpp fmt::fmt ${PROTOBUF_LIBRARY} rpc_contracts proto)
 
 # Eigen3
-target_include_directories(action-server3 PUBLIC externals/eigen)
+target_include_directories(action-server3 PRIVATE externals/eigen)
 # fmt
-target_include_directories(action-server3 PUBLIC externals/fmt/include)
+target_include_directories(action-server3 PRIVATE externals/fmt/include)
 target_include_directories(rpc_contracts PUBLIC externals/fmt/include)
 # strong_type
-target_include_directories(action-server3 PUBLIC externals/strong_type/include)
+target_include_directories(action-server3 PRIVATE externals/strong_type/include)
 target_include_directories(rpc_contracts PUBLIC externals/strong_type/include)
 
 target_include_directories(action-server3 PRIVATE "rpc" "src" ${GENERATED_PROTO_DIR} ${GENERATED_RPC_DIR})
