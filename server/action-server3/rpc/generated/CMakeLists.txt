@@ -7,5 +7,6 @@ ADD_LIBRARY(rpc_contracts ${RPC_CPP_SOURCES})
 add_dependencies(rpc_contracts rpc_generate proto)
 
 target_include_directories(rpc_contracts PRIVATE ${CMAKE_SOURCE_DIR}/src)
+target_include_directories(rpc_contracts PRIVATE ${GENERATED_PROTO_DIR})
 
 set(GENERATED_RPC_DIR ${CMAKE_CURRENT_BINARY_DIR} PARENT_SCOPE)

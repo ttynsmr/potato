@@ -29,28 +29,17 @@ endif()
 # eventpp
 ADD_SUBDIRECTORY(externals/eventpp)
 
-# Eigen3
-INCLUDE_DIRECTORIES(externals/eigen)
-
 # fmt
 ADD_SUBDIRECTORY(externals/fmt)
-INCLUDE_DIRECTORIES(externals/fmt/include)
 
 # strong_type
 ADD_SUBDIRECTORY(externals/strong_type)
-INCLUDE_DIRECTORIES(externals/strong_type/include)
 
 # add protocol buffer settings
 ADD_SUBDIRECTORY(proto)
-include_directories(${GENERATED_PROTO_DIR})
 
 ADD_SUBDIRECTORY(rpc)
 ADD_SUBDIRECTORY(rpc/generated)
-INCLUDE_DIRECTORIES(rpc)
-
-INCLUDE_DIRECTORIES(src)
-
-include_directories(${GENERATED_RPC_DIR})
 
 # ソースをこのプロジェクトの実行可能ファイルに追加します。
 add_executable (action-server3
@@ -81,6 +70,17 @@ INCLUDE(FindProtobuf)
 FIND_PACKAGE(Protobuf REQUIRED)
 
 target_link_libraries(action-server3 pthread eventpp fmt::fmt ${PROTOBUF_LIBRARY} rpc_contracts proto)
+
+# Eigen3
+target_include_directories(action-server3 PUBLIC externals/eigen)
+# fmt
+target_include_directories(action-server3 PUBLIC externals/fmt/include)
+target_include_directories(rpc_contracts PUBLIC externals/fmt/include)
+# strong_type
+target_include_directories(action-server3 PUBLIC externals/strong_type/include)
+target_include_directories(rpc_contracts PUBLIC externals/strong_type/include)
+
+target_include_directories(action-server3 PRIVATE "rpc" "src" ${GENERATED_PROTO_DIR} ${GENERATED_RPC_DIR})
 
 set( BOOST_ROOT "/usr/lib/x86_64-linux-gnu/")
 
