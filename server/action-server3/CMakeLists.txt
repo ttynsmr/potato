@@ -63,7 +63,7 @@ message("ALL_SOURCES: ${ALL_SOURCES}")
 
 # ソースをこのプロジェクトの実行可能ファイルに追加します。
 add_executable (action-server3  ${ALL_SOURCES}
-  "src/rpc/Payload.h" "src/rpc/Payload.cpp" "src/rpc/rpc.h" "src/rpc/rpc.cpp"
+  "src/rpc/payload.h" "src/rpc/payload.cpp" "src/rpc/rpc.h" "src/rpc/rpc.cpp"
   "src/session/session.h" "src/session/session.cpp" "src/session/session_types.h"
   "src/units/unit.cpp" "src/units/unit.h" "src/units/unit_types.h"
   "src/units/unit_registory.cpp" "src/units/unit_registory.h"

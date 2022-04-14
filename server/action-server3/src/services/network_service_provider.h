@@ -6,7 +6,7 @@
 #include "service_provider.h"
 #include "session/session_types.h"
 
-#include "rpc/Payload.h"
+#include "rpc/payload.h"
 
 namespace potato
 {

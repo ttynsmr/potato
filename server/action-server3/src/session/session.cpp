@@ -7,7 +7,7 @@
 #include <boost/asio.hpp>
 #include <fmt/core.h>
 
-#include "rpc/Payload.h"
+#include "rpc/payload.h"
 
 namespace potato::net
 {
