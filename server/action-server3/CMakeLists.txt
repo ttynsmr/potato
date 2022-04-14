@@ -82,19 +82,19 @@ target_include_directories(rpc_contracts PUBLIC externals/strong_type/include)
 
 target_include_directories(action-server3 PRIVATE "rpc" "src" ${GENERATED_PROTO_DIR} ${GENERATED_RPC_DIR})
 
-set( BOOST_ROOT "/usr/lib/x86_64-linux-gnu/")
+set(BOOST_ROOT "/usr/lib/x86_64-linux-gnu/")
 
-set( Boost_USE_STATIC_LIBS OFF )
-set( Boost_USE_MULTITHREADED ON )
-set( Boost_USE_STATIC_RUNTIME OFF )
+set(Boost_USE_STATIC_LIBS OFF)
+set(Boost_USE_MULTITHREADED ON)
+set(Boost_USE_STATIC_RUNTIME OFF)
 
 find_package( Boost 1.71.0 COMPONENTS system)
 
-if ( Boost_FOUND )
-    include_directories( ${Boost_INCLUDE_DIRS} )
-    link_libraries( action-server3 ${Boost_LIBRARIES} )
+if (Boost_FOUND)
+  target_include_directories(action-server3 PRIVATE ${Boost_INCLUDE_DIRS})
+  target_link_libraries(action-server3 ${Boost_LIBRARIES})
 else()
-    message( FATAL_ERROR "Required Boost packages not found. Perhaps add -DBOOST_ROOT?" )
+  message(FATAL_ERROR "Required Boost packages not found. Perhaps add -DBOOST_ROOT?")
 endif()
 
 # message(STATUS "*** dump start cmake variables ***")
