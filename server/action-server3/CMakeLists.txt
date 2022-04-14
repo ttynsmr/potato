@@ -1,6 +1,3 @@
-# CMakeList.txt : action-server3 の CMake プロジェクト。ソースを含めて、次を定義します:
-# プロジェクト専用ロジックはこちらです。
-#
 cmake_minimum_required (VERSION 3.8)
 
 set_property(GLOBAL PROPERTY GLOBAL_DEPENDS_DEBUG_MODE 1)
@@ -30,39 +27,23 @@ elseif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
 endif()
 
 # eventpp
-ADD_SUBDIRECTORY(externals/eventpp)
-
-# Eigen3
-INCLUDE_DIRECTORIES(externals/eigen)
+add_subdirectory(externals/eventpp)
 
 # fmt
-ADD_SUBDIRECTORY(externals/fmt)
-INCLUDE_DIRECTORIES(externals/fmt/include)
+add_subdirectory(externals/fmt)
 
 # strong_type
-ADD_SUBDIRECTORY(externals/strong_type)
-INCLUDE_DIRECTORIES(externals/strong_type/include)
-
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
+add_subdirectory(externals/strong_type)
 
 # add protocol buffer settings
-ADD_SUBDIRECTORY(proto)
+add_subdirectory(proto)
 
-ADD_SUBDIRECTORY(rpc)
-ADD_SUBDIRECTORY(rpc/generated)
-INCLUDE_DIRECTORIES(rpc)
-
-INCLUDE_DIRECTORIES(src)
-
-include_directories(${GENERATED_RPC_DIR})
-
-list(APPEND ALL_SOURCES ${SUB_SOURCES} ${GEN_SOURCES})
-list(APPEND ALL_SOURCES "action-server3.cpp")
-
-message("ALL_SOURCES: ${ALL_SOURCES}")
+add_subdirectory(rpc)
+add_subdirectory(rpc/generated)
 
 # ソースをこのプロジェクトの実行可能ファイルに追加します。
-add_executable (action-server3  ${ALL_SOURCES}
+add_executable (action-server3
+  "action-server3.cpp"
   "src/rpc/payload.h" "src/rpc/payload.cpp" "src/rpc/rpc.h" "src/rpc/rpc.cpp"
   "src/session/session.h" "src/session/session.cpp" "src/session/session_types.h"
   "src/units/unit.cpp" "src/units/unit.h" "src/units/unit_types.h"
@@ -85,24 +66,35 @@ add_executable (action-server3  ${ALL_SOURCES}
 
 find_package (Threads REQUIRED)
 
-INCLUDE(FindProtobuf)
-FIND_PACKAGE(Protobuf REQUIRED)
+include(FindProtobuf)
+find_package(Protobuf REQUIRED)
 
 target_link_libraries(action-server3 pthread eventpp fmt::fmt ${PROTOBUF_LIBRARY} rpc_contracts proto)
 
-set( BOOST_ROOT "/usr/lib/x86_64-linux-gnu/")
+# Eigen3
+target_include_directories(action-server3 PRIVATE externals/eigen)
+# fmt
+target_include_directories(action-server3 PRIVATE externals/fmt/include)
+target_include_directories(rpc_contracts PUBLIC externals/fmt/include)
+# strong_type
+target_include_directories(action-server3 PRIVATE externals/strong_type/include)
+target_include_directories(rpc_contracts PUBLIC externals/strong_type/include)
 
-set( Boost_USE_STATIC_LIBS OFF )
-set( Boost_USE_MULTITHREADED ON )
-set( Boost_USE_STATIC_RUNTIME OFF )
+target_include_directories(action-server3 PRIVATE "rpc" "src")
+
+set(BOOST_ROOT "/usr/lib/x86_64-linux-gnu/")
+
+set(Boost_USE_STATIC_LIBS OFF)
+set(Boost_USE_MULTITHREADED ON)
+set(Boost_USE_STATIC_RUNTIME OFF)
 
 find_package( Boost 1.71.0 COMPONENTS system)
 
-if ( Boost_FOUND )
-    include_directories( ${Boost_INCLUDE_DIRS} )
-    link_libraries( action-server3 ${Boost_LIBRARIES} )
+if (Boost_FOUND)
+  target_include_directories(action-server3 PRIVATE ${Boost_INCLUDE_DIRS})
+  target_link_libraries(action-server3 ${Boost_LIBRARIES})
 else()
-    message( FATAL_ERROR "Required Boost packages not found. Perhaps add -DBOOST_ROOT?" )
+  message(FATAL_ERROR "Required Boost packages not found. Perhaps add -DBOOST_ROOT?")
 endif()
 
 # message(STATUS "*** dump start cmake variables ***")
