@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 3.8)
 
-set_property(GLOBAL PROPERTY GLOBAL_DEPENDS_DEBUG_MODE 1)
+# set_property(GLOBAL PROPERTY GLOBAL_DEPENDS_DEBUG_MODE 1)
 
 project ("action-server3")
 
@@ -36,9 +36,8 @@ add_subdirectory(externals/fmt)
 add_subdirectory(externals/strong_type)
 
 # add protocol buffer settings
-add_subdirectory(proto)
-
 add_subdirectory(rpc)
+add_subdirectory(proto)
 add_subdirectory(rpc/generated)
 
 # ソースをこのプロジェクトの実行可能ファイルに追加します。

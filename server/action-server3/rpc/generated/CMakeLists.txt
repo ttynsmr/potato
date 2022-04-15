@@ -1,8 +1,8 @@
 execute_process(COMMAND touch "${CMAKE_CURRENT_BINARY_DIR}/x.cpp")
 
 file(GLOB_RECURSE RPC_CPP_SOURCES "${CMAKE_CURRENT_BINARY_DIR}/*.cpp")
-message("RPC_CPP_SOURCES.CMAKE_CURRENT_BINARY_DIR: ${CMAKE_CURRENT_BINARY_DIR}")
-message("RPC_CPP_SOURCES: ${RPC_CPP_SOURCES}")
+# message("RPC_CPP_SOURCES.CMAKE_CURRENT_BINARY_DIR: ${CMAKE_CURRENT_BINARY_DIR}")
+# message("RPC_CPP_SOURCES: ${RPC_CPP_SOURCES}")
 add_library(rpc_contracts ${RPC_CPP_SOURCES})
 add_dependencies(rpc_contracts rpc_generate proto)
 
