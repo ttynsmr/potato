@@ -158,12 +158,12 @@ public:
 		return _sessionId;
 	}
 
-	AreaId getAreaId() const
+	potato::AreaId getAreaId() const
 	{
 		return _areaId;
 	}
 
-	void setAreaId(AreaId areaId)
+	void setAreaId(potato::AreaId areaId)
 	{
 		_areaId = areaId;
 	}
@@ -236,7 +236,7 @@ public:
 private:
 	const UnitId _unitId = UnitId(0);
 	potato::net::SessionId _sessionId = potato::net::SessionId(0);
-	AreaId _areaId = 0;
+	potato::AreaId _areaId = potato::AreaId(0);
 	int64_t simulatedNow = 0;
 	int32_t _lastLatency = 0;
 	Eigen::Vector3f position = {};

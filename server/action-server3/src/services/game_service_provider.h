@@ -68,7 +68,7 @@ public:
 
 	std::default_random_engine& getRandomEngine();
 
-	std::shared_ptr<potato::Area> getArea(AreaId areaId);
+	std::shared_ptr<potato::Area> getArea(potato::AreaId areaId);
 
 private:
 	GameServiceProvider() = default;
