@@ -18,6 +18,7 @@ namespace potato
 	class UserRegistory;
 	class UnitRegistory;
 	class Area;
+	class User;
 
 	namespace net
 	{
@@ -39,6 +40,10 @@ public:
 	bool isRunning() override;
 
 	void initialize();
+
+	void generateNPCs();
+
+	void onUnregisterUser(std::shared_ptr<potato::User> user);
 
 	void onAccepted(std::shared_ptr<potato::net::Session> session);
 

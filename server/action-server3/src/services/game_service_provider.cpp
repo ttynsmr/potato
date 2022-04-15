@@ -78,46 +78,52 @@ void GameServiceProvider::initialize()
 
 	_rpcBuilder = std::make_shared<RpcBuilder>();
 
-	_userRegistory->setOnUnregisterUser([this](auto user) {
-		auto unit = _unitRegistory->findUnitByUnitId(user->getUnitId());
-		sendDespawn(potato::net::SessionId(0), unit);
+	_userRegistory->setOnUnregisterUser([this](auto user) { onUnregisterUser(user); });
 
-		auto areaId = unit->getAreaId();
-		auto area = getArea(areaId);
+	generateNPCs();
+}
 
-		_unitRegistory->unregisterUnit(unit);
-
-		const auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-		unit->onDespawn(now);
-
-		auto& user_index = _idMapper.get<user_id>();
-		auto binderIt = user_index.find(user->getUserId());
-		_idMapper.erase(binderIt);
-		});
-
-	{
-		auto addToArea = [this](AreaId areaId, std::shared_ptr<Unit> newUnit) {
-			std::shared_ptr<potato::Area> area = getArea(areaId);
-			if (!area)
-			{
-				area = _areas.emplace_back(std::make_shared<potato::Area>(areaId));
-			}
-			area->enter(newUnit);
-		};
-
-		//for (float p = -20; p < 20; p += 0.005f)
-		//for (float p = -20; p < 20; p += 0.05f)
-		for (float p = -20; p < 20; p += 3.0f)
-		//float p = 0;
+void GameServiceProvider::generateNPCs()
+{
+	auto addToArea = [this](AreaId areaId, std::shared_ptr<Unit> newUnit) {
+		std::shared_ptr<potato::Area> area = getArea(areaId);
+		if (!area)
 		{
-			auto newUnit = _unitRegistory->createUnit(potato::net::Session::getSystemSessionId());
-			newUnit->setPosition({ p, 0, 0 });
-			newUnit->setDisplayName(fmt::format("NONAME{}", newUnit->getUnitId()));
-			newUnit->addComponent<NpcComponent>(shared_from_this());
-			newUnit->addComponent<StatusComponent>(shared_from_this(), _nerworkServiceProvider.lock());
-			addToArea(0, newUnit);
+			area = _areas.emplace_back(std::make_shared<potato::Area>(areaId));
 		}
+		area->enter(newUnit);
+	};
+
+	//for (float p = -20; p < 20; p += 0.005f)
+	//for (float p = -20; p < 20; p += 0.05f)
+	for (float p = -20; p < 20; p += 3.0f)
+		//float p = 0;
+	{
+		auto newUnit = _unitRegistory->createUnit(potato::net::Session::getSystemSessionId());
+		newUnit->setPosition({ p, 0, 0 });
+		newUnit->setDisplayName(fmt::format("NONAME{}", newUnit->getUnitId()));
+		newUnit->addComponent<NpcComponent>(shared_from_this());
+		newUnit->addComponent<StatusComponent>(shared_from_this(), _nerworkServiceProvider.lock());
+		addToArea(0, newUnit);
 	}
+}
+
+void GameServiceProvider::onUnregisterUser(std::shared_ptr<potato::User> user)
+{
+	auto unit = _unitRegistory->findUnitByUnitId(user->getUnitId());
+	sendDespawn(potato::net::SessionId(0), unit);
+
+	auto areaId = unit->getAreaId();
+	auto area = getArea(areaId);
+
+	_unitRegistory->unregisterUnit(unit);
+
+	const auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+	unit->onDespawn(now);
+
+	auto& user_index = _idMapper.get<user_id>();
+	auto binderIt = user_index.find(user->getUserId());
+	_idMapper.erase(binderIt);
 }
 
 void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::Session> session)
