@@ -10,11 +10,11 @@ class Unit;
 
 namespace potato
 {
-	class UnitRegistory
+	class UnitRegistry
 	{
 	public:
-		UnitRegistory();
-		~UnitRegistory();
+		UnitRegistry();
+		~UnitRegistry();
 
 		std::shared_ptr<Unit> createUnit(net::SessionId sessionId);
 		void unregisterUnit(std::shared_ptr<Unit> unit);

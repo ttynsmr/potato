@@ -13,7 +13,7 @@ namespace potato
 {
 	class User;
 
-	class UserRegistory
+	class UserRegistry
 	{
 	public:
 		std::shared_ptr<User> createUser();

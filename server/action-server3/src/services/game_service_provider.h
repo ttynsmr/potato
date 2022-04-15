@@ -9,15 +9,16 @@
 #include "session/session_types.h"
 
 #include "user/user.h"
-#include "user/user_registory.h"
+#include "user/user_registry.h"
 
 #include "area/area_types.h"
 
 namespace potato
 {
-	class UserRegistory;
-	class UnitRegistory;
+	class UserRegistry;
+	class UnitRegistry;
 	class Area;
+	class User;
 
 	namespace net
 	{
@@ -39,6 +40,10 @@ public:
 	bool isRunning() override;
 
 	void initialize();
+
+	void generateNPCs();
+
+	void onUnregisterUser(std::shared_ptr<potato::User> user);
 
 	void onAccepted(std::shared_ptr<potato::net::Session> session);
 
@@ -68,8 +73,8 @@ public:
 private:
 	GameServiceProvider() = default;
 	std::shared_ptr<ServiceRegistry> _service;
-	std::shared_ptr<potato::UserRegistory> _userRegistory;
-	std::shared_ptr<potato::UnitRegistory> _unitRegistory;
+	std::shared_ptr<potato::UserRegistry> _userRegistry;
+	std::shared_ptr<potato::UnitRegistry> _unitRegistry;
 	std::list<std::shared_ptr<potato::Area>> _areas;
 	int64_t messageId = 0;
 	std::weak_ptr<NetworkServiceProvider> _nerworkServiceProvider;
