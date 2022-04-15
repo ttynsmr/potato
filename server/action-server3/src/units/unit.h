@@ -42,7 +42,7 @@ public:
 
 	bool isExpired(int64_t now) const override
 	{
-		return startTime + 10 * 1000 < now;
+		return startTime + 10L * 1000L < now;
 	};
 
 	long getActionTime() const override
@@ -80,7 +80,7 @@ public:
 
 	bool isExpired(int64_t now) const override
 	{
-		return startTime + 10 * 1000 < now;
+		return startTime + 10L * 1000L < now;
 	};
 
 	long getActionTime() const override
@@ -104,7 +104,7 @@ public:
 
 	bool isExpired(int64_t now) const override
 	{
-		return stopTime + 10 * 1000 < now || lastMoveCommand.expired();
+		return stopTime + 10L * 1000L < now || lastMoveCommand.expired();
 	};
 
 	long getActionTime() const override
