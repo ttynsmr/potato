@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 3.8)
 
-set_property(GLOBAL PROPERTY GLOBAL_DEPENDS_DEBUG_MODE 1)
+# set_property(GLOBAL PROPERTY GLOBAL_DEPENDS_DEBUG_MODE 1)
 
 project ("action-server3")
 
