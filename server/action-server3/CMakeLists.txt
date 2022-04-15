@@ -36,9 +36,8 @@ add_subdirectory(externals/fmt)
 add_subdirectory(externals/strong_type)
 
 # add protocol buffer settings
-add_subdirectory(proto)
-
 add_subdirectory(rpc)
+add_subdirectory(proto)
 add_subdirectory(rpc/generated)
 
 # ソースをこのプロジェクトの実行可能ファイルに追加します。
