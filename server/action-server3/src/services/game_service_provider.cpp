@@ -189,7 +189,7 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::Session> sessi
 			assert(session);
 
 			//std::cout << "receive RequestParcel\n";
-			const auto message = requestParcel.request().message();
+			const auto& message = requestParcel.request().message();
 			torikime::chat::send_message::Response response;
 			const int64_t messageId = 0;
 			response.set_message_id(messageId);
@@ -209,7 +209,7 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::Session> sessi
 			responser->send(true, std::move(response));
 		});
 
-	auto pingPong = _rpcBuilder->diagnosis.pingPong;
+	auto& pingPong = _rpcBuilder->diagnosis.pingPong;
 	pingPong->subscribeRequest([this, pingPong, weakSession](const auto& requestParcel, auto& responser)
 		{
 			auto session = weakSession.lock();
@@ -332,8 +332,8 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::Session> sessi
 				notification.set_unit_id(requestParcel.request().unit_id());
 				notification.set_area_id((*unit)->getAreaId());
 				notification.set_time(requestParcel.request().time());
-				auto from = requestParcel.request().from();
-				auto to = requestParcel.request().to();
+				potato::Vector3 from = requestParcel.request().from();
+				potato::Vector3 to = requestParcel.request().to();
 				notification.set_allocated_from(&from);
 				notification.set_allocated_to(&to);
 				notification.set_speed(requestParcel.request().speed());
@@ -414,7 +414,7 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::Session> sessi
 							notification.set_attack_id(attackId);
 							{
 								auto casterUnitPositionAtTheTime = casterUnit->getTrackbackPosition(triggerTime);
-								for (auto unit : units)
+								for (auto& unit : units)
 								{
 									if (unit->getUnitId() == casterUnit->getUnitId()
 										|| unit->getAreaId() != casterUnit->getAreaId())
