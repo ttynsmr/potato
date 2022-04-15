@@ -177,7 +177,7 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::Session> sessi
 			});
 
 	std::weak_ptr<torikime::chat::send_message::Rpc> weak_chat = _rpcBuilder->chat.sendMessage;
-	_rpcBuilder->chat.sendMessage->subscribeRequest([this, weak_chat, weakSession](const torikime::chat::send_message::RequestParcel& requestParcel, std::shared_ptr<torikime::chat::send_message::Responser>& responser)
+	_rpcBuilder->chat.sendMessage->subscribeRequest([this, weak_chat, weakSession](const auto& requestParcel, auto& responser)
 		{
 			auto session = weakSession.lock();
 			assert(session);
@@ -195,14 +195,14 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::Session> sessi
 			notification.set_from(fmt::to_string(session->getSessionId()));
 			_nerworkServiceProvider.lock()->sendBroadcast(session->getSessionId(), weak_chat.lock()->serializeNotification(notification)); });
 
-	_rpcBuilder->diagnosis.severSessions->subscribeRequest([this](const torikime::diagnosis::sever_sessions::RequestParcel&, std::shared_ptr<torikime::diagnosis::sever_sessions::Responser>& responser)
+	_rpcBuilder->diagnosis.severSessions->subscribeRequest([this](const auto&, auto& responser)
 		{
 			torikime::diagnosis::sever_sessions::Response response;
 			response.set_session_count(_nerworkServiceProvider.lock()->getConnectionCount());
 			responser->send(true, std::move(response)); });
 
 	auto pingPong = _rpcBuilder->diagnosis.pingPong;
-	pingPong->subscribeRequest([this, pingPong, weakSession](const torikime::diagnosis::ping_pong::RequestParcel& requestParcel, std::shared_ptr<torikime::diagnosis::ping_pong::Responser>& responser)
+	pingPong->subscribeRequest([this, pingPong, weakSession](const auto& requestParcel, auto& responser)
 		{
 			auto session = weakSession.lock();
 			assert(session);
