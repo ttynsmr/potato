@@ -12,6 +12,8 @@
 #include "services/network_service_provider.h"
 #include "units/unit.h"
 
+#include "area/area_registry.h"
+
 StatusComponent::StatusComponent(
 	std::shared_ptr<GameServiceProvider> gameServiceProvider,
 	std::shared_ptr<NetworkServiceProvider> networkServiceProvider)
@@ -24,7 +26,7 @@ StatusComponent::~StatusComponent() {}
 
 void StatusComponent::onSpawn(std::shared_ptr<Unit> unit, int64_t /*now*/)
 {
-	auto area = _gameServiceProvider.lock()->getArea(unit->getAreaId());
+	auto area = _gameServiceProvider.lock()->getAreaRegistry()->getArea(unit->getAreaId());
 
 	using namespace torikime::battle::sync_parameters;
 	Notification notification;

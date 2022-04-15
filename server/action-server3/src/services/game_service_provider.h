@@ -17,6 +17,7 @@ namespace potato
 {
 	class UserRegistry;
 	class UnitRegistry;
+	class AreaRegistry;
 	class Area;
 	class User;
 
@@ -68,14 +69,14 @@ public:
 
 	std::default_random_engine& getRandomEngine();
 
-	std::shared_ptr<potato::Area> getArea(potato::AreaId areaId);
+	std::shared_ptr<potato::AreaRegistry> getAreaRegistry();
 
 private:
 	GameServiceProvider() = default;
 	std::shared_ptr<ServiceRegistry> _service;
 	std::shared_ptr<potato::UserRegistry> _userRegistry;
 	std::shared_ptr<potato::UnitRegistry> _unitRegistry;
-	std::list<std::shared_ptr<potato::Area>> _areas;
+	std::shared_ptr<potato::AreaRegistry> _areaRegistry;
 	int64_t messageId = 0;
 	std::weak_ptr<NetworkServiceProvider> _nerworkServiceProvider;
 	std::shared_ptr<RpcBuilder> _rpcBuilder;
