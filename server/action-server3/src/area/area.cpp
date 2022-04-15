@@ -30,4 +30,9 @@ namespace potato
 	{
 		return _sessionIds;
 	}
+
+	void Area::process(Processor processor)
+	{
+		std::for_each(_units.begin(), _units.end(), processor);
+	}
 }

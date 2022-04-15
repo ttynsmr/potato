@@ -23,12 +23,10 @@ RUN python3 -m pip install --upgrade pip \
 FROM builder AS action_server3_build
 COPY . /opt/app/action-server3
 RUN cd /opt/app/action-server3 \
-    && cd torikime && pipenv sync && cd ..
-RUN cd /opt/app/action-server3 \
     && mkdir -p build.docker \
     && mkdir -p all \
     && cmake -DCMAKE_BUILD_TYPE=Release -S . -H. -Bbuild.docker -GNinja \
-    && cmake -DCMAKE_BUILD_TYPE=Release -S . --build build.docker/ -GNinja || cmake -DCMAKE_BUILD_TYPE=Release -S . --build build.docker/ -GNinja
+    && cmake -DCMAKE_BUILD_TYPE=Release -S . --build build.docker/ -GNinja
 
 FROM ubuntu:latest AS action_server3_application
 COPY --from=action_server3_build /opt/app/action-server3/build.docker/action-server3 ./

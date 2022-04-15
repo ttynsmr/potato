@@ -7,27 +7,27 @@
 #include <boost/asio.hpp>
 #include <fmt/core.h>
 
-#include "Payload.h"
+#include "rpc/payload.h"
 
 namespace potato::net
 {
-	session::session(boost::asio::ip::tcp::socket socket, SessionId sessionId)
+	Session::Session(boost::asio::ip::tcp::socket socket, SessionId sessionId)
 		: _socket(std::move(socket)), _sessionId(sessionId)
 	{
 	}
 
-	std::shared_ptr<session> session::start()
+	std::shared_ptr<Session> Session::start()
 	{
-		do_read();
+		doRead();
 		return shared_from_this();
 	}
 
-	void session::disconnect()
+	void Session::disconnect()
 	{
 		_socket.close();
 	}
 
-	void session::sendPayload(std::shared_ptr<potato::net::protocol::Payload> payload)
+	void Session::sendPayload(std::shared_ptr<potato::net::protocol::Payload> payload)
 	{
 		if (!_socket.is_open())
 		{
@@ -41,7 +41,7 @@ namespace potato::net
 			});
 	}
 
-	void session::readHeader()
+	void Session::readHeader()
 	{
 		auto self(shared_from_this());
 
@@ -62,7 +62,7 @@ namespace potato::net
 					if (!ec)
 					{
 						readPercel(header);
-						do_read();
+						doRead();
 					}
 					else
 					{
@@ -74,11 +74,11 @@ namespace potato::net
 		else
 		{
 			readPercel(header);
-			do_read();
+			doRead();
 		}
 	}
 
-	void session::readPercel(const protocol::PayloadHeader& header)
+	void Session::readPercel(const protocol::PayloadHeader& header)
 	{
 		const auto percelSize = header.payloadSize;
 		protocol::Payload payload;
@@ -90,7 +90,7 @@ namespace potato::net
 		_receivePayloadDelegate(payload);
 	}
 
-	void session::do_read()
+	void Session::doRead()
 	{
 		auto self(shared_from_this());
 

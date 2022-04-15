@@ -1,12 +1,13 @@
 #pragma once
 
 #include <list>
-#include <queue>
+#include <deque>
 #include <memory>
+#include <ostream>
 
 #include "core/configured_eigen.h"
 
-#include "proto/message.pb.h"
+#include "message.pb.h"
 
 #include "unit_types.h"
 #include "units/components/component_types.h"
@@ -15,7 +16,7 @@
 
 #include "utility/vector_utility.h"
 
-enum class CommandType
+enum class CommandType : int32_t
 {
 	Stop,
 	Move,
@@ -134,8 +135,13 @@ public:
 	void update(int64_t now);
 
 	std::shared_ptr<ICommand> getLastCommand();
+
 	std::shared_ptr<MoveCommand> getLastMoveCommand();
 	const std::shared_ptr<MoveCommand> getLastMoveCommand() const;
+
+	std::shared_ptr<StopCommand> getFirstStopCommandFromQueue();
+	const std::shared_ptr<StopCommand> getFirstStopCommandFromQueue() const;
+
 
 	UnitId getUnitId() const
 	{
@@ -225,6 +231,8 @@ public:
 		_components.erase(typeid(T).hash_code());
 	}
 
+	void dump(int64_t now) const;
+
 private:
 	const UnitId _unitId = UnitId(0);
 	potato::net::SessionId _sessionId = potato::net::SessionId(0);
@@ -233,7 +241,7 @@ private:
 	int32_t _lastLatency = 0;
 	Eigen::Vector3f position = {};
 	std::shared_ptr<MoveCommand> currentMove;
-	std::queue< std::shared_ptr<ICommand>> inputQueue;
+	std::deque< std::shared_ptr<ICommand>> inputQueue;
 	std::list<std::shared_ptr<ICommand>> history;
 	potato::UnitDirection _direction = potato::UNIT_DIRECTION_DOWN;
 	bool _isMoving = false;
