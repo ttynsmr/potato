@@ -1,27 +1,27 @@
-#include "user/user_registory.h"
+#include "user/user_registry.h"
 
 #include "user/user_types.h"
 #include "user/user.h"
 
 namespace potato
 {
-	std::shared_ptr<User> UserRegistory::createUser()
+	std::shared_ptr<User> UserRegistry::createUser()
 	{
 		return registerUser(UserId(++_currentUserId));
 	}
 
-	std::shared_ptr<User> UserRegistory::registerUser(UserId userId)
+	std::shared_ptr<User> UserRegistry::registerUser(UserId userId)
 	{
 		return _users.emplace_back(std::make_shared<User>(userId));
 	}
 
-	void UserRegistory::unregisterUser(std::shared_ptr<User> user)
+	void UserRegistry::unregisterUser(std::shared_ptr<User> user)
 	{
 		_onUnregisterUser(user);
 		_users.remove(user);
 	}
 
-	void UserRegistory::unregisterUserByUserId(UserId userId)
+	void UserRegistry::unregisterUserByUserId(UserId userId)
 	{
 		// 💩
 		auto user = find(userId);
@@ -31,7 +31,7 @@ namespace potato
 		}
 	}
 
-	std::shared_ptr<User> UserRegistory::find(UserId userId)
+	std::shared_ptr<User> UserRegistry::find(UserId userId)
 	{
 		auto userIt = std::find_if(_users.begin(), _users.end(), [userId](auto& user) { return user->getUserId() == userId; });
 		if (userIt == _users.end())
@@ -41,7 +41,7 @@ namespace potato
 		return *userIt;
 	}
 
-	void UserRegistory::update(int64_t now)
+	void UserRegistry::update(int64_t now)
 	{
 		for (auto& user : _users)
 		{
@@ -57,7 +57,7 @@ namespace potato
 		}
 	}
 
-	void UserRegistory::setOnUnregisterUser(OnUnregisterUserDelegate onUnregisterUser)
+	void UserRegistry::setOnUnregisterUser(OnUnregisterUserDelegate onUnregisterUser)
 	{
 		_onUnregisterUser = onUnregisterUser;
 	}

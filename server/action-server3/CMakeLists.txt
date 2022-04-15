@@ -47,7 +47,7 @@ add_executable (action-server3
   "src/rpc/payload.h" "src/rpc/payload.cpp" "src/rpc/rpc.h" "src/rpc/rpc.cpp"
   "src/session/session.h" "src/session/session.cpp" "src/session/session_types.h"
   "src/units/unit.cpp" "src/units/unit.h" "src/units/unit_types.h"
-  "src/units/unit_registory.cpp" "src/units/unit_registory.h"
+  "src/units/unit_registry.cpp" "src/units/unit_registry.h"
   "src/units/components/component_types.h"
   "src/units/components/npc_component.cpp" "src/units/components/npc_component.h"
   "src/units/components/status_component.cpp" "src/units/components/status_component.h"
@@ -60,7 +60,7 @@ add_executable (action-server3
   "src/services/serialize_service_provider.h" "src/services/serialize_service_provider.cpp"
   "src/area/area.h" "src/area/area.cpp" "src/area/area_types.h"
   "src/user/user.cpp" "src/user/user.h" "src/user/user_types.h"
-  "src/user/user_registory.h" "src/user/user_registory.cpp"
+  "src/user/user_registry.h" "src/user/user_registry.cpp"
   "src/utility/vector_utility.h" "src/utility/vector_utility.cpp"
   )
 

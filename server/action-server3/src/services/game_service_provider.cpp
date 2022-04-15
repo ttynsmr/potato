@@ -27,14 +27,14 @@
 #include "rpc/rpc.h"
 
 #include "units/unit.h"
-#include "units/unit_registory.h"
+#include "units/unit_registry.h"
 #include "units/components/npc_component.h"
 #include "units/components/status_component.h"
 
 #include "area/area.h"
 
 #include "user/user.h"
-#include "user/user_registory.h"
+#include "user/user_registry.h"
 
 #include "auth_login.h"
 #include "chat_send_message.h"
@@ -54,8 +54,8 @@
 
 GameServiceProvider::GameServiceProvider(std::shared_ptr<ServiceRegistry> service)
 	: _service(service)
-	, _userRegistory(std::make_shared<potato::UserRegistory>())
-	, _unitRegistory(std::make_shared<potato::UnitRegistory>())
+	, _userRegistry(std::make_shared<potato::UserRegistry>())
+	, _unitRegistry(std::make_shared<potato::UnitRegistry>())
 	, _randomEngine(_randomDevice())
 {
 }
@@ -78,7 +78,7 @@ void GameServiceProvider::initialize()
 
 	_rpcBuilder = std::make_shared<RpcBuilder>();
 
-	_userRegistory->setOnUnregisterUser([this](auto user) { onUnregisterUser(user); });
+	_userRegistry->setOnUnregisterUser([this](auto user) { onUnregisterUser(user); });
 
 	generateNPCs();
 }
@@ -99,7 +99,7 @@ void GameServiceProvider::generateNPCs()
 	for (float p = -20; p < 20; p += 3.0f)
 		//float p = 0;
 	{
-		auto newUnit = _unitRegistory->createUnit(potato::net::Session::getSystemSessionId());
+		auto newUnit = _unitRegistry->createUnit(potato::net::Session::getSystemSessionId());
 		newUnit->setPosition({ p, 0, 0 });
 		newUnit->setDisplayName(fmt::format("NONAME{}", newUnit->getUnitId()));
 		newUnit->addComponent<NpcComponent>(shared_from_this());
@@ -110,13 +110,13 @@ void GameServiceProvider::generateNPCs()
 
 void GameServiceProvider::onUnregisterUser(std::shared_ptr<potato::User> user)
 {
-	auto unit = _unitRegistory->findUnitByUnitId(user->getUnitId());
+	auto unit = _unitRegistry->findUnitByUnitId(user->getUnitId());
 	sendDespawn(potato::net::SessionId(0), unit);
 
 	auto areaId = unit->getAreaId();
 	auto area = getArea(areaId);
 
-	_unitRegistory->unregisterUnit(unit);
+	_unitRegistry->unregisterUnit(unit);
 
 	const auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 	unit->onDespawn(now);
@@ -157,13 +157,13 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::Session> sessi
 
 						// rebind session
 						user_index.replace(binderIt, { r.value(), session->getSessionId(), binderIt->unitId });
-						user = _userRegistory->find(r.value());
+						user = _userRegistry->find(r.value());
 					}
 					else
 					{
 						// new session
 						_idMapper.insert({ r.value(), session->getSessionId(), UnitId(0) });
-						user = _userRegistory->registerUser(r.value());
+						user = _userRegistry->registerUser(r.value());
 					}
 					user->setSession(session);
 					user->setUnitId(binderIt->unitId);
@@ -215,7 +215,7 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::Session> sessi
 			auto session = weakSession.lock();
 			assert(session);
 
-			auto& units = _unitRegistory->getUnits();
+			auto& units = _unitRegistry->getUnits();
 			auto unit = std::find_if(units.begin(), units.end(), [this, &units, &pingPong, requestParcel](auto& u) {
 				return pingPong->getSession()->getSessionId() == u->getSessionId();
 				});
@@ -242,24 +242,24 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::Session> sessi
 			auto binderIt = session_index.find(session->getSessionId());
 			if (binderIt != session_index.end() && binderIt->unitId != UnitId(0))
 			{
-				newUnit = _unitRegistory->findUnitByUnitId(binderIt->unitId);
+				newUnit = _unitRegistry->findUnitByUnitId(binderIt->unitId);
 				newUnit->setSessionId(session->getSessionId());
 				rebind = true;
 			}
 			else
 			{
-				newUnit = _unitRegistory->createUnit(session->getSessionId());
+				newUnit = _unitRegistry->createUnit(session->getSessionId());
 				newUnit->addComponent<StatusComponent>(shared_from_this(), _nerworkServiceProvider.lock());
 			}
 
-			auto user = _userRegistory->find(binderIt->userId);
+			auto user = _userRegistry->find(binderIt->userId);
 			newUnit->setDisplayName(user->getDisplayName());
 
 			// update unit id
 			if (binderIt != session_index.end())
 			{
 				session_index.replace(binderIt, { binderIt->userId, binderIt->sessionId, newUnit->getUnitId() });
-				auto user = _userRegistory->find(binderIt->userId);
+				auto user = _userRegistry->find(binderIt->userId);
 				user->setUnitId(newUnit->getUnitId());
 			}
 
@@ -311,7 +311,7 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::Session> sessi
 				responser->send(true, std::move(response));
 			}
 
-			const auto& units = _unitRegistory->getUnits();
+			const auto& units = _unitRegistry->getUnits();
 			auto unit = std::find_if(units.begin(), units.end(), [requestParcel](auto& u) {
 				return requestParcel.request().unit_id() == u->getUnitId().value_of();
 				});
@@ -356,7 +356,7 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::Session> sessi
 				responser->send(true, std::move(response));
 			}
 
-			const auto& units = _unitRegistory->getUnits();
+			const auto& units = _unitRegistry->getUnits();
 			auto unit = std::find_if(units.begin(), units.end(), [requestParcel](auto& u) {
 				return requestParcel.request().unit_id() == u->getUnitId().value_of();
 				});
@@ -399,12 +399,12 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::Session> sessi
 
 				queue.enqueue(0, [this, session, attackId, skillId, triggerTime]()
 					{
-						const auto& units = _unitRegistory->getUnits();
+						const auto& units = _unitRegistry->getUnits();
 
 						std::vector<std::shared_ptr<potato::net::protocol::Payload>> knockbackPayloads;
 
 						{
-							auto casterUnit = _unitRegistory->findUnitBySessionId(session->getSessionId());
+							auto casterUnit = _unitRegistry->findUnitBySessionId(session->getSessionId());
 							fmt::print("attack reveived caster:{} trigger_time:{} skill_id:{} attack_id:{}\n", casterUnit->getUnitId(), triggerTime, skillId, attackId);
 
 							Notification notification;
@@ -508,11 +508,11 @@ void GameServiceProvider::onDisconnected(std::shared_ptr<potato::net::Session> s
 		if (binderIt != session_index.end())
 		{
 			session_index.replace(binderIt, { binderIt->userId, potato::net::SessionId(0), binderIt->unitId });
-			auto user = _userRegistory->find(binderIt->userId);
+			auto user = _userRegistry->find(binderIt->userId);
 			user->clearSession();
 
 			const auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-			auto unit = _unitRegistory->findUnitByUnitId(user->getUnitId());
+			auto unit = _unitRegistry->findUnitByUnitId(user->getUnitId());
 			if (unit)
 			{
 				unit->onDisconnected(now);
@@ -707,7 +707,7 @@ void GameServiceProvider::main()
 	while (_running)
 	{
 		const auto nowUpdate = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-		for (auto& unit : _unitRegistory->getUnits())
+		for (auto& unit : _unitRegistry->getUnits())
 		{
 			unit->update(nowUpdate);
 
@@ -735,7 +735,7 @@ void GameServiceProvider::main()
 		sendSystemMessage("hey");
 
 		{
-			_userRegistory->update(nowUpdate);
+			_userRegistry->update(nowUpdate);
 		}
 
 		{
