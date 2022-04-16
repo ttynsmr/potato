@@ -5,6 +5,8 @@
 
 #include "core/configured_eigen.h"
 
+class Unit;
+
 namespace potato
 {
 	template<typename T>
@@ -18,11 +20,12 @@ namespace potato
 		IComponent2() = default;
 	};
 
-	class INode
+	class Node
+		: public std::enable_shared_from_this<Node>
 	{
 	public:
-		INode() {}
-		virtual ~INode() {}
+		Node() {}
+		virtual ~Node() {}
 
 		template<typename T>
 		std::shared_ptr<T> addNode(std::shared_ptr<T> node)
@@ -33,13 +36,13 @@ namespace potato
 		template<typename T, class... Args>
 		std::shared_ptr<T> addComponent(Args... args)
 		{
-			std::pair<std::unordered_map<std::size_t, std::shared_ptr<IComponent2<INode>>>::iterator, bool> result = _components.emplace(typeid(T).hash_code(), std::make_shared<T>(args...));
+			std::pair<std::unordered_map<std::size_t, std::shared_ptr<IComponent2<Node>>>::iterator, bool> result = _components.emplace(typeid(T).hash_code(), std::make_shared<T>(args...));
 			if (!result.second)
 			{
 				return nullptr;
 			}
 
-			std::shared_ptr<IComponent2<INode>> i = result.first->second;
+			std::shared_ptr<IComponent2<Node>> i = result.first->second;
 
 			return std::dynamic_pointer_cast<T>(i);
 		}
@@ -53,7 +56,7 @@ namespace potato
 				return nullptr;
 			}
 
-			return *found;
+			return std::dynamic_pointer_cast<T>(found->second);
 		}
 
 		template<typename T>
@@ -62,22 +65,25 @@ namespace potato
 			_components.erase(typeid(T).hash_code());
 		}
 
+		using Processor = std::function<void(std::shared_ptr<Node> node)>;
+		void process(Processor processor);
+
 	private:
-		std::list<std::shared_ptr<INode>> _subNodes;
-		std::unordered_map<std::size_t, std::shared_ptr<IComponent2<INode>>> _components;
+		std::list<std::shared_ptr<Node>> _subNodes;
+		std::unordered_map<std::size_t, std::shared_ptr<IComponent2<Node>>> _components;
 	};
 
-	class NodeRoot final : public INode
+	class NodeRoot final : public Node
 	{
 	public:
 		NodeRoot() {}
 		~NodeRoot() {}
 	};
 
-	class PlaceableComponent final : public IComponent2<INode>
+	class PlaceableComponent final : public IComponent2<Node>
 	{
 	public:
-		PlaceableComponent(std::shared_ptr<INode>) {}
+		PlaceableComponent(std::shared_ptr<Node>) {}
 		~PlaceableComponent() {}
 
 		Eigen::Vector3f position;
@@ -86,10 +92,10 @@ namespace potato
 		PlaceableComponent() = default;
 	};
 
-	class TriggerableComponent final : public IComponent2<INode>
+	class TriggerableComponent final : public IComponent2<Node>
 	{
 	public:
-		TriggerableComponent(std::shared_ptr<INode>) {}
+		TriggerableComponent(std::shared_ptr<Node>) {}
 		~TriggerableComponent() {}
 
 		Eigen::Vector3f position;
@@ -112,17 +118,17 @@ namespace potato
 			return true;
 		}
 
-		using TriggerDelegate = std::function<void()>;
+		using TriggerDelegate = std::function<void(std::shared_ptr<Unit> unit)>;
 		void setOnTrigger(TriggerDelegate onTriggerCallback)
 		{
 			trigger = onTriggerCallback;
 		}
 
-		void invokeOnTrigger()
+		void invokeOnTrigger(std::shared_ptr<Unit> unit)
 		{
 			if (trigger)
 			{
-				trigger();
+				trigger(unit);
 			}
 		}
 
