@@ -61,7 +61,8 @@ add_executable (action-server3
   "src/user/user.cpp" "src/user/user.h" "src/user/user_types.h"
   "src/user/user_registry.h" "src/user/user_registry.cpp"
   "src/utility/vector_utility.h" "src/utility/vector_utility.cpp"
-   "src/area/area_registry.h" "src/area/area_registry.cpp")
+  "src/area/area_registry.h" "src/area/area_registry.cpp"
+  "src/node/node.h" "src/node/node.cpp")
 
 find_package (Threads REQUIRED)
 
