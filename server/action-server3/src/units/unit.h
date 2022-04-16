@@ -222,7 +222,7 @@ public:
 			return nullptr;
 		}
 
-		return *found;
+		return std::dynamic_pointer_cast<T>(found->second);
 	}
 
 	template<typename T>
