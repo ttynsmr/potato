@@ -22,7 +22,7 @@ boost::future<bool> AreaTransporter::transport(std::shared_ptr<Area> fromArea, s
 	return boost::async(boost::launch::async,
 		[gameServiceProvider = std::move(gameServiceProvider)
 		, networkServiceProvider = std::move(networkServiceProvider)
-		, fromArea = std::move(toArea)
+		, fromArea = std::move(fromArea)
 		, toArea = std::move(toArea)
 		, unit = std::move(unit)]()
 	{
