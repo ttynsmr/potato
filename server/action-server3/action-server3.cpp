@@ -20,15 +20,14 @@ int main(int argc, char *argv[])
 			portNumber = std::atoi(argv[1]);
 		}
 
-		std::shared_ptr<ServiceRegistry> service = std::make_shared<ServiceRegistry>();
-		auto network = service->registerServiceProvider(std::make_shared<NetworkServiceProvider>(portNumber, service));
-		auto game = service->registerServiceProvider(std::make_shared<GameServiceProvider>(service));
-		auto serialize = service->registerServiceProvider(std::make_shared<SerializeServiceProvider>(service));
+		auto network = ServiceRegistry::instance().registerServiceProvider(std::make_shared<NetworkServiceProvider>(portNumber));
+		auto game = ServiceRegistry::instance().registerServiceProvider(std::make_shared<GameServiceProvider>());
+		auto serialize = ServiceRegistry::instance().registerServiceProvider(std::make_shared<SerializeServiceProvider>());
 
 		network->start();
 		game->start();
 		serialize->start();
-		service->run();
+		ServiceRegistry::instance().run();
 	}
 	catch (std::exception &e)
 	{

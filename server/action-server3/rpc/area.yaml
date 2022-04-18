@@ -1,0 +1,7 @@
+# yaml -> torikime -> generate .proto & rpc code.
+contracts:
+  area:
+    transport:
+      notification:
+        area_id: uint32
+        unit_id: uint64

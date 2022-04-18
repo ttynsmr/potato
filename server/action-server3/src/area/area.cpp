@@ -1,7 +1,11 @@
 #include "area.h"
 
+#include "core/configured_boost_thread.h"
+
 #include "units/unit.h"
 #include "node/node.h"
+
+#include "area/area_constituter.h"
 
 namespace potato
 {
@@ -13,44 +17,39 @@ namespace potato
 	void Area::requestLoad()
 	{
 		assert(!asyncOperating);
-		assert(futureForLoading.valid());
-		assert(futureForUnloading.valid());
+		assert(!futureForLoading.valid());
+		assert(!futureForUnloading.valid());
 		asyncOperating = true;
-		futureForLoading = load();
+
+		AreaConsituter arecon;
+		futureForLoading = arecon.load(shared_from_this(), "").then([shared_this = std::move(shared_from_this())](auto f) {
+			shared_this->asyncOperating = false;
+			return f.get();
+			});
 	}
 
 	void Area::requestUnoad()
 	{
 		assert(!asyncOperating);
-		assert(futureForLoading.valid());
-		assert(futureForUnloading.valid());
+		assert(!futureForLoading.valid());
+		assert(!futureForUnloading.valid());
 		asyncOperating = true;
 
 		// TODO: Remove units from the area
 
-		futureForUnloading = unload();
-	}
-
-	std::future<bool> Area::load()
-	{
-		return std::async(std::launch::async, [shared_this = std::move(shared_from_this())]{
-			// load area resources
-			auto node = std::make_shared<Node>();
-			auto trigger = node->addComponent<TriggerableComponent>(node);
-			trigger->position = Eigen::Vector3f(5, 0, 0);
-			trigger->offset = Eigen::Vector3f(-0.5f, -0.5f, -0.5f);
-			trigger->size = Eigen::Vector3f(1, 1, 1);
-			trigger->setOnTrigger([](auto unit) {
-				// TODO: Move unit to another area
-				});
-			shared_this->_nodeRoot->addNode(node);
-			return true;
+		futureForUnloading = unload().then([shared_this = std::move(shared_from_this())](auto f) {
+			shared_this->asyncOperating = false;
+			return f.get();
 		});
 	}
 
-	std::future<bool> Area::unload()
+	boost::future<bool> Area::unload()
 	{
-		return std::async(std::launch::async, [] { return true; });
+		return boost::async(boost::launch::async, [shared_this = std::move(shared_from_this())]{
+			shared_this->_nodeRoot->clearNodes();
+			shared_this->_nodeRoot->clearComponents();
+		return true;
+		});
 	}
 
 	void Area::enter(std::shared_ptr<Unit> unit)
@@ -66,43 +65,17 @@ namespace potato
 		_units.remove_if([unit](auto& u) { return unit->getUnitId() == u.lock()->getUnitId(); });
 	}
 
-	void Area::update()
+	void Area::update(time_t now)
 	{
-		if (futureForLoading.valid())
-		{
-			if (futureForLoading.get())
-			{
-				// load success
-			}
-			else
-			{
-				// load fail
-			}
-			asyncOperating = false;
-		}
-
-		if (futureForUnloading.valid())
-		{
-			if (futureForUnloading.get())
-			{
-				// unload success
-			}
-			else
-			{
-				// unload fail
-			}
-			asyncOperating = false;
-		}
-
-		_nodeRoot->process([this](std::shared_ptr<Node> node) {
+		_nodeRoot->process([this, now](std::shared_ptr<Node> node) {
 			auto trigger = node->getComponent<TriggerableComponent>();
 			if (trigger)
 			{
-				process([trigger](auto weakUnit) {
+				process([trigger, now](auto weakUnit) {
 					auto unit = weakUnit.lock();
 					if (trigger->containsAABB(unit->getPosition()))
 					{
-						trigger->invokeOnTrigger(unit);
+						trigger->invokeOnTrigger(unit, now);
 					}
 				});
 			}
@@ -117,5 +90,10 @@ namespace potato
 	void Area::process(Processor processor)
 	{
 		std::for_each(_units.begin(), _units.end(), processor);
+	}
+
+	std::shared_ptr<NodeRoot> Area::getNodeRoot()
+	{
+		return _nodeRoot;
 	}
 }

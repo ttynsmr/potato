@@ -36,7 +36,7 @@ class StopCommand;
 class GameServiceProvider : public IServiceProvider, public std::enable_shared_from_this<GameServiceProvider>
 {
 public:
-	GameServiceProvider(std::shared_ptr<ServiceRegistry> service);
+	GameServiceProvider();
 
 	bool isRunning() override;
 
@@ -54,9 +54,9 @@ public:
 
 	void sendSystemMessage(const std::string& message);
 
-	void sendBroadcastSpawnUnit(potato::net::SessionId sessionId, std::shared_ptr<Unit> spawnUnit);
+	void sendAreacastSpawnUnit(potato::net::SessionId sessionId, std::shared_ptr<Unit> spawnUnit);
 	void sendSpawnUnit(potato::net::SessionId sessionId, std::shared_ptr<Unit> spawnUnit);
-	void sendDespawn(potato::net::SessionId sessionId, std::shared_ptr<Unit> despaenUnit);
+	void sendAreacastDespawnUnit(potato::net::SessionId sessionId, std::shared_ptr<Unit> despaenUnit);
 
 	void sendMove(potato::net::SessionId sessionId, std::shared_ptr<Unit> unit, std::shared_ptr<MoveCommand> moveCommand);
 	void sendStop(potato::net::SessionId sessionId, std::shared_ptr<Unit> unit, std::shared_ptr<StopCommand> stopCommand);
@@ -71,8 +71,10 @@ public:
 
 	std::shared_ptr<potato::AreaRegistry> getAreaRegistry();
 
+	using SynchronizedAction = std::function<void()>;
+	void enqueueSynchronizedAction(SynchronizedAction action);
+
 private:
-	GameServiceProvider() = default;
 	std::shared_ptr<ServiceRegistry> _service;
 	std::shared_ptr<potato::UserRegistry> _userRegistry;
 	std::shared_ptr<potato::UnitRegistry> _unitRegistry;
@@ -82,7 +84,7 @@ private:
 	std::shared_ptr<RpcBuilder> _rpcBuilder;
 	std::atomic<bool> _running = true;
 	std::thread _thread;
-	eventpp::EventQueue<int, void(std::function<void()>)> queue;
+	eventpp::EventQueue<int, void(SynchronizedAction)> queue;
 	IdLookupContainer _idMapper;
 	std::random_device _randomDevice;
 	std::default_random_engine _randomEngine;

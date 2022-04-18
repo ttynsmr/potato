@@ -8,6 +8,10 @@
 #include "area_types.h"
 #include "session/session_types.h"
 
+#define BOOST_THREAD_PROVIDES_FUTURE
+#define BOOST_THREAD_PROVIDES_FUTURE_CONTINUATION
+#include <boost/thread/future.hpp>
+
 class Unit;
 
 namespace potato
@@ -29,20 +33,22 @@ namespace potato
 		void enter(std::shared_ptr<Unit> unit);
 		void leave(std::shared_ptr<Unit> unit);
 
-		void update();
+		void update(time_t now);
 
 		const std::set<potato::net::SessionId> getSessionIds() const;
 
 		using Processor = std::function<void(std::weak_ptr<Unit> weakUnit)>;
 		void process(Processor processor);
 
+		std::shared_ptr<NodeRoot> getNodeRoot();
+
 	private:
-		std::future<bool> load();
-		std::future<bool> unload();
+		boost::future<bool> load();
+		boost::future<bool> unload();
 
 		std::atomic_bool asyncOperating = false;
-		std::future<bool> futureForLoading;
-		std::future<bool> futureForUnloading;
+		boost::future<bool> futureForLoading;
+		boost::future<bool> futureForUnloading;
 		const AreaId _areaId;
 		std::list<std::weak_ptr<Unit>> _units;
 		std::set<potato::net::SessionId> _sessionIds;

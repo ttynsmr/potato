@@ -1,6 +1,7 @@
 #include "area_registry.h"
 
 #include "area/area.h"
+#include "area/area_transporter.h"
 
 using namespace potato;
 
@@ -35,4 +36,9 @@ std::shared_ptr<Area> AreaRegistry::getArea(AreaId areaId)
 	{
 		return areaIt->second;
 	}
+}
+
+std::shared_ptr<AreaTransporter> AreaRegistry::transportUnit(std::shared_ptr<Area> fromArea, std::shared_ptr<Area> toArea, std::shared_ptr<Unit> unit)
+{
+	return std::make_shared<AreaTransporter>();
 }

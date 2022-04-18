@@ -14,8 +14,8 @@
 
 #include "area/area.h"
 
-NetworkServiceProvider::NetworkServiceProvider(uint16_t port, std::shared_ptr<ServiceRegistry> service)
-	: _acceptor(boost::asio::ip::tcp::acceptor(_io_context, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port))), _service(service)
+NetworkServiceProvider::NetworkServiceProvider(uint16_t port)
+	: _acceptor(boost::asio::ip::tcp::acceptor(_io_context, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)))
 {
 }
 

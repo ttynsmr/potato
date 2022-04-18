@@ -33,6 +33,8 @@ namespace potato
 			return _subNodes.emplace_back(node);
 		}
 
+		void clearNodes();
+
 		template<typename T, class... Args>
 		std::shared_ptr<T> addComponent(Args... args)
 		{
@@ -60,10 +62,18 @@ namespace potato
 		}
 
 		template<typename T>
+		const std::shared_ptr<T> getComponent() const
+		{
+			return getComponent<T>();
+		}
+
+		template<typename T>
 		void removeComponent()
 		{
 			_components.erase(typeid(T).hash_code());
 		}
+
+		void clearComponents();
 
 		using Processor = std::function<void(std::shared_ptr<Node> node)>;
 		void process(Processor processor);
@@ -118,17 +128,17 @@ namespace potato
 			return true;
 		}
 
-		using TriggerDelegate = std::function<void(std::shared_ptr<Unit> unit)>;
+		using TriggerDelegate = std::function<void(std::shared_ptr<Unit> unit, time_t now)>;
 		void setOnTrigger(TriggerDelegate onTriggerCallback)
 		{
 			trigger = onTriggerCallback;
 		}
 
-		void invokeOnTrigger(std::shared_ptr<Unit> unit)
+		void invokeOnTrigger(std::shared_ptr<Unit> unit, time_t now)
 		{
 			if (trigger)
 			{
-				trigger(unit);
+				trigger(unit, now);
 			}
 		}
 
