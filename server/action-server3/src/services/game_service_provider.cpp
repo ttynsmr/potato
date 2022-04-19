@@ -10,6 +10,7 @@
 #include "services/network_service_provider.h"
 
 #include "message.pb.h"
+#include "area_transport.pb.h"
 #include "auth_login.pb.h"
 #include "chat_send_message.pb.h"
 #include "diagnosis_sever_sessions.pb.h"
@@ -37,6 +38,7 @@
 #include "user/user.h"
 #include "user/user_registry.h"
 
+#include "area_transport.h"
 #include "auth_login.h"
 #include "chat_send_message.h"
 #include "diagnosis_sever_sessions.h"
@@ -177,6 +179,11 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::Session> sessi
 					fmt::print("session id[{}] user_id: {}({}) logged in\n", session->getSessionId(), r.value(), user_id_name);
 					response.set_ok(true);
 					responser->send(true, std::move(response));
+
+					torikime::area::transport::Notification notification;
+					notification.set_area_id(0);
+					notification.set_unit_id(user->getUnitId().value_of());
+					_nerworkServiceProvider.lock()->sendTo(user->getSessionId(), torikime::area::transport::Rpc::serializeNotification(notification));
 				});
 			}
 			else

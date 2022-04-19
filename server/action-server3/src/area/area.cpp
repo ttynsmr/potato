@@ -52,6 +52,8 @@ namespace potato
 		});
 	}
 
+	// void Area::sendDynamicTriggers(std::shared_ptr<Unit> unit) {}
+
 	void Area::enter(std::shared_ptr<Unit> unit)
 	{
 		unit->setAreaId(getAreaId());
