@@ -292,8 +292,10 @@ def main():
                             f'{args.out_dir}/{params["contract"]}/{params["contract"]}_{params["rpc"]}.proto'
                         )
 
-    convert_rpc_builder_to_hpp(env, args.cpp_out_dir, all_params, args)
-    convert_rpc_builder_to_cpp(env, args.cpp_out_dir, all_params, args)
+    if not args.dryrun:
+        if args.cpp_out_dir:
+            convert_rpc_builder_to_hpp(env, args.cpp_out_dir, all_params, args)
+            convert_rpc_builder_to_cpp(env, args.cpp_out_dir, all_params, args)
 
 
 if __name__ == "__main__":
