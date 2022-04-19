@@ -13,6 +13,7 @@ namespace potato {
 class NetworkServiceProvider;
 
 
+namespace torikime::area::constituted_data { class Rpc; }
 namespace torikime::auth::login { class Rpc; }
 namespace torikime::battle::skill_cast { class Rpc; }
 namespace torikime::chat::send_message { class Rpc; }
@@ -33,6 +34,7 @@ public:
 	void build(std::shared_ptr<NetworkServiceProvider> provider, std::shared_ptr<potato::net::Session> session);
 	struct
 	{
+		std::shared_ptr<torikime::area::constituted_data::Rpc> constitutedData;
 	} area;
 
 	struct

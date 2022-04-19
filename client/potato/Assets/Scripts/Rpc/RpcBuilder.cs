@@ -17,7 +17,7 @@ namespace Torikime
             var rpcs = new List<IRpc>
             {
                 new Area.Transport.Rpc(session),
-                new Area.SetupDynamicTrigger.Rpc(session),
+                new Area.ConstitutedData.Rpc(session),
                 new Auth.Login.Rpc(session),
                 new Channel.Create.Rpc(session),
                 new Channel.Search.Rpc(session),

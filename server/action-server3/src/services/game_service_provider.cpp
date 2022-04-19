@@ -11,6 +11,7 @@
 
 #include "message.pb.h"
 #include "area_transport.pb.h"
+#include "area_constituted_data.pb.h"
 #include "auth_login.pb.h"
 #include "chat_send_message.pb.h"
 #include "diagnosis_sever_sessions.pb.h"
@@ -35,10 +36,13 @@
 #include "area/area.h"
 #include "area/area_registry.h"
 
+#include "node/node.h"
+
 #include "user/user.h"
 #include "user/user_registry.h"
 
 #include "area_transport.h"
+#include "area_constituted_data.h"
 #include "auth_login.h"
 #include "chat_send_message.h"
 #include "diagnosis_sever_sessions.h"
@@ -118,15 +122,18 @@ void GameServiceProvider::generateNPCs()
 void GameServiceProvider::onUnregisterUser(std::shared_ptr<potato::User> user)
 {
 	auto unit = _unitRegistry->findUnitByUnitId(user->getUnitId());
-	sendAreacastDespawnUnit(potato::net::SessionId(0), unit);
+	if (unit)
+	{
+		sendAreacastDespawnUnit(potato::net::SessionId(0), unit);
 
-	auto areaId = unit->getAreaId();
-	auto area = _areaRegistry->getArea(areaId);
+		auto areaId = unit->getAreaId();
+		auto area = _areaRegistry->getArea(areaId);
 
-	_unitRegistry->unregisterUnit(unit);
+		_unitRegistry->unregisterUnit(unit);
 
-	const auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-	unit->onDespawn(now);
+		const auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+		unit->onDespawn(now);
+	}
 
 	auto& user_index = _idMapper.get<user_id>();
 	auto binderIt = user_index.find(user->getUserId());
@@ -240,6 +247,34 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::Session> sessi
 			torikime::diagnosis::ping_pong::Response response;
 			response.set_receive_time(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
 			response.set_send_time(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
+			responser->send(true, std::move(response));
+		});
+
+	_rpcBuilder->area.constitutedData->subscribeRequest([this](const auto& requestParcel, auto& responser)
+		{
+			auto area = _areaRegistry->getArea(potato::AreaId(requestParcel.request().area_id()));
+			torikime::area::constituted_data::Response response;
+			response.set_area_id(area->getAreaId().value_of());
+
+			std::vector<std::shared_ptr<potato::TriggerableComponent>> triggerableComponents;
+			std::function<void(std::shared_ptr<potato::Node>& node)> collectTriggerableComponent;
+			collectTriggerableComponent = [&collectTriggerableComponent, &triggerableComponents](std::shared_ptr<potato::Node>& node) {
+				auto triggerableComponent = node->getComponent<potato::TriggerableComponent>();
+				if (triggerableComponent)
+				{
+					triggerableComponents.emplace_back(triggerableComponent);
+				}
+				node->process(collectTriggerableComponent);
+			};
+			area->getNodeRoot()->process(collectTriggerableComponent);
+			for (auto& triggerableComponent : triggerableComponents)
+			{
+				auto triggers = response.add_triggers();
+				triggers->set_area_id(area->getAreaId().value_of());
+				triggers->set_allocated_position(newVector3(triggerableComponent->position));
+				triggers->set_allocated_offset(newVector3(triggerableComponent->offset));
+				triggers->set_allocated_size(newVector3(triggerableComponent->size));
+			}
 			responser->send(true, std::move(response));
 		});
 

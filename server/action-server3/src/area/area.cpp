@@ -10,7 +10,9 @@
 namespace potato
 {
 	Area::Area(AreaId areaId)
-		: _areaId(areaId) {}
+		: _areaId(areaId)
+		, _nodeRoot(std::make_shared<NodeRoot>()
+		) {}
 
 	Area::~Area() {}
 

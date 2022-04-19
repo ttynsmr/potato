@@ -34,7 +34,8 @@ std::shared_ptr<Area> AreaRegistry::getArea(AreaId areaId)
 	auto areaIt = _areas.find(areaId);
 	if (areaIt == _areas.end())
 	{
-		return addArea(areaId);
+		//return addArea(areaId);
+		return nullptr;
 	}
 	else
 	{

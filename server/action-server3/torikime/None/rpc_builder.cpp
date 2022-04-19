@@ -8,6 +8,8 @@
 #include "message.pb.h"
 
 
+#include "area_constituted_data.pb.h"
+#include "area_constituted_data.h"
 #include "auth_login.pb.h"
 #include "auth_login.h"
 #include "battle_skill_cast.pb.h"
@@ -35,6 +37,8 @@ RpcBuilder::~RpcBuilder() {}
 void RpcBuilder::build(std::shared_ptr<NetworkServiceProvider> provider, std::shared_ptr<potato::net::Session> session)
 {
 
+	area.constitutedData = std::make_shared<torikime::area::constituted_data::Rpc>(session);
+	provider->registerRpc(area.constitutedData);
 	auth.login = std::make_shared<torikime::auth::login::Rpc>(session);
 	provider->registerRpc(auth.login);
 	battle.skillCast = std::make_shared<torikime::battle::skill_cast::Rpc>(session);

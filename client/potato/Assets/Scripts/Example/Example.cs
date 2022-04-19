@@ -166,19 +166,6 @@ namespace Potato
                 };
             }
 
-            {
-                var setupDynamicTrigger = Torikime.RpcHolder.GetRpc<Torikime.Area.SetupDynamicTrigger.Rpc>();
-                setupDynamicTrigger.OnNotification += (notification) => {
-                    foreach(var trigger in notification.Triggers)
-                    {
-                        Debug.Log($"trigger transport to area[{trigger.AreaId}]: {trigger.Position.ToVector3()}");
-                        var t = GameObject.Instantiate(new BoxCollider());
-                        t.center = trigger.Position.ToVector3() + trigger.Offset.ToVector3();
-                        t.size = trigger.Size.ToVector3();
-                    }
-                };
-            }
-
             networkService.StartReceive();
             StartCoroutine(DoPingPong());
 
@@ -188,6 +175,8 @@ namespace Potato
             yield return RequestLogin(nameInputField.text, string.Empty);
 
             yield return new WaitUntil(() => transportOrder);
+
+            yield return RequestAreaConstitudeData(transportToAreaId);
 
             yield return RequestSpawnReady(transportToAreaId);
         }
@@ -200,6 +189,23 @@ namespace Potato
                 {
                     Debug.Log($"Login response {response.Ok}, {response.Token}");
                 });
+        }
+
+        private object RequestAreaConstitudeData(uint transportToAreaId)
+        {
+            var rpc = Torikime.RpcHolder.GetRpc<Torikime.Area.ConstitutedData.Rpc>();
+            return rpc.RequestCoroutine(new Torikime.Area.ConstitutedData.Request { AreaId = transportToAreaId }, (response) =>
+            {
+                foreach (var trigger in response.Triggers)
+                {
+                    Debug.Log($"trigger transport to area[{trigger.AreaId}]: {trigger.Position.ToVector3()}");
+                    var t = GameObject.Instantiate(new GameObject(), trigger.Position.ToVector3(), Quaternion.identity);
+                    t.name = "Area Transport Trigger";
+                    var c = t.AddComponent<BoxCollider>();
+                    c.center = trigger.Position.ToVector3() + trigger.Offset.ToVector3();
+                    c.size = trigger.Size.ToVector3();
+                }
+            });
         }
 
         private IEnumerator RequestSpawnReady(uint transportToAreaId)

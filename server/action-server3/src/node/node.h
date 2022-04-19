@@ -77,7 +77,7 @@ namespace potato
 
 		void clearComponents();
 
-		using Processor = std::function<void(std::shared_ptr<Node> node)>;
+		using Processor = std::function<void(std::shared_ptr<Node>& node)>;
 		void process(Processor processor);
 
 	private:
