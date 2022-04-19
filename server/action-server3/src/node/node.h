@@ -13,11 +13,13 @@ namespace potato
 	class IComponent2
 	{
 	public:
-		IComponent2(std::shared_ptr<T> owner) {}
+		IComponent2(std::shared_ptr<T> owner) : _owner(owner) {}
 		virtual ~IComponent2() {}
 
 	protected:
-		IComponent2() = default;
+		std::shared_ptr<T> _owner;
+	private:
+		IComponent2() = delete;
 	};
 
 	class Node
@@ -90,25 +92,34 @@ namespace potato
 		~NodeRoot() {}
 	};
 
-	class PlaceableComponent final : public IComponent2<Node>
+	class PlaceableComponent : public IComponent2<Node>
 	{
 	public:
-		PlaceableComponent(std::shared_ptr<Node>) {}
-		~PlaceableComponent() {}
+		PlaceableComponent(std::shared_ptr<Node> node) : IComponent2<Node>(node) {}
+		virtual ~PlaceableComponent() {}
 
 		Eigen::Vector3f position;
-
-	private:
-		PlaceableComponent() = default;
 	};
 
-	class TriggerableComponent final : public IComponent2<Node>
+	class VisibileComponent : public PlaceableComponent
 	{
 	public:
-		TriggerableComponent(std::shared_ptr<Node>) {}
+		VisibileComponent(std::shared_ptr<Node> node) : PlaceableComponent(node) {}
+		virtual ~VisibileComponent() {}
+
+		void setVisible(bool visible) { _visible = visible; }
+		bool isVisible() const { return _visible; }
+
+	private:
+		bool _visible;
+	};
+
+	class TriggerableComponent final : public VisibileComponent
+	{
+	public:
+		TriggerableComponent(std::shared_ptr<Node> node) : VisibileComponent(node) {}
 		~TriggerableComponent() {}
 
-		Eigen::Vector3f position;
 		Eigen::Vector3f offset;
 		Eigen::Vector3f size;
 
