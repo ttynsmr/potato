@@ -5,3 +5,11 @@ contracts:
       notification:
         area_id: uint32
         unit_id: uint64
+    setup_dynamic_trigger:
+      imports:
+        - "area"
+      notification:
+        area_id: uint32
+        triggers:
+          container: array
+          type: potato.Trigger
