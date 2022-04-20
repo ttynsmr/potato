@@ -177,10 +177,6 @@ namespace Potato
             yield return RequestLogin(nameInputField.text, string.Empty);
 
             yield return new WaitUntil(() => transportOrder);
-
-            yield return RequestAreaConstitudeData(transportToAreaId);
-
-            yield return RequestSpawnReady(transportToAreaId);
         }
 
         private IEnumerator TransportSequence(Torikime.Area.Transport.Notification notification)
