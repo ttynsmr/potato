@@ -3,6 +3,7 @@
 #include "area_types.h"
 #include "area/area.h"
 #include "units/unit.h"
+#include "units/components/area_transport_component.h"
 
 #include "services/service_registry.h"
 #include "services/game_service_provider.h"
@@ -13,11 +14,22 @@
 #include "area_transport.pb.h"
 #include "area_transport.h"
 
+#include "unit_stop.pb.h"
+#include "unit_stop.h"
+
 using namespace potato;
 
 static uint64_t s_transportId = 0;
 
-void AreaTransporter::transport(std::shared_ptr<Area> fromArea, std::shared_ptr<Area> toArea, std::shared_ptr<Unit> unit)
+AreaTransporter::AreaTransporter()
+{
+}
+
+AreaTransporter::~AreaTransporter()
+{
+}
+
+void AreaTransporter::transport(std::shared_ptr<Area> fromArea, std::shared_ptr<Area> toArea, std::shared_ptr<Unit> unit, time_t now)
 {
 	const uint64_t transportId = ++s_transportId;
 	auto gameServiceProvider = ServiceRegistry::instance().findServiceProvider<GameServiceProvider>();
@@ -30,12 +42,14 @@ void AreaTransporter::transport(std::shared_ptr<Area> fromArea, std::shared_ptr<
 		{
 			toArea->enter(unit);
 			gameServiceProvider->sendAreacastSpawnUnit(unit->getSessionId(), unit);
+			unit->removeComponent<AreaTransporterComponent>();
 		});
 	};
 
-	auto onSpawnReadyRequest = [sendAreacastSpawnUnit = std::move(sendAreacastSpawnUnit)]()
+	auto onSpawnReadyRequest = [this, sendAreacastSpawnUnit = std::move(sendAreacastSpawnUnit)]()
 	{
 		//spawn_ready to next area
+		//_spawnReadyRequest.disconnect();
 		sendAreacastSpawnUnit();
 	};
 
@@ -58,28 +72,44 @@ void AreaTransporter::transport(std::shared_ptr<Area> fromArea, std::shared_ptr<
 		unloadCirrentAreaAndLoadNextArea();
 	};
 
-	auto onTransportRequestReceived = [sendAreacastDespawnUnit = std::move(sendAreacastDespawnUnit), transportId](uint64_t receivedTransportId)
+	auto onTransportRequestReceived = [this, sendAreacastDespawnUnit = std::move(sendAreacastDespawnUnit), transportId](uint64_t receivedTransportId)
 	{
 		if (transportId != receivedTransportId)
 		{
 			return;
 		}
+		//_transportRequest.disconnect();
 		sendAreacastDespawnUnit();
 	};
 	
 	_transportRequest = gameServiceProvider->subscribeOnTransportRequest(onTransportRequestReceived);
 	
-	auto sendAreaTransportNotification = [networkServiceProvider, fromArea, toArea, unit, transportId]()
+	auto sendAreaTransportNotification = [networkServiceProvider, fromArea, toArea, unit, now, transportId]()
 	{
 		//add move_to_area Notification
-		ServiceRegistry::instance().getQueue().enqueue(ServiceProviderType::Game, [networkServiceProvider, fromArea, toArea, unit, transportId]()
+		ServiceRegistry::instance().getQueue().enqueue(ServiceProviderType::Game, [networkServiceProvider, fromArea, toArea, unit, now, transportId]()
 		{
-			using namespace torikime::area::transport;
-			Notification notification;
-			notification.set_transport_id(transportId);
-			notification.set_area_id(toArea->getAreaId().value_of());
-			notification.set_unit_id(unit->getUnitId().value_of());
-			networkServiceProvider->sendTo(unit->getSessionId(), Rpc::serializeNotification(notification));
+			{
+				using namespace torikime::unit::stop;
+				Notification notification;
+				notification.set_unit_id(unit->getUnitId().value_of());
+				auto lastMoveCommand = unit->getLastMoveCommand();
+				auto lastMoveTime = lastMoveCommand != nullptr ? lastMoveCommand->startTime : 0;
+				notification.set_time(lastMoveTime);
+				notification.set_stop_time(now);
+				notification.set_direction(unit->getDirection());
+				notification.set_move_id(0);
+				networkServiceProvider->sendAreacast(unit->getSessionId(), fromArea, Rpc::serializeNotification(notification));
+			}
+			
+			{
+				using namespace torikime::area::transport;
+				Notification notification;
+				notification.set_transport_id(transportId);
+				notification.set_area_id(toArea->getAreaId().value_of());
+				notification.set_unit_id(unit->getUnitId().value_of());
+				networkServiceProvider->sendTo(unit->getSessionId(), Rpc::serializeNotification(notification));
+			}
 		});
 	};
 

@@ -79,6 +79,11 @@ namespace potato
 			{
 				process([trigger, now](auto weakUnit) {
 					std::shared_ptr<Unit> unit = weakUnit.lock();
+
+					if (unit == nullptr)
+					{
+						return;
+					}
 					
 					if (unit->hasComponent<NpcComponent>())
 					{

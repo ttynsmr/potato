@@ -10,9 +10,12 @@ namespace potato
 	class Area;
 
 	class AreaTransporter final
+		: public std::enable_shared_from_this<AreaTransporter>
 	{
 	public:
-		void transport(std::shared_ptr<Area> fromArea, std::shared_ptr<Area> toArea, std::shared_ptr<Unit> unit);
+		AreaTransporter();
+		~AreaTransporter();
+		void transport(std::shared_ptr<Area> fromArea, std::shared_ptr<Area> toArea, std::shared_ptr<Unit> unit, time_t now);
 
 	private:
 		boost::signals2::connection _spawnReadyRequest;
