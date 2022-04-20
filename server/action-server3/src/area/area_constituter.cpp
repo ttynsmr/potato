@@ -36,6 +36,13 @@ boost::future<bool> AreaConsituter::load(std::shared_ptr<Area> area, const std::
 						auto gameServiceProvider = ServiceRegistry::instance().findServiceProvider<GameServiceProvider>();
 						auto areaRegistory = gameServiceProvider->getAreaRegistry();
 						auto nextArea = areaRegistory->getArea(AreaId(1));
+
+						if (!nextArea)
+						{
+							nextArea = areaRegistory->addArea(AreaId(1));
+							nextArea->requestLoad();
+						}
+
 						areaRegistory->transportUnit(currentArea, nextArea, unit);
 						});
 					currentArea->getNodeRoot()->addNode(node);
@@ -53,6 +60,13 @@ boost::future<bool> AreaConsituter::load(std::shared_ptr<Area> area, const std::
 						auto gameServiceProvider = ServiceRegistry::instance().findServiceProvider<GameServiceProvider>();
 						auto areaRegistory = gameServiceProvider->getAreaRegistry();
 						auto nextArea = areaRegistory->getArea(AreaId(0));
+
+						if (!nextArea)
+						{
+							nextArea = areaRegistory->addArea(AreaId(0));
+							nextArea->requestLoad();
+						}
+						
 						areaRegistory->transportUnit(currentArea, nextArea, unit);
 						});
 					currentArea->getNodeRoot()->addNode(node);

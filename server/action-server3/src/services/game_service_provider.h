@@ -3,6 +3,7 @@
 #include <memory>
 #include <iostream>
 #include <random>
+#include <boost/signals2/signal.hpp>
 
 #include "service_registry.h"
 #include "service_provider.h"
@@ -74,7 +75,15 @@ public:
 	using SynchronizedAction = std::function<void()>;
 	void enqueueSynchronizedAction(SynchronizedAction action);
 
+	using OnSpawnReadyRequestDelegate = std::function<void()>;
+	boost::signals2::connection subscribeOnSpawnReadyRequest(OnSpawnReadyRequestDelegate onSpawnReadyRequestRequest);
+
+	using OnTransportRequestDelegate = std::function<void(uint64_t transportId)>;
+	boost::signals2::connection subscribeOnTransportRequest(OnTransportRequestDelegate onTransportRequest);
+
 private:
+	boost::signals2::signal<void()> _onSpawnReadyRequest;
+	boost::signals2::signal<void(uint64_t transportId)> _onTransportRequest;
 	std::shared_ptr<ServiceRegistry> _service;
 	std::shared_ptr<potato::UserRegistry> _userRegistry;
 	std::shared_ptr<potato::UnitRegistry> _unitRegistry;

@@ -3,6 +3,8 @@
 #include "core/configured_boost_thread.h"
 
 #include "units/unit.h"
+#include "units/components/npc_component.h"
+
 #include "node/node.h"
 
 #include "area/area_constituter.h"
@@ -76,7 +78,13 @@ namespace potato
 			if (trigger)
 			{
 				process([trigger, now](auto weakUnit) {
-					auto unit = weakUnit.lock();
+					std::shared_ptr<Unit> unit = weakUnit.lock();
+					
+					if (unit->hasComponent<NpcComponent>())
+					{
+						return;
+					}
+
 					if (trigger->containsAABB(unit->getPosition()))
 					{
 						trigger->invokeOnTrigger(unit, now);

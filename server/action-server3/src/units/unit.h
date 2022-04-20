@@ -226,6 +226,24 @@ public:
 	}
 
 	template<typename T>
+	bool hasComponent()
+	{
+		auto found = _components.find(typeid(T).hash_code());
+		if (found == _components.end())
+		{
+			return false;
+		}
+
+		return true;
+	}
+
+	template<typename T>
+	bool hasComponent() const
+	{
+		return hasComponent<T>();
+	}
+
+	template<typename T>
 	void removeComponent()
 	{
 		_components.erase(typeid(T).hash_code());

@@ -250,6 +250,12 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::Session> sessi
 			responser->send(true, std::move(response));
 		});
 
+	_rpcBuilder->area.transport->subscribeRequest([this](const auto& requestParcel, auto& responser)
+		{
+			responser->send(true, torikime::area::transport::Response());
+			_onTransportRequest(requestParcel.request().transport_id());
+		});
+
 	_rpcBuilder->area.constitutedData->subscribeRequest([this](const auto& requestParcel, auto& responser)
 		{
 			auto area = _areaRegistry->getArea(potato::AreaId(requestParcel.request().area_id()));
@@ -336,6 +342,7 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::Session> sessi
 				sendAreacastSpawnUnit(session->getSessionId(), newUnit);
 			}
 			sendSpawnUnit(session->getSessionId(), newUnit);
+			_onSpawnReadyRequest();
 		});
 
 	_rpcBuilder->unit.move->subscribeRequest([this, weakSession](const auto& requestParcel, auto& responser)
@@ -698,6 +705,16 @@ void GameServiceProvider::sendAreacastDespawnUnit(potato::net::SessionId session
 	notification.set_unit_id(despawnUnit->getUnitId().value_of());
 	notification.set_area_id(despawnUnit->getAreaId().value_of());
 	_nerworkServiceProvider.lock()->sendAreacast(sessionId, _areaRegistry->getArea(despawnUnit->getAreaId()), torikime::unit::despawn::Rpc::serializeNotification(notification));
+
+	const auto& units = _unitRegistry->getUnits();
+	for (auto& unit : units)
+	{
+		torikime::unit::despawn::Notification notification;
+		notification.set_session_id(unit->getSessionId().value_of());
+		notification.set_unit_id(unit->getUnitId().value_of());
+		notification.set_area_id(unit->getAreaId().value_of());
+		_nerworkServiceProvider.lock()->sendTo(sessionId, torikime::unit::despawn::Rpc::serializeNotification(notification));
+	}
 }
 
 void GameServiceProvider::sendMove(potato::net::SessionId sessionId, std::shared_ptr<Unit> unit, std::shared_ptr<MoveCommand> moveCommand)
@@ -772,9 +789,8 @@ void GameServiceProvider::main()
 
 		sendSystemMessage("hey");
 
-		{
-			_userRegistry->update(nowUpdate);
-		}
+		_userRegistry->update(nowUpdate);
+		_areaRegistry->update(nowUpdate);
 
 		{
 			fps++;
@@ -832,4 +848,14 @@ std::shared_ptr<potato::AreaRegistry> GameServiceProvider::getAreaRegistry()
 void GameServiceProvider::enqueueSynchronizedAction(SynchronizedAction action)
 {
 	queue.enqueue(0, action);
+}
+
+boost::signals2::connection GameServiceProvider::subscribeOnSpawnReadyRequest(OnSpawnReadyRequestDelegate onSpawnReadyRequestRequest)
+{
+	return _onSpawnReadyRequest.connect(onSpawnReadyRequestRequest);
+}
+
+boost::signals2::connection GameServiceProvider::subscribeOnTransportRequest(OnTransportRequestDelegate onTransportRequest)
+{
+	return _onTransportRequest.connect(onTransportRequest);
 }

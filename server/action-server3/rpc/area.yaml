@@ -2,7 +2,12 @@
 contracts:
   area:
     transport:
+      request:
+        transport_id: uint64
+      response:
+        _do_not_use_: bool
       notification:
+        transport_id: uint64
         area_id: uint32
         unit_id: uint64
     constituted_data:

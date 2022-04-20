@@ -163,6 +163,8 @@ namespace Potato
                     Debug.Log(notification.ToString());
                     transportToAreaId = notification.AreaId;
                     transportOrder = true;
+
+                    StartCoroutine(TransportSequence(notification));
                 };
             }
 
@@ -179,6 +181,19 @@ namespace Potato
             yield return RequestAreaConstitudeData(transportToAreaId);
 
             yield return RequestSpawnReady(transportToAreaId);
+        }
+
+        private IEnumerator TransportSequence(Torikime.Area.Transport.Notification notification)
+        {
+            var transport = Torikime.RpcHolder.GetRpc<Torikime.Area.Transport.Rpc>();
+            yield return transport.RequestCoroutine(new Torikime.Area.Transport.Request(new Torikime.Area.Transport.Request() { TransportId = notification.TransportId }), (response) =>
+            {
+                Debug.Log("Transport response");
+            });
+
+            yield return RequestAreaConstitudeData(notification.AreaId);
+
+            yield return RequestSpawnReady(notification.AreaId);
         }
 
         private IEnumerator RequestLogin(string userId, string password)

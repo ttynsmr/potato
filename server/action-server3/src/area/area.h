@@ -37,7 +37,7 @@ namespace potato
 
 		const std::set<potato::net::SessionId> getSessionIds() const;
 
-		using Processor = std::function<void(std::weak_ptr<Unit> weakUnit)>;
+		using Processor = std::function<void(std::weak_ptr<Unit>& weakUnit)>;
 		void process(Processor processor);
 
 		std::shared_ptr<NodeRoot> getNodeRoot();

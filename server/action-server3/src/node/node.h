@@ -129,9 +129,9 @@ namespace potato
 			const Eigen::Vector3f large = position + offset + size;
 
 			assert(point.size() == less.size() && point.size() == large.size());
-			for (int i = 0; i < point.size(); i++)
+			for (int i = 0; i < 3; i++)
 			{
-				if ((less[i] > point[i]) && (point[i] > large[i]))
+				if ((point[i] < less[i]) || (large[i] < point[i]))
 				{
 					return false;
 				}

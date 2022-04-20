@@ -46,12 +46,21 @@ std::shared_ptr<Area> AreaRegistry::getArea(AreaId areaId)
 std::shared_ptr<AreaTransporter> AreaRegistry::transportUnit(std::shared_ptr<Area> fromArea, std::shared_ptr<Area> toArea, std::shared_ptr<Unit> unit)
 {
 	auto areaTransporter = std::make_shared<AreaTransporter>();
-	areaTransporter->transport(fromArea, toArea, unit).then([fromArea, toArea, unit](auto f)
+	areaTransporter->transport(fromArea, toArea, unit);/* .then([fromArea, toArea, unit](auto f)
 		{
 			const bool result = f.get();
 			fmt::print("area transport from: {} to: {} unit: {} result: {}\n", fromArea->getAreaId(), toArea->getAreaId(), unit->getUnitId(), result);
 			return result;
 		}
-	);
+	);*/
 	return areaTransporter;
+}
+
+void AreaRegistry::update(time_t now)
+{
+	std::for_each(_areas.begin(), _areas.end(), [&](auto& area)
+		{
+			area.second->update(now);
+		}
+	);
 }
