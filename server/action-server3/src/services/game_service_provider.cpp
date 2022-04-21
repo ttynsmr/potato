@@ -128,7 +128,8 @@ void GameServiceProvider::onUnregisterUser(std::shared_ptr<potato::User> user)
 
 		auto areaId = unit->getAreaId();
 		auto area = _areaRegistry->getArea(areaId);
-
+		area->leave(unit);
+		
 		_unitRegistry->unregisterUnit(unit);
 
 		const auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
@@ -608,11 +609,6 @@ void GameServiceProvider::sendSpawnUnit(potato::net::SessionId sessionId, std::s
 	area->process([nerworkServiceProvider, now, sessionId, spawnUnit](auto weakUnit)
 	{
 		auto unit = weakUnit.lock();
-		if (!unit)
-		{
-			return;
-		}
-
 		if (unit->getUnitId() == spawnUnit->getUnitId())
 		{
 			return;
