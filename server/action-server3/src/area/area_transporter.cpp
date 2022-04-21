@@ -27,6 +27,8 @@ AreaTransporter::AreaTransporter()
 
 AreaTransporter::~AreaTransporter()
 {
+	_spawnReadyRequest.disconnect();
+	_transportRequest.disconnect();
 }
 
 void AreaTransporter::transport(std::shared_ptr<Area> fromArea, std::shared_ptr<Area> toArea, std::shared_ptr<Unit> unit, time_t now)
@@ -45,7 +47,7 @@ void AreaTransporter::transport(std::shared_ptr<Area> fromArea, std::shared_ptr<
 	auto onSpawnReadyRequest = [this, sendAreacastSpawnUnit = std::move(sendAreacastSpawnUnit)]()
 	{
 		//spawn_ready to next area
-		//_spawnReadyRequest.disconnect();
+		_spawnReadyRequest.disconnect();
 		sendAreacastSpawnUnit();
 	};
 
@@ -71,7 +73,7 @@ void AreaTransporter::transport(std::shared_ptr<Area> fromArea, std::shared_ptr<
 		{
 			return;
 		}
-		//_transportRequest.disconnect();
+		_transportRequest.disconnect();
 		sendAreacastDespawnUnit();
 	};
 	
