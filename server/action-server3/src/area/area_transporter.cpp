@@ -39,7 +39,6 @@ void AreaTransporter::transport(std::shared_ptr<Area> fromArea, std::shared_ptr<
 
 	auto sendAreacastSpawnUnit = [gameServiceProvider, toArea, unit]()
 	{
-		toArea->enter(unit);
 		gameServiceProvider->sendAreacastSpawnUnit(unit->getSessionId(), unit);
 		unit->removeComponent<AreaTransporterComponent>();
 	};
