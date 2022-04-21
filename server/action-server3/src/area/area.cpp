@@ -65,10 +65,19 @@ namespace potato
 		_sessionIds.emplace(unit->getSessionId());
 	}
 
-	void Area::leave(std::shared_ptr<Unit> unit)
+	void Area::leave(std::shared_ptr<Unit> leaveUnit)
 	{
-		_sessionIds.erase(unit->getSessionId());
-		_units.remove_if([unit](auto& u) { return unit->getUnitId() == u.lock()->getUnitId(); });
+		_sessionIds.erase(leaveUnit->getSessionId());
+		_units.remove_if([leaveUnit = std::move(leaveUnit)](auto& u)
+			{
+				auto unit = u.lock();
+				if (unit == nullptr)
+				{
+					return true;
+				}
+				
+				return leaveUnit->getUnitId() == unit->getUnitId();
+			});
 	}
 
 	void Area::update(time_t now)
