@@ -706,7 +706,6 @@ void GameServiceProvider::sendAreacastDespawnUnit(potato::net::SessionId session
 	area->process([this, sessionId](auto weakUnit)
 		{
 			auto unit = weakUnit.lock();
-			fmt::print("session[{}] call sendDespawn but unit {}\n", sessionId, unit->getUnitId().value_of());
 			torikime::unit::despawn::Notification notification;
 			notification.set_session_id(unit->getSessionId().value_of());
 			notification.set_unit_id(unit->getUnitId().value_of());
