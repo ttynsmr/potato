@@ -31,6 +31,7 @@ FROM ubuntu:latest AS action_server3_application
 COPY --from=action_server3_build /opt/app/action-server3/build.docker/action-server3 ./
 RUN apt-get update && apt-get install -yq \
     libprotobuf17 \
+    libboost-thread1.71.0 \
     && apt clean \
     && rm -rf /var/lib/apt/lists/*
 CMD ["./action-server3", "28888"]
