@@ -120,6 +120,7 @@ namespace Potato
                 var unitSpawn = Torikime.RpcHolder.GetRpc<Torikime.Unit.Spawn.Rpc>();
                 unitSpawn.OnNotification += (notification) =>
                 {
+                    Debug.Log($"spawn: area:{notification.AreaId} unit:{notification.UnitId}");
                     var unit = new PlayerUnit(networkService.Now, new UnitId(notification.UnitId), notification.Position.ToVector3(), notification.Direction, notification.Avatar);
                     unitService.Register(unit);
                 };
@@ -127,6 +128,7 @@ namespace Potato
                 var unitDespawn = Torikime.RpcHolder.GetRpc<Torikime.Unit.Despawn.Rpc>();
                 unitDespawn.OnNotification += (notification) =>
                 {
+                    Debug.Log($"despawn: area:{notification.AreaId} unit:{notification.UnitId}");
                     unitService.UnregisterByUnitId(new UnitId(notification.UnitId));
                 };
 
