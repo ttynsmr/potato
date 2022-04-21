@@ -706,15 +706,16 @@ void GameServiceProvider::sendAreacastDespawnUnit(potato::net::SessionId session
 	notification.set_area_id(despawnUnit->getAreaId().value_of());
 	_nerworkServiceProvider.lock()->sendAreacast(sessionId, _areaRegistry->getArea(despawnUnit->getAreaId()), torikime::unit::despawn::Rpc::serializeNotification(notification));
 
-	const auto& units = _unitRegistry->getUnits();
-	for (auto& unit : units)
-	{
-		torikime::unit::despawn::Notification notification;
-		notification.set_session_id(unit->getSessionId().value_of());
-		notification.set_unit_id(unit->getUnitId().value_of());
-		notification.set_area_id(unit->getAreaId().value_of());
-		_nerworkServiceProvider.lock()->sendTo(sessionId, torikime::unit::despawn::Rpc::serializeNotification(notification));
-	}
+	auto area = _areaRegistry->getArea(despawnUnit->getAreaId());
+	area->process([this, sessionId](auto weakUnit)
+		{
+			auto unit = weakUnit.lock();
+			torikime::unit::despawn::Notification notification;
+			notification.set_session_id(unit->getSessionId().value_of());
+			notification.set_unit_id(unit->getUnitId().value_of());
+			notification.set_area_id(unit->getAreaId().value_of());
+			_nerworkServiceProvider.lock()->sendTo(sessionId, torikime::unit::despawn::Rpc::serializeNotification(notification));
+		});
 }
 
 void GameServiceProvider::sendMove(potato::net::SessionId sessionId, std::shared_ptr<Unit> unit, std::shared_ptr<MoveCommand> moveCommand)
