@@ -222,7 +222,25 @@ public:
 			return nullptr;
 		}
 
-		return *found;
+		return std::dynamic_pointer_cast<T>(found->second);
+	}
+
+	template<typename T>
+	bool hasComponent()
+	{
+		auto found = _components.find(typeid(T).hash_code());
+		if (found == _components.end())
+		{
+			return false;
+		}
+
+		return true;
+	}
+
+	template<typename T>
+	bool hasComponent() const
+	{
+		return hasComponent<T>();
 	}
 
 	template<typename T>

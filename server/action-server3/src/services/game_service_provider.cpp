@@ -10,6 +10,8 @@
 #include "services/network_service_provider.h"
 
 #include "message.pb.h"
+#include "area_transport.pb.h"
+#include "area_constituted_data.pb.h"
 #include "auth_login.pb.h"
 #include "chat_send_message.pb.h"
 #include "diagnosis_sever_sessions.pb.h"
@@ -34,9 +36,13 @@
 #include "area/area.h"
 #include "area/area_registry.h"
 
+#include "node/node.h"
+
 #include "user/user.h"
 #include "user/user_registry.h"
 
+#include "area_transport.h"
+#include "area_constituted_data.h"
 #include "auth_login.h"
 #include "chat_send_message.h"
 #include "diagnosis_sever_sessions.h"
@@ -53,9 +59,8 @@
 
 #include "rpc_builder.h"
 
-GameServiceProvider::GameServiceProvider(std::shared_ptr<ServiceRegistry> service)
-	: _service(service)
-	, _userRegistry(std::make_shared<potato::UserRegistry>())
+GameServiceProvider::GameServiceProvider()
+	: _userRegistry(std::make_shared<potato::UserRegistry>())
 	, _unitRegistry(std::make_shared<potato::UnitRegistry>())
 	, _areaRegistry(std::make_shared<potato::AreaRegistry>())
 	, _randomEngine(_randomDevice())
@@ -69,8 +74,11 @@ bool GameServiceProvider::isRunning()
 
 void GameServiceProvider::initialize()
 {
-	_service->getQueue().appendListener(ServiceProviderType::Game, [](const std::string& s, bool b) {
-		fmt::print("received queue {}:{}\n", s, b);
+	_nerworkServiceProvider = ServiceRegistry::instance().findServiceProvider<NetworkServiceProvider>();
+
+	ServiceRegistry::instance().getQueue().appendListener(ServiceProviderType::Game, [](auto action) {
+		fmt::print("received queue\n");
+		action();
 		});
 
 	auto nerworkServiceProvider = _nerworkServiceProvider.lock();
@@ -92,6 +100,7 @@ void GameServiceProvider::generateNPCs()
 		if (!area)
 		{
 			area = _areaRegistry->addArea(areaId);
+			area->requestLoad();
 		}
 		area->enter(newUnit);
 	};
@@ -113,15 +122,19 @@ void GameServiceProvider::generateNPCs()
 void GameServiceProvider::onUnregisterUser(std::shared_ptr<potato::User> user)
 {
 	auto unit = _unitRegistry->findUnitByUnitId(user->getUnitId());
-	sendDespawn(potato::net::SessionId(0), unit);
+	if (unit)
+	{
+		sendAreacastDespawnUnit(potato::net::SessionId(0), unit);
 
-	auto areaId = unit->getAreaId();
-	auto area = _areaRegistry->getArea(areaId);
+		auto areaId = unit->getAreaId();
+		auto area = _areaRegistry->getArea(areaId);
+		area->leave(unit);
+		
+		_unitRegistry->unregisterUnit(unit);
 
-	_unitRegistry->unregisterUnit(unit);
-
-	const auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-	unit->onDespawn(now);
+		const auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+		unit->onDespawn(now);
+	}
 
 	auto& user_index = _idMapper.get<user_id>();
 	auto binderIt = user_index.find(user->getUserId());
@@ -174,6 +187,11 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::Session> sessi
 					fmt::print("session id[{}] user_id: {}({}) logged in\n", session->getSessionId(), r.value(), user_id_name);
 					response.set_ok(true);
 					responser->send(true, std::move(response));
+
+					torikime::area::transport::Notification notification;
+					notification.set_area_id(0);
+					notification.set_unit_id(user->getUnitId().value_of());
+					_nerworkServiceProvider.lock()->sendTo(user->getSessionId(), torikime::area::transport::Rpc::serializeNotification(notification));
 				});
 			}
 			else
@@ -233,6 +251,40 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::Session> sessi
 			responser->send(true, std::move(response));
 		});
 
+	_rpcBuilder->area.transport->subscribeRequest([this](const auto& requestParcel, auto& responser)
+		{
+			responser->send(true, torikime::area::transport::Response());
+			_onTransportRequest(requestParcel.request().transport_id());
+		});
+
+	_rpcBuilder->area.constitutedData->subscribeRequest([this](const auto& requestParcel, auto& responser)
+		{
+			auto area = _areaRegistry->getArea(potato::AreaId(requestParcel.request().area_id()));
+			torikime::area::constituted_data::Response response;
+			response.set_area_id(area->getAreaId().value_of());
+
+			std::vector<std::shared_ptr<potato::TriggerableComponent>> triggerableComponents;
+			std::function<void(std::shared_ptr<potato::Node>& node)> collectTriggerableComponent;
+			collectTriggerableComponent = [&collectTriggerableComponent, &triggerableComponents](std::shared_ptr<potato::Node>& node) {
+				auto triggerableComponent = node->getComponent<potato::TriggerableComponent>();
+				if (triggerableComponent)
+				{
+					triggerableComponents.emplace_back(triggerableComponent);
+				}
+				node->process(collectTriggerableComponent);
+			};
+			area->getNodeRoot()->process(collectTriggerableComponent);
+			for (auto& triggerableComponent : triggerableComponents)
+			{
+				auto triggers = response.add_triggers();
+				triggers->set_area_id(area->getAreaId().value_of());
+				triggers->set_allocated_position(newVector3(triggerableComponent->position));
+				triggers->set_allocated_offset(newVector3(triggerableComponent->offset));
+				triggers->set_allocated_size(newVector3(triggerableComponent->size));
+			}
+			responser->send(true, std::move(response));
+		});
+
 	_rpcBuilder->unit.spawnReady->subscribeRequest([this, weakSession](const auto& request, auto& responser)
 		{
 			auto session = weakSession.lock();
@@ -288,9 +340,10 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::Session> sessi
 
 			if (!rebind)
 			{
-				sendBroadcastSpawnUnit(session->getSessionId(), newUnit);
+				sendAreacastSpawnUnit(session->getSessionId(), newUnit);
 			}
 			sendSpawnUnit(session->getSessionId(), newUnit);
+			_onSpawnReadyRequest();
 		});
 
 	_rpcBuilder->unit.move->subscribeRequest([this, weakSession](const auto& requestParcel, auto& responser)
@@ -525,7 +578,7 @@ void GameServiceProvider::sendSystemMessage(const std::string& message)
 	_nerworkServiceProvider.lock()->sendBroadcast(potato::net::SessionId(0), torikime::chat::send_message::Rpc::serializeNotification(notification));
 }
 
-void GameServiceProvider::sendBroadcastSpawnUnit(potato::net::SessionId sessionId, std::shared_ptr<Unit> spawnUnit)
+void GameServiceProvider::sendAreacastSpawnUnit(potato::net::SessionId sessionId, std::shared_ptr<Unit> spawnUnit)
 {
 	// broadcast spawn to neighbors
 	torikime::unit::spawn::Notification notification;
@@ -556,11 +609,6 @@ void GameServiceProvider::sendSpawnUnit(potato::net::SessionId sessionId, std::s
 	area->process([nerworkServiceProvider, now, sessionId, spawnUnit](auto weakUnit)
 	{
 		auto unit = weakUnit.lock();
-		if (!unit)
-		{
-			return;
-		}
-
 		if (unit->getUnitId() == spawnUnit->getUnitId())
 		{
 			return;
@@ -640,7 +688,7 @@ void GameServiceProvider::sendSpawnUnit(potato::net::SessionId sessionId, std::s
 	});
 }
 
-void GameServiceProvider::sendDespawn(potato::net::SessionId sessionId, std::shared_ptr<Unit> despawnUnit)
+void GameServiceProvider::sendAreacastDespawnUnit(potato::net::SessionId sessionId, std::shared_ptr<Unit> despawnUnit)
 {
 	if (despawnUnit == nullptr)
 	{
@@ -653,6 +701,17 @@ void GameServiceProvider::sendDespawn(potato::net::SessionId sessionId, std::sha
 	notification.set_unit_id(despawnUnit->getUnitId().value_of());
 	notification.set_area_id(despawnUnit->getAreaId().value_of());
 	_nerworkServiceProvider.lock()->sendAreacast(sessionId, _areaRegistry->getArea(despawnUnit->getAreaId()), torikime::unit::despawn::Rpc::serializeNotification(notification));
+
+	auto area = _areaRegistry->getArea(despawnUnit->getAreaId());
+	area->process([this, sessionId](auto weakUnit)
+		{
+			auto unit = weakUnit.lock();
+			torikime::unit::despawn::Notification notification;
+			notification.set_session_id(unit->getSessionId().value_of());
+			notification.set_unit_id(unit->getUnitId().value_of());
+			notification.set_area_id(unit->getAreaId().value_of());
+			_nerworkServiceProvider.lock()->sendTo(sessionId, torikime::unit::despawn::Rpc::serializeNotification(notification));
+		});
 }
 
 void GameServiceProvider::sendMove(potato::net::SessionId sessionId, std::shared_ptr<Unit> unit, std::shared_ptr<MoveCommand> moveCommand)
@@ -723,13 +782,12 @@ void GameServiceProvider::main()
 		}
 
 		queue.process();
-		_service->getQueue().process();
+		ServiceRegistry::instance().getQueue().process();
 
 		sendSystemMessage("hey");
 
-		{
-			_userRegistry->update(nowUpdate);
-		}
+		_userRegistry->update(nowUpdate);
+		_areaRegistry->update(nowUpdate);
 
 		{
 			fps++;
@@ -761,7 +819,6 @@ void GameServiceProvider::main()
 void GameServiceProvider::start()
 {
 	_thread = std::thread([this]() {
-		_nerworkServiceProvider = _service->findServiceProvider<NetworkServiceProvider>();
 		initialize();
 		fmt::print("start game service loop\n");
 		main();
@@ -783,4 +840,19 @@ std::default_random_engine& GameServiceProvider::getRandomEngine()
 std::shared_ptr<potato::AreaRegistry> GameServiceProvider::getAreaRegistry()
 {
 	return _areaRegistry;
+}
+
+void GameServiceProvider::enqueueSynchronizedAction(SynchronizedAction action)
+{
+	queue.enqueue(0, action);
+}
+
+boost::signals2::connection GameServiceProvider::subscribeOnSpawnReadyRequest(OnSpawnReadyRequestDelegate onSpawnReadyRequestRequest)
+{
+	return _onSpawnReadyRequest.connect(onSpawnReadyRequestRequest);
+}
+
+boost::signals2::connection GameServiceProvider::subscribeOnTransportRequest(OnTransportRequestDelegate onTransportRequest)
+{
+	return _onTransportRequest.connect(onTransportRequest);
 }

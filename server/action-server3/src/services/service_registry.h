@@ -11,9 +11,11 @@ enum class ServiceProviderType
 	Game,
 };
 
-class ServiceRegistry
+class ServiceRegistry final
 {
 public:
+	static ServiceRegistry& instance();
+
 	template <typename T>
 	std::shared_ptr<T> registerServiceProvider(std::shared_ptr<T> serviceProvider)
 	{
@@ -47,13 +49,19 @@ public:
 		}
 	}
 
-	using Queue = eventpp::EventQueue<ServiceProviderType, void(const std::string&, const bool)>;
+	using QueuedAction = std::function<void()>;
+	using Queue = eventpp::EventQueue<ServiceProviderType, void(QueuedAction)>;
 	Queue& getQueue()
 	{
 		return queue;
 	}
 
 private:
+	ServiceRegistry() {}
+	~ServiceRegistry() {}
+	ServiceRegistry(const ServiceRegistry&) = delete;
+	ServiceRegistry& operator=(const ServiceRegistry&) = delete;
+
 	std::mutex _serviceProvidersLock;
 	bool running = true;
 	std::list<std::shared_ptr<IServiceProvider>> _serviceProviders;

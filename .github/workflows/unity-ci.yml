@@ -78,11 +78,8 @@ jobs:
           python -m pip install --upgrade pip
           pip install pipenv --upgrade-strategy=only-if-needed
           pipenv sync
-          pipenv run python torikime.py -v -o "../proto" -s "../../../client/potato/Assets/Scripts/Rpc/Generated" -i "../rpc"
           popd
           ./generate_csharp_proto.sh
-          # find ./proto -name "*.proto"
-          # protoc --proto_path=./proto --csharp_out=../../client/potato/Assets/Scripts/Proto ./proto/*.proto
           popd
 
       - name: list output

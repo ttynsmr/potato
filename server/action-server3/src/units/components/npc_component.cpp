@@ -60,6 +60,7 @@ void NpcComponent::update(std::shared_ptr<Unit> unit, int64_t now)
 		stopCommand->stopTime = now + 2000;
 		stopCommand->direction = moveCommand->direction;
 		stopCommand->moveId = 0;
+		stopCommand->lastMoveCommand = moveCommand;
 		unit->inputCommand(stopCommand);
 		gameServiceProvider->sendStop(potato::net::SessionId(0), unit, stopCommand);
 

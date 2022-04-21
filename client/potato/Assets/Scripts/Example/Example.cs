@@ -120,6 +120,7 @@ namespace Potato
                 var unitSpawn = Torikime.RpcHolder.GetRpc<Torikime.Unit.Spawn.Rpc>();
                 unitSpawn.OnNotification += (notification) =>
                 {
+                    Debug.Log($"spawn: area:{notification.AreaId} unit:{notification.UnitId}");
                     var unit = new PlayerUnit(networkService.Now, new UnitId(notification.UnitId), notification.Position.ToVector3(), notification.Direction, notification.Avatar);
                     unitService.Register(unit);
                 };
@@ -127,6 +128,7 @@ namespace Potato
                 var unitDespawn = Torikime.RpcHolder.GetRpc<Torikime.Unit.Despawn.Rpc>();
                 unitDespawn.OnNotification += (notification) =>
                 {
+                    Debug.Log($"despawn: area:{notification.AreaId} unit:{notification.UnitId}");
                     unitService.UnregisterByUnitId(new UnitId(notification.UnitId));
                 };
 
@@ -155,28 +157,79 @@ namespace Potato
                 syncCharacterStatus.OnNotification += unitService.OnReceiveCharacterStatus;
             }
 
+            bool transportOrder = false;
+            uint transportToAreaId = 0;
+            {
+                var transport = Torikime.RpcHolder.GetRpc<Torikime.Area.Transport.Rpc>();
+                transport.OnNotification += (notification) => {
+                    Debug.Log(notification.ToString());
+                    transportToAreaId = notification.AreaId;
+                    transportOrder = true;
+
+                    StartCoroutine(TransportSequence(notification));
+                };
+            }
+
             networkService.StartReceive();
             StartCoroutine(DoPingPong());
 
             yield return new WaitUntil(() => timeSyncronized);
             panel.SetActive(false);
 
-            yield return Torikime.RpcHolder.GetRpc<Torikime.Auth.Login.Rpc>().RequestCoroutine(
-                new Torikime.Auth.Login.Request { UserId = nameInputField.text, Password = "" },
+            yield return RequestLogin(nameInputField.text, string.Empty);
+
+            yield return new WaitUntil(() => transportOrder);
+        }
+
+        private IEnumerator TransportSequence(Torikime.Area.Transport.Notification notification)
+        {
+            Debug.Log($"Area transport notification received: transport id:{notification.TransportId} area:{notification.AreaId} unit:{notification.UnitId}");
+            var transport = Torikime.RpcHolder.GetRpc<Torikime.Area.Transport.Rpc>();
+            yield return transport.RequestCoroutine(new Torikime.Area.Transport.Request(new Torikime.Area.Transport.Request() { TransportId = notification.TransportId }), (response) =>
+            {
+                Debug.Log("Transport response");
+            });
+
+            yield return RequestAreaConstitudeData(notification.AreaId);
+
+            yield return RequestSpawnReady(notification.AreaId);
+        }
+
+        private IEnumerator RequestLogin(string userId, string password)
+        {
+            return Torikime.RpcHolder.GetRpc<Torikime.Auth.Login.Rpc>().RequestCoroutine(
+                new Torikime.Auth.Login.Request { UserId = userId, Password = password },
                 (response) =>
                 {
                     Debug.Log($"Login response {response.Ok}, {response.Token}");
                 });
+        }
 
-
+        private object RequestAreaConstitudeData(uint transportToAreaId)
+        {
+            var rpc = Torikime.RpcHolder.GetRpc<Torikime.Area.ConstitutedData.Rpc>();
+            return rpc.RequestCoroutine(new Torikime.Area.ConstitutedData.Request { AreaId = transportToAreaId }, (response) =>
             {
-                var rpc = Torikime.RpcHolder.GetRpc<Torikime.Unit.SpawnReady.Rpc>();
-                yield return rpc.RequestCoroutine(new Torikime.Unit.SpawnReady.Request { AreaId = 0 }, (response) =>
+                foreach (var trigger in response.Triggers)
                 {
-                    var unit = new ControllablePlayerUnit(networkService, new UnitId(response.UnitId), response.Position.ToVector3(), response.Direction, response.Avatar);
-                    unitService.Register(unit);
-                });
-            }
+                    Debug.Log($"trigger transport to area[{trigger.AreaId}]: {trigger.Position.ToVector3()}");
+                    var t = GameObject.Instantiate(new GameObject(), trigger.Position.ToVector3(), Quaternion.identity);
+                    t.name = "Area Transport Trigger";
+                    var c = t.AddComponent<BoxCollider>();
+                    c.center = trigger.Position.ToVector3() + trigger.Offset.ToVector3();
+                    c.size = trigger.Size.ToVector3();
+                }
+            });
+        }
+
+        private IEnumerator RequestSpawnReady(uint transportToAreaId)
+        {
+            var rpc = Torikime.RpcHolder.GetRpc<Torikime.Unit.SpawnReady.Rpc>();
+            return rpc.RequestCoroutine(new Torikime.Unit.SpawnReady.Request { AreaId = transportToAreaId }, (response) =>
+            {
+                var unit = new ControllablePlayerUnit(networkService, new UnitId(response.UnitId), response.Position.ToVector3(), response.Direction, response.Avatar);
+                unitService.Register(unit);
+            });
         }
 
         private void OnDisconnected(Network.Session _)

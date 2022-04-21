@@ -1,0 +1,22 @@
+# yaml -> torikime -> generate .proto & rpc code.
+contracts:
+  area:
+    transport:
+      request:
+        transport_id: uint64
+      response:
+        _do_not_use_: bool
+      notification:
+        transport_id: uint64
+        area_id: uint32
+        unit_id: uint64
+    constituted_data:
+      imports:
+        - "area"
+      request:
+        area_id: uint32
+      response:
+        area_id: uint32
+        triggers:
+          container: array
+          type: potato.Trigger

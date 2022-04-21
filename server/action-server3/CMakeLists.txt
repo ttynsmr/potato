@@ -52,6 +52,7 @@ add_executable (action-server3
   "src/units/components/status_component.cpp" "src/units/components/status_component.h"
   "src/core/core.h"
   "src/core/configured_eigen.h"
+  "src/core/configured_boost_thread.h"
   "src/services/service_registry.cpp" "src/services/service_registry.h"
   "src/services/service_provider.h"
   "src/services/game_service_provider.cpp" "src/services/game_service_provider.h"
@@ -61,7 +62,10 @@ add_executable (action-server3
   "src/user/user.cpp" "src/user/user.h" "src/user/user_types.h"
   "src/user/user_registry.h" "src/user/user_registry.cpp"
   "src/utility/vector_utility.h" "src/utility/vector_utility.cpp"
-   "src/area/area_registry.h" "src/area/area_registry.cpp")
+  "src/area/area_registry.h" "src/area/area_registry.cpp"
+  "src/area/area_constituter.h" "src/area/area_constituter.cpp"
+  "src/node/node.h" "src/node/node.cpp"
+  "src/area/area_transporter.h" "src/area/area_transporter.cpp")
 
 find_package (Threads REQUIRED)
 
@@ -87,7 +91,7 @@ set(Boost_USE_STATIC_LIBS OFF)
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
 
-find_package( Boost 1.71.0 COMPONENTS system)
+find_package(Boost 1.71.0 COMPONENTS system thread)
 
 if (Boost_FOUND)
   target_include_directories(action-server3 PRIVATE ${Boost_INCLUDE_DIRS})
