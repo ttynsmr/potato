@@ -168,20 +168,20 @@ def lower_camelize(input):
     return inflection.camelize(input, False)
 
 
-def params_to(inpit_params):
+def params_to(input_params):
     parameters = {}
-    # print(inpit_params)
-    for k, v in inpit_params.items():
+    # print(input_params)
+    for k, v in input_params.items():
         # print(
         #     k,
         #     v,
-        #     "type" in inpit_params[k],
+        #     "type" in input_params[k],
         # )
         parameters[k] = {}
-        if "type" in inpit_params[k]:
-            if inpit_params[k]["container"] == "array":
+        if "type" in input_params[k]:
+            if input_params[k]["container"] == "array":
                 parameters[k]["container"] = "array"
-                parameters[k]["type"] = inpit_params[k]["type"]
+                parameters[k]["type"] = input_params[k]["type"]
             else:
                 parameters[k]["container"] = "value"
                 parameters[k]["type"] = v
