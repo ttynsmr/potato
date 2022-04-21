@@ -37,13 +37,9 @@ void AreaTransporter::transport(std::shared_ptr<Area> fromArea, std::shared_ptr<
 
 	auto sendAreacastSpawnUnit = [gameServiceProvider, toArea, unit]()
 	{
-		//spawn to next area
-		ServiceRegistry::instance().getQueue().enqueue(ServiceProviderType::Game, [gameServiceProvider, toArea, unit]()
-		{
-			toArea->enter(unit);
-			gameServiceProvider->sendAreacastSpawnUnit(unit->getSessionId(), unit);
-			unit->removeComponent<AreaTransporterComponent>();
-		});
+		toArea->enter(unit);
+		gameServiceProvider->sendAreacastSpawnUnit(unit->getSessionId(), unit);
+		unit->removeComponent<AreaTransporterComponent>();
 	};
 
 	auto onSpawnReadyRequest = [this, sendAreacastSpawnUnit = std::move(sendAreacastSpawnUnit)]()
@@ -63,11 +59,8 @@ void AreaTransporter::transport(std::shared_ptr<Area> fromArea, std::shared_ptr<
 	auto sendAreacastDespawnUnit = [unloadCirrentAreaAndLoadNextArea = std::move(unloadCirrentAreaAndLoadNextArea), gameServiceProvider, fromArea, unit]()
 	{
 		//despawn from current area
-		ServiceRegistry::instance().getQueue().enqueue(ServiceProviderType::Game, [gameServiceProvider, fromArea, unit]()
-		{
-			gameServiceProvider->sendAreacastDespawnUnit(unit->getSessionId(), unit);
-			fromArea->leave(unit);
-		});
+		gameServiceProvider->sendAreacastDespawnUnit(unit->getSessionId(), unit);
+		fromArea->leave(unit);
 
 		unloadCirrentAreaAndLoadNextArea();
 	};
@@ -87,30 +80,27 @@ void AreaTransporter::transport(std::shared_ptr<Area> fromArea, std::shared_ptr<
 	auto sendAreaTransportNotification = [networkServiceProvider, fromArea, toArea, unit, now, transportId]()
 	{
 		//add move_to_area Notification
-		ServiceRegistry::instance().getQueue().enqueue(ServiceProviderType::Game, [networkServiceProvider, fromArea, toArea, unit, now, transportId]()
 		{
-			{
-				using namespace torikime::unit::stop;
-				Notification notification;
-				notification.set_unit_id(unit->getUnitId().value_of());
-				auto lastMoveCommand = unit->getLastMoveCommand();
-				auto lastMoveTime = lastMoveCommand != nullptr ? lastMoveCommand->startTime : 0;
-				notification.set_time(lastMoveTime);
-				notification.set_stop_time(now);
-				notification.set_direction(unit->getDirection());
-				notification.set_move_id(0);
-				networkServiceProvider->sendAreacast(unit->getSessionId(), fromArea, Rpc::serializeNotification(notification));
-			}
+			using namespace torikime::unit::stop;
+			Notification notification;
+			notification.set_unit_id(unit->getUnitId().value_of());
+			auto lastMoveCommand = unit->getLastMoveCommand();
+			auto lastMoveTime = lastMoveCommand != nullptr ? lastMoveCommand->startTime : 0;
+			notification.set_time(lastMoveTime);
+			notification.set_stop_time(now);
+			notification.set_direction(unit->getDirection());
+			notification.set_move_id(0);
+			networkServiceProvider->sendAreacast(unit->getSessionId(), fromArea, Rpc::serializeNotification(notification));
+		}
 			
-			{
-				using namespace torikime::area::transport;
-				Notification notification;
-				notification.set_transport_id(transportId);
-				notification.set_area_id(toArea->getAreaId().value_of());
-				notification.set_unit_id(unit->getUnitId().value_of());
-				networkServiceProvider->sendTo(unit->getSessionId(), Rpc::serializeNotification(notification));
-			}
-		});
+		{
+			using namespace torikime::area::transport;
+			Notification notification;
+			notification.set_transport_id(transportId);
+			notification.set_area_id(toArea->getAreaId().value_of());
+			notification.set_unit_id(unit->getUnitId().value_of());
+			networkServiceProvider->sendTo(unit->getSessionId(), Rpc::serializeNotification(notification));
+		}
 	};
 
 	sendAreaTransportNotification();
