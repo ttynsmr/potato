@@ -181,6 +181,7 @@ namespace Potato
 
         private IEnumerator TransportSequence(Torikime.Area.Transport.Notification notification)
         {
+            Debug.Log($"Area transport notification received: transport id:{notification.TransportId} area:{notification.AreaId} unit:{notification.UnitId}");
             var transport = Torikime.RpcHolder.GetRpc<Torikime.Area.Transport.Rpc>();
             yield return transport.RequestCoroutine(new Torikime.Area.Transport.Request(new Torikime.Area.Transport.Request() { TransportId = notification.TransportId }), (response) =>
             {

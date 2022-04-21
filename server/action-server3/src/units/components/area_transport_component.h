@@ -12,7 +12,8 @@ namespace potato
 class AreaTransporterComponent : public IComponent
 {
 public:
-	AreaTransporterComponent(std::shared_ptr<potato::AreaTransporter> areaTransportrt) {}
+	AreaTransporterComponent(std::shared_ptr<potato::AreaTransporter>& areaTransportrt)
+		: _areaTransportrt(areaTransportrt) {}
 	virtual ~AreaTransporterComponent() {}
 
 private:

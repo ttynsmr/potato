@@ -42,7 +42,7 @@ public class UnitService : MonoBehaviour
         var unit = units.Find((u) => { return u.UnitId.Equals(unitId); });
         if (unit == null || unit is ControllablePlayerUnit)
         {
-            Debug.LogWarning($"unit {notification.UnitId} not found");
+            Debug.LogWarning($"area:{notification.AreaId} unit:{notification.UnitId} not found");
             return;
         }
 
