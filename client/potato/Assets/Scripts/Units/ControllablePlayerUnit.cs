@@ -107,7 +107,7 @@ public class ControllablePlayerUnit : IUnit, IHasStatus
                 // blocked
                 if (moveX != 0 || moveY != 0)
                 {
-                    Debug.Log($"knock back!! input dropping until {currentMove.GetGoalTime()}, command action time is {now}.\n");
+                    //Debug.Log($"knock back!! input dropping until {currentMove.GetGoalTime()}, command action time is {now}.\n");
                 }
                 return;
             }
@@ -141,11 +141,11 @@ public class ControllablePlayerUnit : IUnit, IHasStatus
                     Direction = Direction,
                     MoveId = ++moveId,
                 }, (response) => {
-                    Debug.Log($"Request Stop {response.Ok}");
+                    //Debug.Log($"Request Stop {response.Ok}");
                 });;
-                Debug.Log("Request Stop");
+                //Debug.Log("Request Stop");
                 var expectedStopPosition = stopCommand.LastMoveCommand.CalcCurrentPosition(stopCommand.StopTime);
-                Debug.Log($"expected stop [{moveId}] stop time:{now} position: ({expectedStopPosition.x}, {expectedStopPosition.y}, {expectedStopPosition.z})");
+                //Debug.Log($"expected stop [{moveId}] stop time:{now} position: ({expectedStopPosition.x}, {expectedStopPosition.y}, {expectedStopPosition.z})");
             }
             else
             {
@@ -182,9 +182,9 @@ public class ControllablePlayerUnit : IUnit, IHasStatus
                     MoveId = ++moveId,
                 }, (response) =>
                 {
-                    Debug.Log($"Request Move {response.Ok}");
+                    //Debug.Log($"Request Move {response.Ok}");
                 });
-                Debug.Log($"Request Move [{moveId}]");
+                //Debug.Log($"Request Move [{moveId}]");
             }
 
             history.Add(command);
@@ -204,7 +204,7 @@ public class ControllablePlayerUnit : IUnit, IHasStatus
                 TriggerTime = now,
             }, (response) =>
             {
-                Debug.Log($"Request SkillCast {response.Ok} {response.AttackId}");
+                //Debug.Log($"Request SkillCast {response.Ok} {response.AttackId}");
             });
         }
         else if(prevAttackButton && !Input.GetKey(KeyCode.P))
