@@ -125,8 +125,9 @@ namespace potato
 
 		bool containsAABB(const Eigen::Vector3f& point) const
 		{
-			const Eigen::Vector3f less = position + offset;
-			const Eigen::Vector3f large = position + offset + size;
+			const auto halfSize = size / 2;
+			const Eigen::Vector3f less = position + offset - halfSize;
+			const Eigen::Vector3f large = position + offset + halfSize;
 
 			assert(point.size() == 3);
 			for (int i = 0; i < 3; i++)
