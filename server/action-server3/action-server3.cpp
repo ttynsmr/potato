@@ -1,4 +1,4 @@
-#include <iostream>
+#include <fmt/core.h>
 
 #include "src/services/service_registry.h"
 #include "src/services/network_service_provider.h"
@@ -12,8 +12,7 @@ int main(int argc, char *argv[])
 		int32_t portNumber = 28888;
 		if (argc != 2)
 		{
-			std::cerr << "Usage: async_tcp_echo_server <port>\n";
-			//return 1;
+			fmt::print("Usage: async_tcp_echo_server <port>\n");
 		}
 		else
 		{
@@ -31,7 +30,7 @@ int main(int argc, char *argv[])
 	}
 	catch (std::exception &e)
 	{
-		std::cerr << "Exception: " << e.what() << "\n";
+		fmt::print("Exception: {}\n", e.what());
 	}
 
 	return 0;
