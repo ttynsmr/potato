@@ -18,7 +18,7 @@ RUN apt-get update && apt-get install -yq \
     && rm -rf /var/lib/apt/lists/*
 
 RUN python3 -m pip install --upgrade pip \
-    pip install pipenv --upgrade-strategy=only-if-needed
+    && pip install pipenv --upgrade-strategy=only-if-needed
 
 FROM builder AS action_server3_build
 COPY . /opt/app/action-server3
