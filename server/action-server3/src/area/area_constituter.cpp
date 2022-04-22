@@ -21,12 +21,13 @@ AreaConsituter::~AreaConsituter()
 {
 }
 
-boost::future<bool> AreaConsituter::load(std::shared_ptr<Area> area, const std::string& file)
+boost::future<bool> AreaConsituter::load(std::shared_ptr<Area> area, const std::string& /*file*/)
 {
-	return boost::async(boost::launch::async, [currentArea = std::move(area)]{
-		// load area resources
-		switch (currentArea->getAreaId().value_of())
+	return boost::async(boost::launch::async, [currentArea = std::move(area)]()
 		{
+			// load area resources
+			switch (currentArea->getAreaId().value_of())
+			{
 			case 0:
 				{
 					auto node = std::make_shared<Node>();
@@ -36,22 +37,22 @@ boost::future<bool> AreaConsituter::load(std::shared_ptr<Area> area, const std::
 					trigger->size = Eigen::Vector3f(1, 1, 1);
 					trigger->setOnTrigger([currentArea](std::shared_ptr<Unit> unit, auto now)
 						{
-							// TODO: Move unit to another area(1)
-							auto gameServiceProvider = ServiceRegistry::instance().findServiceProvider<GameServiceProvider>();
-							auto areaRegistory = gameServiceProvider->getAreaRegistry();
-							auto nextArea = areaRegistory->getArea(AreaId(1));
+					// TODO: Move unit to another area(1)
+					auto gameServiceProvider = ServiceRegistry::instance().findServiceProvider<GameServiceProvider>();
+					auto areaRegistory = gameServiceProvider->getAreaRegistry();
+					auto nextArea = areaRegistory->getArea(AreaId(1));
 
-							if (!nextArea)
-							{
-								nextArea = areaRegistory->addArea(AreaId(1));
-								nextArea->requestLoad();
-							}
+					if (!nextArea)
+					{
+						nextArea = areaRegistory->addArea(AreaId(1));
+						nextArea->requestLoad();
+					}
 
-							if (!unit->hasComponent<AreaTransporterComponent>())
-							{
-								unit->addComponent<AreaTransporterComponent>(areaRegistory->transportUnit(currentArea, nextArea, unit, now));
-							}
-						});
+					if (!unit->hasComponent<AreaTransporterComponent>())
+					{
+						unit->addComponent<AreaTransporterComponent>(areaRegistory->transportUnit(currentArea, nextArea, unit, now));
+					}
+					});
 					currentArea->getNodeRoot()->addNode(node);
 				}
 				break;
@@ -83,12 +84,16 @@ boost::future<bool> AreaConsituter::load(std::shared_ptr<Area> area, const std::
 					currentArea->getNodeRoot()->addNode(node);
 				}
 				break;
-		}
-		return true;
-	});
+			}
+			return true;
+		});
 }
 
 
 boost::future<bool> AreaConsituter::unload(std::shared_ptr<Area> area)
 {
+	return boost::async(boost::launch::async, [currentArea = std::move(area)]
+		{
+			return true;
+		});
 }
