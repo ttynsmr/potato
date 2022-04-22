@@ -49,6 +49,9 @@ namespace Potato
 
         private IEnumerator LoginSequence()
         {
+            connectButton.enabled = false;
+            nameInputField.Select();
+
             var web = UnityWebRequest.Get("https://asia-northeast1-potato-343314.cloudfunctions.net/function-1");
             yield return web.SendWebRequest();
             Debug.Log(web.result);
@@ -58,13 +61,18 @@ namespace Potato
                 hostInputField.text = web.downloadHandler.text;
             }
 
-            connectButton.onClick.AddListener(() =>
+            connectButton.enabled = true;
+
+            void SubmitLogin()
             {
                 hostInputField.gameObject.SetActive(false);
                 nameInputField.gameObject.SetActive(false);
                 connectButton.gameObject.SetActive(false);
                 serverHost = hostInputField.text;
-            });
+            }
+
+            connectButton.onClick.AddListener(SubmitLogin);
+            nameInputField.onSubmit.AddListener((_) => { SubmitLogin(); });
 
             yield return new WaitWhile(() => connectButton.gameObject.activeSelf);
 
