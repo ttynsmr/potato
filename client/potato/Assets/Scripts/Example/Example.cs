@@ -33,8 +33,13 @@ namespace Potato
 
         private ConcurrentQueue<Action> queue = new ConcurrentQueue<Action>();
 
+        private GameObject nodes;
+
         private IEnumerator Start()
         {
+            nodes = new GameObject();
+            nodes.name = "Area Nodes";
+
             var task = UnityEngine.SceneManagement.SceneManager.LoadSceneAsync("Assets/Examples/Map1/Map1.unity", UnityEngine.SceneManagement.LoadSceneMode.Additive);
             unitService = FindObjectOfType<UnitService>();
 
@@ -210,13 +215,18 @@ namespace Potato
             var rpc = Torikime.RpcHolder.GetRpc<Torikime.Area.ConstitutedData.Rpc>();
             return rpc.RequestCoroutine(new Torikime.Area.ConstitutedData.Request { AreaId = transportToAreaId }, (response) =>
             {
+                foreach (var t in nodes.transform)
+                {
+                    Destroy((t as Transform).gameObject);
+                }
                 foreach (var trigger in response.Triggers)
                 {
                     Debug.Log($"trigger transport to area[{trigger.AreaId}]: {trigger.Position.ToVector3()}");
-                    var t = GameObject.Instantiate(new GameObject(), trigger.Position.ToVector3(), Quaternion.identity);
-                    t.name = "Area Transport Trigger";
+                    var t = new GameObject("Area Transport Trigger");
+                    t.transform.parent = nodes.transform;
+                    t.transform.SetPositionAndRotation(trigger.Position.ToVector3(), Quaternion.identity);
                     var c = t.AddComponent<BoxCollider>();
-                    c.center = trigger.Position.ToVector3() + trigger.Offset.ToVector3();
+                    c.center = trigger.Offset.ToVector3();
                     c.size = trigger.Size.ToVector3();
                 }
             });

@@ -32,7 +32,7 @@ boost::future<bool> AreaConsituter::load(std::shared_ptr<Area> area, const std::
 					auto node = std::make_shared<Node>();
 					auto trigger = node->addComponent<TriggerableComponent>(node);
 					trigger->position = Eigen::Vector3f(5, 0, 0);
-					trigger->offset = Eigen::Vector3f(-0.5f, -0.5f, -0.5f);
+					trigger->offset = Eigen::Vector3f(0, 0, 0);
 					trigger->size = Eigen::Vector3f(1, 1, 1);
 					trigger->setOnTrigger([currentArea](std::shared_ptr<Unit> unit, auto now)
 						{
@@ -60,7 +60,7 @@ boost::future<bool> AreaConsituter::load(std::shared_ptr<Area> area, const std::
 					auto node = std::make_shared<Node>();
 					auto trigger = node->addComponent<TriggerableComponent>(node);
 					trigger->position = Eigen::Vector3f(-5, 0, 0);
-					trigger->offset = Eigen::Vector3f(-0.5f, -0.5f, -0.5f);
+					trigger->offset = Eigen::Vector3f(0, 0, 0);
 					trigger->size = Eigen::Vector3f(1, 1, 1);
 					trigger->setOnTrigger([currentArea](std::shared_ptr<Unit> unit, auto now)
 						{
