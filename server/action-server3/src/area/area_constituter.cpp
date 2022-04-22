@@ -21,7 +21,7 @@ AreaConsituter::~AreaConsituter()
 {
 }
 
-boost::future<bool> AreaConsituter::load(std::shared_ptr<Area> area, const std::string& file)
+boost::future<bool> AreaConsituter::load(std::shared_ptr<Area> area, const std::string& /*file*/)
 {
 	return boost::async(boost::launch::async, [currentArea = std::move(area)]{
 		// load area resources
@@ -91,4 +91,8 @@ boost::future<bool> AreaConsituter::load(std::shared_ptr<Area> area, const std::
 
 boost::future<bool> AreaConsituter::unload(std::shared_ptr<Area> area)
 {
+	return boost::async(boost::launch::async, [currentArea = std::move(area)]
+		{
+			return true;
+		});
 }
