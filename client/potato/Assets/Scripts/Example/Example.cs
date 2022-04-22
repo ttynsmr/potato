@@ -37,8 +37,7 @@ namespace Potato
 
         private IEnumerator Start()
         {
-            nodes = new GameObject();
-            nodes.name = "Area Nodes";
+            nodes = new GameObject("Area Nodes");
 
             var task = UnityEngine.SceneManagement.SceneManager.LoadSceneAsync("Assets/Examples/Map1/Map1.unity", UnityEngine.SceneManagement.LoadSceneMode.Additive);
             unitService = FindObjectOfType<UnitService>();
