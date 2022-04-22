@@ -16,29 +16,30 @@ class ServiceRegistry final
 public:
 	static ServiceRegistry& instance();
 
-	template <typename T>
-	std::shared_ptr<T> registerServiceProvider(std::shared_ptr<T> serviceProvider)
+	template<typename T, class... Args>
+	std::shared_ptr<T> registerServiceProvider(Args... args)
 	{
-		std::scoped_lock lock(_serviceProvidersLock);
-		_serviceProviders.push_back(serviceProvider);
-		return serviceProvider;
-	}
-
-	template <typename T>
-	std::shared_ptr<T> findServiceProvider()
-	{
-		auto serviceProvider = [this] {
-			std::scoped_lock lock(_serviceProvidersLock);
-			return std::find_if(_serviceProviders.begin(), _serviceProviders.end(), [](std::shared_ptr<IServiceProvider>& s) {
-				return std::dynamic_pointer_cast<T>(s); });
-		}();
-
-		if (serviceProvider == _serviceProviders.end())
+		std::pair<std::unordered_map<std::size_t, std::shared_ptr<IServiceProvider>>::iterator, bool> result = _components.emplace(typeid(T).hash_code(), std::make_shared<T>(args...));
+		if (!result.second)
 		{
 			return nullptr;
 		}
 
-		return std::dynamic_pointer_cast<T>(*serviceProvider);
+		std::shared_ptr<IServiceProvider> i = result.first->second;
+
+		return std::dynamic_pointer_cast<T>(i);
+	}
+
+	template<typename T>
+	std::shared_ptr<T> findServiceProvider()
+	{
+		auto found = _components.find(typeid(T).hash_code());
+		if (found == _components.end())
+		{
+			return nullptr;
+		}
+
+		return std::dynamic_pointer_cast<T>(found->second);
 	}
 
 	void run()
@@ -64,7 +65,7 @@ private:
 
 	std::mutex _serviceProvidersLock;
 	bool running = true;
-	std::list<std::shared_ptr<IServiceProvider>> _serviceProviders;
+	std::unordered_map<std::size_t, std::shared_ptr<IServiceProvider>> _components;
 	Queue queue;
 };
 
