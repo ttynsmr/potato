@@ -32,6 +32,10 @@
 #include "units/unit_registry.h"
 #include "units/components/npc_component.h"
 #include "units/components/status_component.h"
+#include "units/commands/command_types.h"
+#include "units/commands/command_move.h"
+#include "units/commands/command_stop.h"
+#include "units/commands/command_knockback.h"
 
 #include "area/area.h"
 #include "area/area_registry.h"

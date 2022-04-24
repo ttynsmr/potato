@@ -4,6 +4,9 @@
 #include "area/area.h"
 #include "units/unit.h"
 #include "units/components/area_transport_component.h"
+#include "units/commands/command_types.h"
+#include "units/commands/command_move.h"
+#include "units/commands/command_stop.h"
 
 #include "services/service_registry.h"
 #include "services/game_service_provider.h"

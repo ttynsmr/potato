@@ -4,6 +4,11 @@
 #include <memory>
 #include <fmt/core.h>
 
+#include "commands/command_types.h"
+#include "commands/command_move.h"
+#include "commands/command_knockback.h"
+#include "commands/command_stop.h"
+
 Unit::Unit(UnitId unitId, potato::net::SessionId sessionId)
 	: _unitId(unitId), _sessionId(sessionId)
 {

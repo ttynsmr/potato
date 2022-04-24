@@ -65,7 +65,7 @@ add_executable (action-server3
   "src/area/area_registry.h" "src/area/area_registry.cpp"
   "src/area/area_constituter.h" "src/area/area_constituter.cpp"
   "src/node/node.h" "src/node/node.cpp"
-  "src/area/area_transporter.h" "src/area/area_transporter.cpp")
+  "src/area/area_transporter.h" "src/area/area_transporter.cpp" "src/units/commands/command_types.h" "src/units/commands/command_move.h" "src/units/commands/command_knockback.h" "src/units/commands/command_stop.h")
 
 find_package (Threads REQUIRED)
 

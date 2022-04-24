@@ -7,6 +7,10 @@
 #include "services/game_service_provider.h"
 #include "units/unit.h"
 
+#include "units/commands/command_types.h"
+#include "units/commands/command_move.h"
+#include "units/commands/command_stop.h"
+
 NpcComponent::NpcComponent(std::shared_ptr<GameServiceProvider> gameServiceProvider) : _gameServiceProvider(gameServiceProvider)
 {
 	std::uniform_int_distribution<int64_t> dist(0, 5000);
