@@ -71,11 +71,6 @@ public:
 		_areaId = areaId;
 	}
 
-	const Eigen::Vector3f& getPosition() const
-	{
-		return position;
-	}
-
 	potato::UnitDirection getDirection() const
 	{
 		return _direction;
@@ -95,7 +90,7 @@ public:
 
 	Eigen::Vector3f getTrackbackPosition(int64_t now) const;
 
-	Eigen::Vector3f getCurrentPosition() const;
+	const Eigen::Vector3f& getPosition() const;
 
 	void setPosition(const Eigen::Vector3f& position);
 

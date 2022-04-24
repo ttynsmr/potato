@@ -303,7 +303,7 @@ Eigen::Vector3f Unit::getTrackbackPosition(int64_t now) const
 	return lerp(lastMoveCommand->from, lastMoveCommand->to, progress);
 }
 
-Eigen::Vector3f Unit::getCurrentPosition() const
+const Eigen::Vector3f& Unit::getPosition() const
 {
 	return position;
 }
