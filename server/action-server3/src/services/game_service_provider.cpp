@@ -759,28 +759,7 @@ void GameServiceProvider::main()
 	while (_running)
 	{
 		const auto nowUpdate = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-		for (auto& unit : _unitRegistry->getUnits())
-		{
-			unit->update(nowUpdate);
-
-			//{
-			//	torikime::diagnosis::gizmo::Notification notification;
-			//	notification.set_name(fmt::format("unit[{}]", unit->getUnitId()));
-			//	auto from = new potato::Vector3();
-			//	from->set_x(0);
-			//	from->set_y(0);
-			//	from->set_z(0);
-			//	auto to = new potato::Vector3();
-			//	to->set_x(unit->getPosition().x());
-			//	to->set_y(unit->getPosition().y());
-			//	to->set_z(unit->getPosition().z());
-			//	notification.set_allocated_begin(from);
-			//	notification.set_allocated_end(to);
-			//	notification.set_color(0xffffffff);
-			//	_networkServiceProvider.lock()->sendBroadcast(0, torikime::diagnosis::gizmo::Rpc::serializeNotification(notification));
-			//}
-		}
-
+		_unitRegistry->update(nowUpdate);
 		queue.process();
 		ServiceRegistry::instance().getQueue().process();
 

@@ -26,6 +26,8 @@ namespace potato
 
 		const std::list<std::shared_ptr<Unit>> getUnits() const { return units; }
 
+		void update(time_t now);
+
 	private:
 		UnitId generateUnitId();
 		UnitId currentUnitId = UnitId(0);

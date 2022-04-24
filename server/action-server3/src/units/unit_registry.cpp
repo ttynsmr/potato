@@ -56,4 +56,13 @@ namespace potato
 	{
 		return ++currentUnitId;
 	}
+
+	void UnitRegistry::update(time_t now)
+	{
+		std::for_each(units.begin(), units.end(), [now](auto& unit)
+			{
+				unit->update(now);
+			}
+		);
+	}
 }
