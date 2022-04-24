@@ -13,12 +13,12 @@ Unit::Unit(UnitId unitId, potato::net::SessionId sessionId)
 	: _unitId(unitId), _sessionId(sessionId)
 {
 	setPosition({ 0, 0, 0 });
-	simulatedNow = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+	_simulatedNow = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 }
 
 std::shared_ptr<ICommand> Unit::getLastCommand()
 {
-	return history.size() > 0 ? history.back() : nullptr;
+	return _history.size() > 0 ? _history.back() : nullptr;
 }
 
 std::shared_ptr<MoveCommand> Unit::getLastMoveCommand()
@@ -42,7 +42,7 @@ const std::shared_ptr<MoveCommand> Unit::getLastMoveCommand() const
 
 std::shared_ptr<StopCommand> Unit::getFirstStopCommandFromQueue()
 {
-	for (auto& input : inputQueue)
+	for (auto& input : _inputQueue)
 	{
 		if (input->getCommandType() == CommandType::Stop)
 		{
@@ -70,7 +70,7 @@ void Unit::inputCommand(std::shared_ptr<ICommand> command)
 		//assert(!stopCommand->lastMoveCommand.expired());
 	}
 
-	inputQueue.emplace_back(command);
+	_inputQueue.emplace_back(command);
 
 	if (command->getCommandType() == CommandType::KnockBack)
 	{
@@ -86,17 +86,17 @@ void Unit::interveneHistory(std::shared_ptr<ICommand> interveneCommand)
 		return;
 	}
 
-	history.erase(std::find_if(history.begin(), history.end(), [interveneCommand](auto command) {
+	_history.erase(std::find_if(_history.begin(), _history.end(), [interveneCommand](auto command) {
 		return command->getActionTime() >= interveneCommand->getActionTime();
-		}), history.end());
+		}), _history.end());
 
 	//if (getLastCommand()->getCommandType() == CommandType::Stop)
 	//{
-	//	currentMove.reset();
+	//	_currentMove.reset();
 	//}
 	//else
 	//{
-	//	currentMove = std::dynamic_pointer_cast<MoveCommand>(getLastCommand());
+	//	_currentMove = std::dynamic_pointer_cast<MoveCommand>(getLastCommand());
 	//}
 }
 
@@ -142,16 +142,16 @@ void Unit::update(int64_t now)
 	auto updatePosition = [this](std::shared_ptr<MoveCommand> currentMove, int64_t now) {
 		auto distance = (currentMove->to - currentMove->from).norm();
 		auto progress = std::min(1.0f, (now - currentMove->startTime) / (distance / currentMove->speed));
-		position = lerp(currentMove->from, currentMove->to, progress);
+		_position = lerp(currentMove->from, currentMove->to, progress);
 		_direction = currentMove->direction;
-		//fmt::print("unit[{}] time: {} position[{}]: x:{} y:{} z:{} direction:{}\n", unitId, now, currentMove->moveId, position.x(), position.y(), position.z(), currentMove->direction);
+		//fmt::print("unit[{}] time: {} position[{}]: x:{} y:{} z:{} direction:{}\n", unitId, now, currentMove->moveId, _position.x(), _position.y(), _position.z(), currentMove->direction);
 	};
 
-	while (simulatedNow < now)
+	while (_simulatedNow < now)
 	{
-		if (currentMove == nullptr)
+		if (_currentMove == nullptr)
 		{
-			auto lastCommand = history.size() > 0 ? history.back() : nullptr;
+			auto lastCommand = _history.size() > 0 ? _history.back() : nullptr;
 			if (lastCommand != nullptr)
 			{
 				if (lastCommand->getCommandType() == CommandType::Stop)
@@ -161,76 +161,76 @@ void Unit::update(int64_t now)
 					{
 						updatePosition(stopCommand->lastMoveCommand.lock(), stopCommand->stopTime);
 					}
-					if (inputQueue.size() == 0)
+					if (_inputQueue.size() == 0)
 					{
-						simulatedNow = now;
+						_simulatedNow = now;
 						break;
 					}
 				}
 			}
 			else
 			{
-				currentMove = std::dynamic_pointer_cast<MoveCommand>(lastCommand);
+				_currentMove = std::dynamic_pointer_cast<MoveCommand>(lastCommand);
 			}
 		}
 		else
 		{
-			updatePosition(currentMove, simulatedNow);
+			updatePosition(_currentMove, _simulatedNow);
 		}
 
-		if (inputQueue.size() > 0 && inputQueue.front()->getActionTime() <= now)
+		if (_inputQueue.size() > 0 && _inputQueue.front()->getActionTime() <= now)
 		{
-			auto command = inputQueue.front();
+			auto command = _inputQueue.front();
 
-			if (currentMove != nullptr && currentMove->getCommandType() == CommandType::KnockBack)
+			if (_currentMove != nullptr && _currentMove->getCommandType() == CommandType::KnockBack)
 			{
-				auto knockbackMove = std::dynamic_pointer_cast<KnockbackCommand>(currentMove);
+				auto knockbackMove = std::dynamic_pointer_cast<KnockbackCommand>(_currentMove);
 				if (command->getActionTime() >= knockbackMove->getGoalTime())
 				{
 					// ok
-					fmt::print("unit[{}] knockback!!                until {}(.. {}sec), command action time is {}.\n", _unitId, knockbackMove->endTime, (knockbackMove->endTime - simulatedNow) / 1000.0, command->getActionTime());
+					fmt::print("unit[{}] knockback!!                until {}(.. {}sec), command action time is {}.\n", _unitId, knockbackMove->endTime, (knockbackMove->endTime - _simulatedNow) / 1000.0, command->getActionTime());
 				}
 				else
 				{
 					// blocked
-					fmt::print("unit[{}] knockback!! input dropping until {}(.. {}sec), command action time is {}.\n", _unitId, knockbackMove->endTime, (knockbackMove->endTime - simulatedNow) / 1000.0, command->getActionTime());
-					fmt::print("unit[{}] now:{} simulationNow:{} endTime:{} actionTime:{}\n", _unitId, now, now - simulatedNow, knockbackMove->endTime - simulatedNow, command->getActionTime() - simulatedNow);
+					fmt::print("unit[{}] knockback!! input dropping until {}(.. {}sec), command action time is {}.\n", _unitId, knockbackMove->endTime, (knockbackMove->endTime - _simulatedNow) / 1000.0, command->getActionTime());
+					fmt::print("unit[{}] now:{} simulationNow:{} endTime:{} actionTime:{}\n", _unitId, now, now - _simulatedNow, knockbackMove->endTime - _simulatedNow, command->getActionTime() - _simulatedNow);
 					fmt::print("unit[{}] CommandType:{} dropped\n", _unitId, static_cast<int>(command->getCommandType()));
-					simulatedNow = now;
+					_simulatedNow = now;
 					break;
 				}
 			}
-			inputQueue.pop_front();
+			_inputQueue.pop_front();
 
 			switch (command->getCommandType())
 			{
 			case CommandType::Move:
 				{
 					auto moveCommand = std::dynamic_pointer_cast<MoveCommand>(command);
-					simulatedNow = moveCommand->startTime;
-					moveCommand->lastMoveCommand = currentMove;
-					history.emplace_back(moveCommand);
-					currentMove = moveCommand;
+					_simulatedNow = moveCommand->startTime;
+					moveCommand->lastMoveCommand = _currentMove;
+					_history.emplace_back(moveCommand);
+					_currentMove = moveCommand;
 					_isMoving = true;
 				}
 				break;
 			case CommandType::KnockBack:
 				{
 					auto moveCommand = std::dynamic_pointer_cast<MoveCommand>(command);
-					simulatedNow = moveCommand->startTime;
-					moveCommand->lastMoveCommand = currentMove;
-					history.emplace_back(moveCommand);
-					currentMove = moveCommand;
+					_simulatedNow = moveCommand->startTime;
+					moveCommand->lastMoveCommand = _currentMove;
+					_history.emplace_back(moveCommand);
+					_currentMove = moveCommand;
 					_isMoving = true;
 				}
 				break;
 			case CommandType::Stop:
 				{
 					auto stopCommand = std::dynamic_pointer_cast<StopCommand>(command);
-					simulatedNow = stopCommand->stopTime;
-					stopCommand->lastMoveCommand = currentMove;
-					history.emplace_back(stopCommand);
-					currentMove = nullptr;
+					_simulatedNow = stopCommand->stopTime;
+					stopCommand->lastMoveCommand = _currentMove;
+					_history.emplace_back(stopCommand);
+					_currentMove = nullptr;
 					_isMoving = false;
 				}
 				break;
@@ -238,7 +238,7 @@ void Unit::update(int64_t now)
 		}
 		else
 		{
-			simulatedNow = now;
+			_simulatedNow = now;
 		}
 	}
 
@@ -247,27 +247,27 @@ void Unit::update(int64_t now)
 		component.second->update(shared_from_this(), now);
 	}
 
-	while (history.size() > 2)
+	while (_history.size() > 2)
 	{
-		if (!history.front()->isExpired(now))
+		if (!_history.front()->isExpired(now))
 		{
 			break;
 		}
 
 		//fmt::print("remove old history\n");
-		history.pop_front();
+		_history.pop_front();
 	}
 }
 
 Eigen::Vector3f Unit::getTrackbackPosition(int64_t now) const
 {
-	if (history.empty())
+	if (_history.empty())
 	{
 		return Eigen::Vector3f();
 	}
-	auto past = history.begin();
+	auto past = _history.begin();
 	auto next = ++past;
-	while (next != history.end())
+	while (next != _history.end())
 	{
 		if ((*next)->getActionTime() > now)
 		{
@@ -305,12 +305,12 @@ Eigen::Vector3f Unit::getTrackbackPosition(int64_t now) const
 
 const Eigen::Vector3f& Unit::getPosition() const
 {
-	return position;
+	return _position;
 }
 
 void Unit::setPosition(const Eigen::Vector3f& position)
 {
-	history.clear();
+	_history.clear();
 
 	auto moveCommand = std::make_shared<MoveCommand>();
 	moveCommand->startTime = 0;
@@ -326,15 +326,15 @@ void Unit::setPosition(const Eigen::Vector3f& position)
 	stopCommand->direction = potato::UnitDirection::UNIT_DIRECTION_DOWN;
 	stopCommand->moveId = 0;
 
-	history.emplace_back(moveCommand);
-	history.emplace_back(stopCommand);
+	_history.emplace_back(moveCommand);
+	_history.emplace_back(stopCommand);
 
-	currentMove.reset();
+	_currentMove.reset();
 }
 
 void Unit::dump(int64_t now) const
 {
-	for (auto& command : history)
+	for (auto& command : _history)
 	{
 		fmt::print("CommandType: {}, Expired: {}, ActionTime: {}\n", static_cast<int32_t>(command->getCommandType()), command->isExpired(now), command->getActionTime());
 	}

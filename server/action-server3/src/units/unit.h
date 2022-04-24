@@ -153,12 +153,12 @@ private:
 	const UnitId _unitId = UnitId(0);
 	potato::net::SessionId _sessionId = potato::net::SessionId(0);
 	potato::AreaId _areaId = potato::AreaId(0);
-	int64_t simulatedNow = 0;
+	int64_t _simulatedNow = 0;
 	int32_t _lastLatency = 0;
-	Eigen::Vector3f position = {};
-	std::shared_ptr<MoveCommand> currentMove;
-	std::deque< std::shared_ptr<ICommand>> inputQueue;
-	std::list<std::shared_ptr<ICommand>> history;
+	Eigen::Vector3f _position = {};
+	std::shared_ptr<MoveCommand> _currentMove;
+	std::deque< std::shared_ptr<ICommand>> _inputQueue;
+	std::list<std::shared_ptr<ICommand>> _history;
 	potato::UnitDirection _direction = potato::UNIT_DIRECTION_DOWN;
 	bool _isMoving = false;
 	std::string _displayName;
