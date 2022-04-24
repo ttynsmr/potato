@@ -43,7 +43,7 @@ namespace potato::net
 
 	private:
 		void readHeader();
-		void readPercel(const protocol::PayloadHeader& header);
+		void readParcel(const protocol::PayloadHeader& header);
 		void doRead();
 
 		boost::asio::ip::tcp::socket _socket;

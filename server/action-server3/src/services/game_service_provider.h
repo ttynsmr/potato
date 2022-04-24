@@ -89,7 +89,7 @@ private:
 	std::shared_ptr<potato::UnitRegistry> _unitRegistry;
 	std::shared_ptr<potato::AreaRegistry> _areaRegistry;
 	int64_t messageId = 0;
-	std::weak_ptr<NetworkServiceProvider> _nerworkServiceProvider;
+	std::weak_ptr<NetworkServiceProvider> _networkServiceProvider;
 	std::shared_ptr<RpcBuilder> _rpcBuilder;
 	std::atomic<bool> _running = true;
 	std::thread _thread;

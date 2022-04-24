@@ -13,10 +13,10 @@ namespace Potato
         {
 
             public Action<Session> OnDisconnectedCallback { get; set; }
-            public Action<Payload> OnPayloadReceoved { get; set; }
+            public Action<Payload> OnPayloadReceived { get; set; }
 
             private CancellationTokenSource tokenSource = new CancellationTokenSource();
-            private UniTask receieverTask;
+            private UniTask receiverTask;
 
             private TcpClient client;
 
@@ -31,9 +31,9 @@ namespace Potato
             {
                 Debug.Log("disconnecting");
                 tokenSource.Cancel();
-                Debug.Log(receieverTask.ToString());
+                Debug.Log(receiverTask.ToString());
                 Debug.Log("disconnected");
-                receieverTask.Forget();
+                receiverTask.Forget();
             }
 
             public void SendPayload(Payload payload)
@@ -44,7 +44,7 @@ namespace Potato
 
             public void Start()
             {
-                receieverTask = UniTask.RunOnThreadPool(async () =>
+                receiverTask = UniTask.RunOnThreadPool(async () =>
                 {
                     while (!tokenSource.IsCancellationRequested)
                     {
@@ -74,18 +74,18 @@ namespace Potato
                             }
                             Debug.Assert(readSize == payload.Header.payloadSize);
 
-                            OnPayloadReceoved?.Invoke(payload);
+                            OnPayloadReceived?.Invoke(payload);
                         }
                         catch (OperationCanceledException e)
                         {
                             Debug.Log(e.ToString());
-                            Debug.Log($"receieverTask was {receieverTask.Status}");
+                            Debug.Log($"receiverTask was {receiverTask.Status}");
                             await OnDisconnect();
                         }
                         catch(Exception e)
                         {
                             Debug.LogException(e);
-                            Debug.Log($"receieverTask was {receieverTask.Status}");
+                            Debug.Log($"receiverTask was {receiverTask.Status}");
                             await OnDisconnect();
                         }
                     }

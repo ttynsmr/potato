@@ -61,7 +61,7 @@ namespace potato::net
 				{
 					if (!ec)
 					{
-						readPercel(header);
+						readParcel(header);
 						doRead();
 					}
 					else
@@ -73,12 +73,12 @@ namespace potato::net
 		}
 		else
 		{
-			readPercel(header);
+			readParcel(header);
 			doRead();
 		}
 	}
 
-	void Session::readPercel(const protocol::PayloadHeader& header)
+	void Session::readParcel(const protocol::PayloadHeader& header)
 	{
 		const auto percelSize = header.payloadSize;
 		protocol::Payload payload;

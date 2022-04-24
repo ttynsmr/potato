@@ -79,7 +79,7 @@ namespace Potato
             networkService = FindObjectOfType<Potato.Network.NetworkService>();
             var session = networkService.Connect(serverHost, int.Parse(serverPort));
             Torikime.RpcHolder.Rpcs = Torikime.RpcBuilder.Build(session);
-            session.OnPayloadReceoved = (Potato.Network.Protocol.Payload payload) =>
+            session.OnPayloadReceived = (Potato.Network.Protocol.Payload payload) =>
             {
                 var rpc = Torikime.RpcHolder.Rpcs.Find(x => x.ContractId == payload.Header.contract_id
                  && x.RpcId == payload.Header.rpc_id);
@@ -185,7 +185,7 @@ namespace Potato
             networkService.StartReceive();
             StartCoroutine(DoPingPong());
 
-            yield return new WaitUntil(() => timeSyncronized);
+            yield return new WaitUntil(() => timeSynchronized);
             panel.SetActive(false);
 
             yield return RequestLogin(nameInputField.text, string.Empty);
@@ -202,7 +202,7 @@ namespace Potato
                 Debug.Log("Transport response");
             });
 
-            yield return RequestAreaConstitudeData(notification.AreaId);
+            yield return RequestAreaConstituteData(notification.AreaId);
 
             yield return RequestSpawnReady(notification.AreaId);
         }
@@ -217,7 +217,7 @@ namespace Potato
                 });
         }
 
-        private object RequestAreaConstitudeData(uint transportToAreaId)
+        private object RequestAreaConstituteData(uint transportToAreaId)
         {
             var rpc = Torikime.RpcHolder.GetRpc<Torikime.Area.ConstitutedData.Rpc>();
             return rpc.RequestCoroutine(new Torikime.Area.ConstitutedData.Request { AreaId = transportToAreaId }, (response) =>
@@ -270,7 +270,7 @@ namespace Potato
             StartCoroutine(LoginSequence());
         }
 
-        private bool timeSyncronized = false;
+        private bool timeSynchronized = false;
         public long __now;
         public long __serverTime;
         public long __diffTime;
@@ -317,7 +317,7 @@ namespace Potato
                         __subjectiveLatency = (long)(DateTime.UtcNow - UnixEpoch).TotalMilliseconds - request.SendTime;
                         pingText.text = str + $"subjective latency: {__subjectiveLatency}\n";
                         networkService.ServerTimeDifference = __diffTime;
-                        timeSyncronized = true;
+                        timeSynchronized = true;
                     }, null);
                 });
 

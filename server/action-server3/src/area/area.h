@@ -28,7 +28,7 @@ namespace potato
 		AreaId getAreaId() const { return _areaId; }
 
 		void requestLoad();
-		void requestUnoad();
+		void requestUnload();
 
 		void enter(std::shared_ptr<Unit> unit);
 		void leave(std::shared_ptr<Unit> unit);
