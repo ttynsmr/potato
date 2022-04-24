@@ -101,11 +101,11 @@ namespace potato
 		Eigen::Vector3f position;
 	};
 
-	class VisibileComponent : public PlaceableComponent
+	class VisibleComponent : public PlaceableComponent
 	{
 	public:
-		VisibileComponent(std::shared_ptr<Node> node) : PlaceableComponent(node) {}
-		virtual ~VisibileComponent() {}
+		VisibleComponent(std::shared_ptr<Node> node) : PlaceableComponent(node) {}
+		virtual ~VisibleComponent() {}
 
 		void setVisible(bool visible) { _visible = visible; }
 		bool isVisible() const { return _visible; }
@@ -114,10 +114,10 @@ namespace potato
 		bool _visible;
 	};
 
-	class TriggerableComponent final : public VisibileComponent
+	class TriggerableComponent final : public VisibleComponent
 	{
 	public:
-		TriggerableComponent(std::shared_ptr<Node> node) : VisibileComponent(node) {}
+		TriggerableComponent(std::shared_ptr<Node> node) : VisibleComponent(node) {}
 		~TriggerableComponent() {}
 
 		Eigen::Vector3f offset;

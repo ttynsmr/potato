@@ -32,7 +32,7 @@ namespace potato
 			});
 	}
 
-	void Area::requestUnoad()
+	void Area::requestUnload()
 	{
 		assert(!asyncOperating);
 		assert(!futureForLoading.valid());
