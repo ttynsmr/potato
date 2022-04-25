@@ -239,16 +239,16 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::Session> sessi
 			auto session = weakSession.lock();
 			assert(session);
 
-			auto& units = _unitRegistry->getUnits();
-			auto unit = std::find_if(units.begin(), units.end(), [this, &units, &pingPong, requestParcel](auto& u) {
-				return pingPong->getSession()->getSessionId() == u->getSessionId();
-				});
-			if (unit != units.end())
-			{
-				(*unit)->setLastLatency(requestParcel.request().last_latency());
+			_unitRegistry->process([&requestParcel, &pingPong](std::shared_ptr<Unit> unit) {
+				if (pingPong->getSession()->getSessionId() != unit->getSessionId())
+				{
+					return;
+				}
+				
+				unit->setLastLatency(requestParcel.request().last_latency());
 				//fmt::print("unit[{}] last latency: {}\n", (*unit)->getUnitId(), (*unit)->getLastLatency());
-			}
-
+			});
+			
 			torikime::diagnosis::ping_pong::Response response;
 			response.set_receive_time(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
 			response.set_send_time(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
@@ -361,11 +361,12 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::Session> sessi
 				responser->send(true, std::move(response));
 			}
 
-			const auto& units = _unitRegistry->getUnits();
-			auto unit = std::find_if(units.begin(), units.end(), [requestParcel](auto& u) {
-				return requestParcel.request().unit_id() == u->getUnitId().value_of();
-				});
-			if (unit != units.end())
+			auto unit = _unitRegistry->findUnitByUnitId(UnitId(requestParcel.request().unit_id()));
+			if (!unit)
+			{
+				return;
+			}
+			
 			{
 				auto moveCommand = std::make_shared<MoveCommand>();
 				moveCommand->startTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
@@ -374,13 +375,13 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::Session> sessi
 				moveCommand->speed = requestParcel.request().speed();
 				moveCommand->direction = requestParcel.request().direction();
 				moveCommand->moveId = requestParcel.request().move_id();
-				(*unit)->inputCommand(moveCommand);
+				unit->inputCommand(moveCommand);
 			}
 
 			{
 				torikime::unit::move::Notification notification;
 				notification.set_unit_id(requestParcel.request().unit_id());
-				notification.set_area_id((*unit)->getAreaId().value_of());
+				notification.set_area_id(unit->getAreaId().value_of());
 				notification.set_time(requestParcel.request().time());
 				potato::Vector3 from = requestParcel.request().from();
 				potato::Vector3 to = requestParcel.request().to();
@@ -389,7 +390,7 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::Session> sessi
 				notification.set_speed(requestParcel.request().speed());
 				notification.set_direction(requestParcel.request().direction());
 				notification.set_move_id(requestParcel.request().move_id());
-				_networkServiceProvider.lock()->sendAreacast(session->getSessionId(), _areaRegistry->getArea((*unit)->getAreaId()), torikime::unit::move::Rpc::serializeNotification(notification));
+				_networkServiceProvider.lock()->sendAreacast(session->getSessionId(), _areaRegistry->getArea(unit->getAreaId()), torikime::unit::move::Rpc::serializeNotification(notification));
 				notification.release_to();
 				notification.release_from();
 			}
@@ -406,143 +407,137 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::Session> sessi
 				responser->send(true, std::move(response));
 			}
 
-			const auto& units = _unitRegistry->getUnits();
-			auto unit = std::find_if(units.begin(), units.end(), [requestParcel](auto& u) {
-				return requestParcel.request().unit_id() == u->getUnitId().value_of();
-				});
-			if (unit != units.end())
+			auto unit = _unitRegistry->findUnitByUnitId(UnitId(requestParcel.request().unit_id()));
+			if (!unit)
+			{
+				return;
+			}
+
 			{
 				auto stopCommand = std::make_shared<StopCommand>();
 				stopCommand->stopTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 				stopCommand->direction = requestParcel.request().direction();
 				stopCommand->moveId = requestParcel.request().move_id();
-				(*unit)->inputCommand(stopCommand);
+				unit->inputCommand(stopCommand);
 			}
 
 			{
 				torikime::unit::stop::Notification notification;
 				notification.set_unit_id(requestParcel.request().unit_id());
-				notification.set_area_id((*unit)->getAreaId().value_of());
+				notification.set_area_id(unit->getAreaId().value_of());
 				notification.set_time(requestParcel.request().time());
 				notification.set_stop_time(requestParcel.request().stop_time());
 				notification.set_direction(requestParcel.request().direction());
 				notification.set_move_id(requestParcel.request().move_id());
-				_networkServiceProvider.lock()->sendAreacast(session->getSessionId(), _areaRegistry->getArea((*unit)->getAreaId()), torikime::unit::stop::Rpc::serializeNotification(notification));
+				_networkServiceProvider.lock()->sendAreacast(session->getSessionId(), _areaRegistry->getArea(unit->getAreaId()), torikime::unit::stop::Rpc::serializeNotification(notification));
 			}
 		});
 
-	{
-		_rpcBuilder->battle.skillCast->subscribeRequest([this, weakSession](const auto& requestParcel, auto& responser)
-			{
-				using namespace torikime::battle::skill_cast;
+	_rpcBuilder->battle.skillCast->subscribeRequest([this, weakSession](const auto& requestParcel, auto& responser)
+		{
+			using namespace torikime::battle::skill_cast;
 
-				auto session = weakSession.lock();
-				assert(session);
+			auto session = weakSession.lock();
+			assert(session);
 
-				uint64_t attackId = ++_attackId;
-				uint32_t skillId = requestParcel.request().skill_id();
-				int64_t triggerTime = requestParcel.request().trigger_time();
-				Response response;
-				response.set_ok(true);
-				response.set_attack_id(attackId);
-				responser->send(true, std::move(response));
+			uint64_t attackId = ++_attackId;
+			uint32_t skillId = requestParcel.request().skill_id();
+			int64_t triggerTime = requestParcel.request().trigger_time();
+			Response response;
+			response.set_ok(true);
+			response.set_attack_id(attackId);
+			responser->send(true, std::move(response));
 
-				queue.enqueue(0, [this, session, attackId, skillId, triggerTime]()
+			queue.enqueue(0, [this, session, attackId, skillId, triggerTime]()
+				{
+				std::vector<std::shared_ptr<potato::net::protocol::Payload>> knockbackPayloads;
+
+				auto casterUnit = _unitRegistry->findUnitBySessionId(session->getSessionId());
+				fmt::print("attack received caster:{} trigger_time:{} skill_id:{} attack_id:{}\n", casterUnit->getUnitId(), triggerTime, skillId, attackId);
+
+				Notification notification;
+				notification.set_caster_unit_id(casterUnit->getUnitId().value_of());
+				notification.set_trigger_time(triggerTime);
+				notification.set_skill_id(skillId);
+				notification.set_attack_id(attackId);
+
+				auto casterUnitPositionAtTheTime = casterUnit->getTrackbackPosition(triggerTime);
+				_unitRegistry->process([&notification, &knockbackPayloads, &casterUnit, triggerTime, casterUnitPositionAtTheTime](auto unit)
 					{
-						const auto& units = _unitRegistry->getUnits();
-
-						std::vector<std::shared_ptr<potato::net::protocol::Payload>> knockbackPayloads;
-
+						if (unit->getUnitId() == casterUnit->getUnitId()
+							|| unit->getAreaId() != casterUnit->getAreaId())
 						{
-							auto casterUnit = _unitRegistry->findUnitBySessionId(session->getSessionId());
-							fmt::print("attack received caster:{} trigger_time:{} skill_id:{} attack_id:{}\n", casterUnit->getUnitId(), triggerTime, skillId, attackId);
-
-							Notification notification;
-							notification.set_caster_unit_id(casterUnit->getUnitId().value_of());
-							notification.set_trigger_time(triggerTime);
-							notification.set_skill_id(skillId);
-							notification.set_attack_id(attackId);
-							{
-								auto casterUnitPositionAtTheTime = casterUnit->getTrackbackPosition(triggerTime);
-								for (auto& unit : units)
-								{
-									if (unit->getUnitId() == casterUnit->getUnitId()
-										|| unit->getAreaId() != casterUnit->getAreaId())
-									{
-										continue;
-									}
-
-									auto receiverUnitPositionAtTheTime = unit->getTrackbackPosition(triggerTime);
-									auto range = 1.0f;
-									if ((receiverUnitPositionAtTheTime - casterUnitPositionAtTheTime).squaredNorm() > range * range)
-									{
-										fmt::print("too far {} > {}\n", (receiverUnitPositionAtTheTime - casterUnitPositionAtTheTime).norm(), range);
-										continue;
-									}
-
-									fmt::print("cast skill hit {} to {}\n", casterUnit->getUnitId(), unit->getUnitId());
-									auto result = notification.add_results();
-									result->set_receiver_unit_id(unit->getUnitId().value_of());
-									result->set_damage(100);
-									result->set_heal(0);
-									result->set_miss(false);
-									result->set_dodged(false);
-
-									auto knockbackDirection = (receiverUnitPositionAtTheTime - casterUnitPositionAtTheTime).normalized();
-									auto knockbackCommand = std::make_shared<KnockbackCommand>();
-									int64_t knockbackDuration = 200;
-									knockbackCommand->startTime = triggerTime;
-									knockbackCommand->endTime = triggerTime + knockbackDuration;
-									knockbackCommand->moveId = 0;
-									knockbackCommand->from = receiverUnitPositionAtTheTime;
-									knockbackCommand->to = receiverUnitPositionAtTheTime + knockbackDirection * 1;
-									knockbackCommand->lastMoveCommand = unit->getLastMoveCommand();
-									knockbackCommand->direction = unit->getDirection();
-									knockbackCommand->speed = (knockbackCommand->to - knockbackCommand->from).norm() / static_cast<float>(knockbackDuration);
-									unit->inputCommand(knockbackCommand);
-
-									{
-										torikime::unit::knockback::Notification notification;
-										notification.set_unit_id(unit->getUnitId().value_of());
-										notification.set_area_id(unit->getAreaId().value_of());
-										notification.set_start_time(knockbackCommand->startTime);
-										notification.set_end_time(knockbackCommand->endTime);
-										notification.set_allocated_from(newVector3(knockbackCommand->from));
-										notification.set_allocated_to(newVector3(knockbackCommand->to));
-										notification.set_speed(knockbackCommand->speed);
-										notification.set_direction(knockbackCommand->direction);
-										notification.set_move_id(knockbackCommand->moveId);
-										knockbackPayloads.emplace_back(torikime::unit::knockback::Rpc::serializeNotification(notification));
-									}
-
-									auto stopCommand = std::make_shared<StopCommand>();
-									stopCommand->stopTime = knockbackCommand->endTime;
-									stopCommand->direction = knockbackCommand->direction;
-									stopCommand->moveId = 0;
-									unit->inputCommand(stopCommand);
-
-									{
-										torikime::unit::stop::Notification notification;
-										notification.set_unit_id(unit->getUnitId().value_of());
-										notification.set_area_id(unit->getAreaId().value_of());
-										notification.set_time(knockbackCommand->endTime);
-										notification.set_stop_time(knockbackCommand->endTime);
-										notification.set_direction(knockbackCommand->direction);
-										notification.set_move_id(0);
-										knockbackPayloads.emplace_back(torikime::unit::stop::Rpc::serializeNotification(notification));
-									}
-								}
-							}
-							_networkServiceProvider.lock()->sendAreacast(potato::net::SessionId(0), _areaRegistry->getArea(casterUnit->getAreaId()), Rpc::serializeNotification(notification));
-							for (auto& payload : knockbackPayloads)
-							{
-								_networkServiceProvider.lock()->sendAreacast(potato::net::SessionId(0), _areaRegistry->getArea(casterUnit->getAreaId()), payload);
-							}
+							return;
 						}
 
+						auto receiverUnitPositionAtTheTime = unit->getTrackbackPosition(triggerTime);
+						auto range = 1.0f;
+						if ((receiverUnitPositionAtTheTime - casterUnitPositionAtTheTime).squaredNorm() > range * range)
+						{
+							fmt::print("too far {} > {}\n", (receiverUnitPositionAtTheTime - casterUnitPositionAtTheTime).norm(), range);
+							return;
+						}
+
+						fmt::print("cast skill hit {} to {}\n", casterUnit->getUnitId(), unit->getUnitId());
+						auto result = notification.add_results();
+						result->set_receiver_unit_id(unit->getUnitId().value_of());
+						result->set_damage(100);
+						result->set_heal(0);
+						result->set_miss(false);
+						result->set_dodged(false);
+
+						auto knockbackDirection = (receiverUnitPositionAtTheTime - casterUnitPositionAtTheTime).normalized();
+						auto knockbackCommand = std::make_shared<KnockbackCommand>();
+						int64_t knockbackDuration = 200;
+						knockbackCommand->startTime = triggerTime;
+						knockbackCommand->endTime = triggerTime + knockbackDuration;
+						knockbackCommand->moveId = 0;
+						knockbackCommand->from = receiverUnitPositionAtTheTime;
+						knockbackCommand->to = receiverUnitPositionAtTheTime + knockbackDirection * 1;
+						knockbackCommand->lastMoveCommand = unit->getLastMoveCommand();
+						knockbackCommand->direction = unit->getDirection();
+						knockbackCommand->speed = (knockbackCommand->to - knockbackCommand->from).norm() / static_cast<float>(knockbackDuration);
+						unit->inputCommand(knockbackCommand);
+
+						{
+							torikime::unit::knockback::Notification notification;
+							notification.set_unit_id(unit->getUnitId().value_of());
+							notification.set_area_id(unit->getAreaId().value_of());
+							notification.set_start_time(knockbackCommand->startTime);
+							notification.set_end_time(knockbackCommand->endTime);
+							notification.set_allocated_from(newVector3(knockbackCommand->from));
+							notification.set_allocated_to(newVector3(knockbackCommand->to));
+							notification.set_speed(knockbackCommand->speed);
+							notification.set_direction(knockbackCommand->direction);
+							notification.set_move_id(knockbackCommand->moveId);
+							knockbackPayloads.emplace_back(torikime::unit::knockback::Rpc::serializeNotification(notification));
+						}
+
+						auto stopCommand = std::make_shared<StopCommand>();
+						stopCommand->stopTime = knockbackCommand->endTime;
+						stopCommand->direction = knockbackCommand->direction;
+						stopCommand->moveId = 0;
+						unit->inputCommand(stopCommand);
+
+						{
+							torikime::unit::stop::Notification notification;
+							notification.set_unit_id(unit->getUnitId().value_of());
+							notification.set_area_id(unit->getAreaId().value_of());
+							notification.set_time(knockbackCommand->endTime);
+							notification.set_stop_time(knockbackCommand->endTime);
+							notification.set_direction(knockbackCommand->direction);
+							notification.set_move_id(0);
+							knockbackPayloads.emplace_back(torikime::unit::stop::Rpc::serializeNotification(notification));
+						}
 					});
+
+				_networkServiceProvider.lock()->sendAreacast(potato::net::SessionId(0), _areaRegistry->getArea(casterUnit->getAreaId()), Rpc::serializeNotification(notification));
+				for (auto& payload : knockbackPayloads)
+				{
+					_networkServiceProvider.lock()->sendAreacast(potato::net::SessionId(0), _areaRegistry->getArea(casterUnit->getAreaId()), payload);
+				}
 			});
-	}
+		});
 }
 
 void GameServiceProvider::onSessionStarted(std::shared_ptr<potato::net::Session>)
