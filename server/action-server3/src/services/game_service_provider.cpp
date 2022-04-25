@@ -339,6 +339,9 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::Session> sessi
 				auto avatar = new potato::Avatar();
 				avatar->set_name(user->getDisplayName());
 				response.set_allocated_avatar(avatar);
+
+				appendNeighborUnits(response, newUnit);
+
 				responser->send(true, std::move(response));
 			}
 
@@ -346,7 +349,6 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::Session> sessi
 			{
 				sendAreacastSpawnUnit(session->getSessionId(), newUnit);
 			}
-			sendSpawnUnit(session->getSessionId(), newUnit);
 			_onSpawnReadyRequest();
 		});
 
@@ -596,16 +598,13 @@ void GameServiceProvider::sendAreacastSpawnUnit(potato::net::SessionId sessionId
 	_networkServiceProvider.lock()->sendAreacast(sessionId, _areaRegistry->getArea(spawnUnit->getAreaId()), torikime::unit::spawn::Rpc::serializeNotification(notification));
 }
 
-void GameServiceProvider::sendSpawnUnit(potato::net::SessionId sessionId, std::shared_ptr<Unit> spawnUnit)
+void GameServiceProvider::appendNeighborUnits(torikime::unit::spawn_ready::Response& response, std::shared_ptr<Unit> spawnUnit)
 {
 	auto area = _areaRegistry->getArea(spawnUnit->getAreaId());
 	assert(area);
 
-	auto networkServiceProvider = _networkServiceProvider.lock();
-	assert(networkServiceProvider);
-
 	const auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-	area->process([networkServiceProvider, now, sessionId, spawnUnit](auto weakUnit)
+	area->process([now, &response, spawnUnit](auto weakUnit)
 	{
 		auto unit = weakUnit.lock();
 		if (unit->getUnitId() == spawnUnit->getUnitId())
@@ -615,21 +614,19 @@ void GameServiceProvider::sendSpawnUnit(potato::net::SessionId sessionId, std::s
 
 		// spawn
 		{
-			torikime::unit::spawn::Notification notification;
-			notification.set_session_id(unit->getSessionId().value_of());
-			notification.set_unit_id(unit->getUnitId().value_of());
-			notification.set_area_id(unit->getAreaId().value_of());
-			notification.set_allocated_position(newVector3(unit->getPosition()));
-			notification.set_direction(potato::UNIT_DIRECTION_DOWN);
+			torikime::unit::spawn::Notification* notification = response.add_neighbors_spawn();
+			notification->set_session_id(unit->getSessionId().value_of());
+			notification->set_unit_id(unit->getUnitId().value_of());
+			notification->set_area_id(unit->getAreaId().value_of());
+			notification->set_allocated_position(newVector3(unit->getPosition()));
+			notification->set_direction(potato::UNIT_DIRECTION_DOWN);
 			auto individuality = new potato::Individuality();
 			individuality->set_type(potato::UNIT_TYPE_PLAYER);
-			notification.set_allocated_individuality(individuality);
-			notification.set_cause(potato::UNIT_SPAWN_CAUSE_ASIS);
+			notification->set_allocated_individuality(individuality);
+			notification->set_cause(potato::UNIT_SPAWN_CAUSE_ASIS);
 			auto avatar = new potato::Avatar();
 			avatar->set_name(unit->getDisplayName());
-			notification.set_allocated_avatar(avatar);
-			auto payload = torikime::unit::spawn::Rpc::serializeNotification(notification);
-			networkServiceProvider->sendTo(sessionId, payload);
+			notification->set_allocated_avatar(avatar);
 		}
 
 		unit->onSpawn(now);
@@ -639,20 +636,19 @@ void GameServiceProvider::sendSpawnUnit(potato::net::SessionId sessionId, std::s
 			auto moveCommand = unit->getLastMoveCommand();
 			if (moveCommand != nullptr)
 			{
-				torikime::unit::move::Notification notification;
-				notification.set_unit_id(unit->getUnitId().value_of());
-				notification.set_area_id(unit->getAreaId().value_of());
-				notification.set_time(moveCommand->startTime);
-				notification.set_allocated_from(newVector3(moveCommand->from));
-				notification.set_allocated_to(newVector3(moveCommand->to));
-				notification.set_speed(moveCommand->speed);
-				notification.set_direction(moveCommand->direction);
-				notification.set_move_id(moveCommand->moveId);
-				networkServiceProvider->sendTo(sessionId, torikime::unit::move::Rpc::serializeNotification(notification));
+				torikime::unit::move::Notification* notification = response.add_neighbors_move();
+				notification->set_unit_id(unit->getUnitId().value_of());
+				notification->set_area_id(unit->getAreaId().value_of());
+				notification->set_time(moveCommand->startTime);
+				notification->set_allocated_from(newVector3(moveCommand->from));
+				notification->set_allocated_to(newVector3(moveCommand->to));
+				notification->set_speed(moveCommand->speed);
+				notification->set_direction(moveCommand->direction);
+				notification->set_move_id(moveCommand->moveId);
 			}
 			else
 			{
-				fmt::print("session[{}] unit[{}] call sendSpawnUnit(Send MoveCommand) but MoveCommand is null\n", sessionId, unit->getUnitId());
+				fmt::print("session[{}] unit[{}] call appendNeighborUnits(Send MoveCommand) but MoveCommand is null\n", spawnUnit->getSessionId(), unit->getUnitId());
 				unit->dump(now);
 				assert(false);
 			}
@@ -664,22 +660,19 @@ void GameServiceProvider::sendSpawnUnit(potato::net::SessionId sessionId, std::s
 			}
 			if (stopCommand != nullptr)
 			{
-				torikime::unit::stop::Notification notification;
-				notification.set_unit_id(unit->getUnitId().value_of());
-				notification.set_area_id(unit->getAreaId().value_of());
+				torikime::unit::stop::Notification* notification = response.add_neighbors_stop();
+				notification->set_unit_id(unit->getUnitId().value_of());
+				notification->set_area_id(unit->getAreaId().value_of());
 				auto lastMoveCommand = stopCommand->lastMoveCommand.lock();
 				auto lastMoveTime = lastMoveCommand != nullptr ? lastMoveCommand->startTime : 0;
-				notification.set_time(lastMoveTime);
-				notification.set_stop_time(stopCommand->stopTime);
-				notification.set_direction(stopCommand->direction);
-				notification.set_move_id(stopCommand->moveId);
-
-				auto payload = torikime::unit::stop::Rpc::serializeNotification(notification);
-				networkServiceProvider->sendTo(sessionId, payload);
+				notification->set_time(lastMoveTime);
+				notification->set_stop_time(stopCommand->stopTime);
+				notification->set_direction(stopCommand->direction);
+				notification->set_move_id(stopCommand->moveId);
 			}
 			else
 			{
-				fmt::print("session[{}] unit[{}] call sendSpawnUnit(Send StopCommand) but StopCommand is null\n", sessionId, unit->getUnitId());
+				fmt::print("session[{}] unit[{}] call appendNeighborUnits(Send StopCommand) but StopCommand is null\n", spawnUnit->getSessionId(), unit->getUnitId());
 				unit->dump(now);
 				assert(false);
 			}

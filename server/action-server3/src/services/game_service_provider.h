@@ -34,6 +34,11 @@ class Unit;
 class MoveCommand;
 class StopCommand;
 
+namespace torikime::unit::spawn_ready
+{
+	class Response;
+}
+
 class GameServiceProvider : public IServiceProvider, public std::enable_shared_from_this<GameServiceProvider>
 {
 public:
@@ -56,7 +61,7 @@ public:
 	void sendSystemMessage(const std::string& message);
 
 	void sendAreacastSpawnUnit(potato::net::SessionId sessionId, std::shared_ptr<Unit> spawnUnit);
-	void sendSpawnUnit(potato::net::SessionId sessionId, std::shared_ptr<Unit> spawnUnit);
+	void appendNeighborUnits(torikime::unit::spawn_ready::Response& response, std::shared_ptr<Unit> spawnUnit);
 	void sendAreacastDespawnUnit(potato::net::SessionId sessionId, std::shared_ptr<Unit> despaenUnit);
 
 	void sendMove(potato::net::SessionId sessionId, std::shared_ptr<Unit> unit, std::shared_ptr<MoveCommand> moveCommand);
