@@ -1,4 +1,14 @@
 # yaml -> torikime -> generate .proto & rpc code.
+defines:
+  neighbors:
+    imports:
+      - "unit_spawn"
+      - "unit_move"
+      - "unit_stop"
+    params:
+      spawn: unit.spawn.Notification
+      move: unit.move.Notification
+      stop: unit.stop.Notification
 contracts:
   unit:
     spawn_ready:

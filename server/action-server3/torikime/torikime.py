@@ -160,6 +160,29 @@ def convert_rpc_to_csharp(env, out_dir, params, args):
     write_cache(cache_filename, rendered_s, args)
 
 
+def convert_rpc_to_protobuf_define(env, out_dir, input, args):
+    tmpl = env.get_template("define.j2")
+
+    rendered_s = tmpl.render(input)
+
+    # print(input)
+    filename = f'{input["define"]}.proto'
+    out_filename = f"{out_dir}/{filename}"
+    cache_filename = f"{args.cache_dir}/{filename}.hash"
+    if is_cached(cache_filename, rendered_s, args):
+        return
+
+    if args.verbose:
+        print(f"output: {out_filename}")
+
+    os.makedirs(os.path.dirname(out_filename), exist_ok=True)
+    with open(out_filename, mode="w") as f:
+        f.write(rendered_s)
+        # print(rendered_s)
+
+    write_cache(cache_filename, rendered_s, args)
+
+
 def camelize(input):
     return inflection.camelize(input)
 
@@ -191,6 +214,101 @@ def params_to(input_params):
     return parameters
 
 
+def output_defines(defines, args, env):
+    tmpl = env.get_template("define.j2")
+    # print("")
+    # print(defines)
+    for define in defines:
+        imports = []
+        input_param = {}
+        # print(defines[define])
+        if "params" in defines[define]:
+            if "imports" in defines[define]:
+                imports = defines[define]["imports"]
+                # print(f"imports: {imports}")
+
+            # print(defines[define]["params"])
+            input_param["params"] = {}
+            for params in defines[define]["params"]:
+                # print(define)
+                # print(input_param)
+                input_param["namespace"] = args.namespace
+                input_param["define"] = define
+                input_param["imports"] = imports
+                # print(
+                #     f'input_param["params"][{params}] = {defines[define]["params"][params]}'
+                # )
+                input_param["params"][params] = defines[define]["params"][params]
+
+            if not args.dryrun:
+                if args.proto_out_dir:
+                    # print(f'before: {input_param["params"]}')
+                    # print(f'after: {params_to(input_param["params"])}')
+                    input_param["params"] = params_to(input_param["params"])
+                    # print(input_param)
+                    convert_rpc_to_protobuf_define(
+                        env, args.proto_out_dir, input_param, args
+                    )
+
+
+def output_contracts(contracts, contract_idx, all_params, args, env):
+    # print(contracts)
+    if not isinstance(contracts, dict):
+        return
+
+    for contract in contracts:
+        # print(contract)
+        # print(contracts[contract])
+        c = {}
+        c["name"] = contract
+        c["names"] = []
+        all_params["contracts"].append(c)
+        for rpc_idx, rpc in enumerate(contracts[contract]):
+            # print(rpc)
+            # print(contracts[contract][rpc])
+
+            rpc_def = {}
+            if "request" in contracts[contract][rpc]:
+                rpc_def["request"] = params_to(contracts[contract][rpc]["request"])
+            if "response" in contracts[contract][rpc]:
+                rpc_def["response"] = params_to(contracts[contract][rpc]["response"])
+            if "notification" in contracts[contract][rpc]:
+                rpc_def["notification"] = params_to(
+                    contracts[contract][rpc]["notification"]
+                )
+
+            if "request" in contracts[contract][rpc]:
+                c["names"].append(rpc)
+
+            params = {
+                "namespace": args.namespace,
+                "contract_id": contract_idx,
+                "rpc_id": rpc_idx,
+                "contract": contract,
+                "name": rpc,
+                "rpc": contracts[contract][rpc],
+                "rpc_def": rpc_def,
+            }
+
+            if "imports" in contracts[contract][rpc]:
+                params["imports"] = contracts[contract][rpc]["imports"]
+
+            # print(params)
+
+            if not args.dryrun:
+                if args.proto_out_dir:
+                    convert_rpc_to_protobuf(env, args.proto_out_dir, params, args)
+                if args.cpp_out_dir:
+                    convert_rpc_to_hpp(env, args.cpp_out_dir, params, args)
+                    convert_rpc_to_cpp(env, args.cpp_out_dir, params, args)
+                if args.csharp_out_dir:
+                    convert_rpc_to_csharp(env, args.csharp_out_dir, params, args)
+            else:
+                print(
+                    f'{args.out_dir}/{params["contract"]}/{params["contract"]}_{params["rpc"]}.proto'
+                )
+
+
 def main():
     parser = argparse.ArgumentParser(description="torikime")
     parser.add_argument("--namespace", type=str, default="torikime")
@@ -214,8 +332,6 @@ def main():
     env.filters["camelize"] = camelize
     env.filters["lower_camelize"] = lower_camelize
 
-    tmpl = env.get_template("proto.j2")
-
     all_params = {}
     all_params["namespace"] = args.namespace
     all_params["contracts"] = []
@@ -228,69 +344,9 @@ def main():
             file = yaml.safe_load(file)
 
             contracts = file["contracts"]
-            # print(contracts)
-            if not isinstance(contracts, dict):
-                return
-
-            for contract in contracts:
-                # print(contract)
-                # print(contracts[contract])
-                c = {}
-                c["name"] = contract
-                c["names"] = []
-                all_params["contracts"].append(c)
-                for rpc_idx, rpc in enumerate(contracts[contract]):
-                    # print(rpc)
-                    # print(contracts[contract][rpc])
-
-                    rpc_def = {}
-                    if "request" in contracts[contract][rpc]:
-                        rpc_def["request"] = params_to(
-                            contracts[contract][rpc]["request"]
-                        )
-                    if "response" in contracts[contract][rpc]:
-                        rpc_def["response"] = params_to(
-                            contracts[contract][rpc]["response"]
-                        )
-                    if "notification" in contracts[contract][rpc]:
-                        rpc_def["notification"] = params_to(
-                            contracts[contract][rpc]["notification"]
-                        )
-
-                    if "request" in contracts[contract][rpc]:
-                        c["names"].append(rpc)
-
-                    params = {
-                        "namespace": args.namespace,
-                        "contract_id": contract_idx,
-                        "rpc_id": rpc_idx,
-                        "contract": contract,
-                        "name": rpc,
-                        "rpc": contracts[contract][rpc],
-                        "rpc_def": rpc_def,
-                    }
-
-                    if "imports" in contracts[contract][rpc]:
-                        params["imports"] = contracts[contract][rpc]["imports"]
-
-                    # print(params)
-
-                    if not args.dryrun:
-                        if args.proto_out_dir:
-                            convert_rpc_to_protobuf(
-                                env, args.proto_out_dir, params, args
-                            )
-                        if args.cpp_out_dir:
-                            convert_rpc_to_hpp(env, args.cpp_out_dir, params, args)
-                            convert_rpc_to_cpp(env, args.cpp_out_dir, params, args)
-                        if args.csharp_out_dir:
-                            convert_rpc_to_csharp(
-                                env, args.csharp_out_dir, params, args
-                            )
-                    else:
-                        print(
-                            f'{args.out_dir}/{params["contract"]}/{params["contract"]}_{params["rpc"]}.proto'
-                        )
+            output_contracts(contracts, contract_idx, all_params, args, env)
+            if "defines" in file:
+                output_defines(file["defines"], args, env)
 
     if not args.dryrun:
         if args.cpp_out_dir:
