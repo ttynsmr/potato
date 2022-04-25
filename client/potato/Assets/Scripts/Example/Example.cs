@@ -239,9 +239,12 @@ namespace Potato
                 var unit = new ControllablePlayerUnit(networkService, new UnitId(response.UnitId), response.Position.ToVector3(), response.Direction, response.Avatar);
                 unitService.Register(unit);
 
-                response.NeighborsSpawn.ToList().ForEach(unitService.OnReceiveSpawn);
-                response.NeighborsMove.ToList().ForEach(unitService.OnReceiveMove);
-                response.NeighborsStop.ToList().ForEach(unitService.OnReceiveStop);
+                foreach (var neighbor in response.Neighbors)
+                {
+                    unitService.OnReceiveSpawn(neighbor.Spawn);
+                    unitService.OnReceiveMove(neighbor.Move);
+                    unitService.OnReceiveStop(neighbor.Stop);
+                }
             });
         }
 

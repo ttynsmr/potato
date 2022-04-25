@@ -10,6 +10,7 @@
 #include "services/network_service_provider.h"
 
 #include "message.pb.h"
+#include "neighbor.pb.h"
 #include "area_transport.pb.h"
 #include "area_constituted_data.pb.h"
 #include "auth_login.pb.h"
@@ -612,9 +613,11 @@ void GameServiceProvider::appendNeighborUnits(torikime::unit::spawn_ready::Respo
 			return;
 		}
 
+		auto neighbor = response.add_neighbors();
+
 		// spawn
 		{
-			torikime::unit::spawn::Notification* notification = response.add_neighbors_spawn();
+			auto notification = new torikime::unit::spawn::Notification;
 			notification->set_session_id(unit->getSessionId().value_of());
 			notification->set_unit_id(unit->getUnitId().value_of());
 			notification->set_area_id(unit->getAreaId().value_of());
@@ -627,6 +630,8 @@ void GameServiceProvider::appendNeighborUnits(torikime::unit::spawn_ready::Respo
 			auto avatar = new potato::Avatar();
 			avatar->set_name(unit->getDisplayName());
 			notification->set_allocated_avatar(avatar);
+
+			neighbor->set_allocated_spawn(notification);
 		}
 
 		unit->onSpawn(now);
@@ -636,7 +641,7 @@ void GameServiceProvider::appendNeighborUnits(torikime::unit::spawn_ready::Respo
 			auto moveCommand = unit->getLastMoveCommand();
 			if (moveCommand != nullptr)
 			{
-				torikime::unit::move::Notification* notification = response.add_neighbors_move();
+				auto notification = new torikime::unit::move::Notification();
 				notification->set_unit_id(unit->getUnitId().value_of());
 				notification->set_area_id(unit->getAreaId().value_of());
 				notification->set_time(moveCommand->startTime);
@@ -645,6 +650,8 @@ void GameServiceProvider::appendNeighborUnits(torikime::unit::spawn_ready::Respo
 				notification->set_speed(moveCommand->speed);
 				notification->set_direction(moveCommand->direction);
 				notification->set_move_id(moveCommand->moveId);
+
+				neighbor->set_allocated_move(notification);
 			}
 			else
 			{
@@ -660,7 +667,7 @@ void GameServiceProvider::appendNeighborUnits(torikime::unit::spawn_ready::Respo
 			}
 			if (stopCommand != nullptr)
 			{
-				torikime::unit::stop::Notification* notification = response.add_neighbors_stop();
+				auto notification = new torikime::unit::stop::Notification();
 				notification->set_unit_id(unit->getUnitId().value_of());
 				notification->set_area_id(unit->getAreaId().value_of());
 				auto lastMoveCommand = stopCommand->lastMoveCommand.lock();
@@ -669,6 +676,8 @@ void GameServiceProvider::appendNeighborUnits(torikime::unit::spawn_ready::Respo
 				notification->set_stop_time(stopCommand->stopTime);
 				notification->set_direction(stopCommand->direction);
 				notification->set_move_id(stopCommand->moveId);
+
+				neighbor->set_allocated_stop(notification);
 			}
 			else
 			{
