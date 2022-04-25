@@ -36,6 +36,19 @@ public class UnitService : MonoBehaviour
         Unregister(unit);
     }
 
+    public void OnReceiveSpawn(Torikime.Unit.Spawn.Notification notification)
+    {
+        //Debug.Log($"spawn: area:{notification.AreaId} unit:{notification.UnitId}");
+        var unit = new PlayerUnit(_networkService.Now, new UnitId(notification.UnitId), notification.Position.ToVector3(), notification.Direction, notification.Avatar);
+        Register(unit);
+    }
+
+    public void OnReceiveDespawn(Torikime.Unit.Despawn.Notification notification)
+    {
+        //Debug.Log($"despawn: area:{notification.AreaId} unit:{notification.UnitId}");
+        UnregisterByUnitId(new UnitId(notification.UnitId));
+    }
+
     public void OnReceiveMove(Torikime.Unit.Move.Notification notification)
     {
         var unitId = new UnitId(notification.UnitId);

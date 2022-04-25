@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -130,19 +131,10 @@ namespace Potato
 
             {
                 var unitSpawn = Torikime.RpcHolder.GetRpc<Torikime.Unit.Spawn.Rpc>();
-                unitSpawn.OnNotification += (notification) =>
-                {
-                    //Debug.Log($"spawn: area:{notification.AreaId} unit:{notification.UnitId}");
-                    var unit = new PlayerUnit(networkService.Now, new UnitId(notification.UnitId), notification.Position.ToVector3(), notification.Direction, notification.Avatar);
-                    unitService.Register(unit);
-                };
+                unitSpawn.OnNotification += unitService.OnReceiveSpawn;
 
                 var unitDespawn = Torikime.RpcHolder.GetRpc<Torikime.Unit.Despawn.Rpc>();
-                unitDespawn.OnNotification += (notification) =>
-                {
-                    //Debug.Log($"despawn: area:{notification.AreaId} unit:{notification.UnitId}");
-                    unitService.UnregisterByUnitId(new UnitId(notification.UnitId));
-                };
+                unitDespawn.OnNotification += unitService.OnReceiveDespawn;
 
                 var unitMove = Torikime.RpcHolder.GetRpc<Torikime.Unit.Move.Rpc>();
                 unitMove.OnNotification += unitService.OnReceiveMove;
@@ -246,6 +238,10 @@ namespace Potato
             {
                 var unit = new ControllablePlayerUnit(networkService, new UnitId(response.UnitId), response.Position.ToVector3(), response.Direction, response.Avatar);
                 unitService.Register(unit);
+
+                response.NeighborsSpawn.ToList().ForEach(unitService.OnReceiveSpawn);
+                response.NeighborsMove.ToList().ForEach(unitService.OnReceiveMove);
+                response.NeighborsStop.ToList().ForEach(unitService.OnReceiveStop);
             });
         }
 
