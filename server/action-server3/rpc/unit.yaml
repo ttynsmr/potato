@@ -1,6 +1,6 @@
 # yaml -> torikime -> generate .proto & rpc code.
 defines:
-  neighbors:
+  neighbor:
     imports:
       - "unit_spawn"
       - "unit_move"
@@ -14,9 +14,7 @@ contracts:
     spawn_ready:
       imports:
         - "message"
-        - "unit_spawn"
-        - "unit_move"
-        - "unit_stop"
+        - "neighbor"
       request:
         area_id: uint32
       response:
@@ -27,15 +25,9 @@ contracts:
         individuality: potato.Individuality
         cause: potato.UnitSpawnCause
         avatar: potato.Avatar
-        neighbors_spawn:
+        neighbors:
           container: array
-          type: unit.spawn.Notification
-        neighbors_move:
-          container: array
-          type: unit.move.Notification
-        neighbors_stop:
-          container: array
-          type: unit.stop.Notification
+          type: torikime.Neighbor
     spawn:
       imports:
         - "message"
