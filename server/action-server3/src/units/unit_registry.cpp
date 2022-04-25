@@ -57,6 +57,16 @@ namespace potato
 		return ++currentUnitId;
 	}
 
+	std::shared_ptr<Unit> UnitRegistry::find(Predecate predecate)
+	{
+		auto unit = std::find_if(units.begin(), units.end(), predecate);
+		if (unit == units.end())
+		{
+			return nullptr;
+		}
+		return (*unit);
+	}
+
 	void UnitRegistry::update(time_t now)
 	{
 		std::for_each(units.begin(), units.end(), [now](auto& unit)
@@ -64,5 +74,10 @@ namespace potato
 				unit->update(now);
 			}
 		);
+	}
+
+	void UnitRegistry::process(Processor processor)
+	{
+		std::for_each(units.begin(), units.end(), processor);
 	}
 }
