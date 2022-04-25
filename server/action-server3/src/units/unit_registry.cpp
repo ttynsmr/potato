@@ -32,29 +32,14 @@ namespace potato
 		units.remove_if([sessionId](auto& u) { return u->getSessionId() == sessionId; });
 	}
 
-	const std::shared_ptr<Unit> UnitRegistry::findUnitBySessionId(net::SessionId sessionId) const
+	std::shared_ptr<Unit> UnitRegistry::findUnitBySessionId(net::SessionId sessionId)
 	{
-		auto unitIt = std::find_if(units.begin(), units.end(), [sessionId](auto& unit) { return unit->getSessionId() == sessionId; });
-		if (unitIt == units.end())
-		{
-			return nullptr;
-		}
-		return *unitIt;
+		return find([sessionId](auto& unit) { return unit->getSessionId() == sessionId; });
 	}
 
-	const std::shared_ptr<Unit> UnitRegistry::findUnitByUnitId(UnitId unitId) const
+	std::shared_ptr<Unit> UnitRegistry::findUnitByUnitId(UnitId unitId)
 	{
-		auto unitIt = std::find_if(units.begin(), units.end(), [unitId](auto& unit) { return unit->getUnitId() == unitId; });
-		if (unitIt == units.end())
-		{
-			return nullptr;
-		}
-		return *unitIt;
-	}
-
-	UnitId UnitRegistry::generateUnitId()
-	{
-		return ++currentUnitId;
+		return find([unitId](auto& unit) { return unit->getUnitId() == unitId; });
 	}
 
 	std::shared_ptr<Unit> UnitRegistry::find(Predecate predecate)
@@ -79,5 +64,10 @@ namespace potato
 	void UnitRegistry::process(Processor processor)
 	{
 		std::for_each(units.begin(), units.end(), processor);
+	}
+
+	UnitId UnitRegistry::generateUnitId()
+	{
+		return ++currentUnitId;
 	}
 }
