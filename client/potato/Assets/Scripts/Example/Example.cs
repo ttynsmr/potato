@@ -24,6 +24,7 @@ namespace Potato
         public InputField hostInputField;
         public InputField nameInputField;
         public Button connectButton;
+        public GameObject nowLoading;
 
         public Camera mainCamera;
 
@@ -38,12 +39,16 @@ namespace Potato
 
         private IEnumerator Start()
         {
+            nowLoading.SetActive(true);
+
             nodes = new GameObject("Area Nodes");
 
             var task = UnityEngine.SceneManagement.SceneManager.LoadSceneAsync("Assets/Examples/Map1/Map1.unity", UnityEngine.SceneManagement.LoadSceneMode.Additive);
             unitService = FindObjectOfType<UnitService>();
 
             yield return new WaitUntil(() => task.isDone);
+
+            nowLoading.SetActive(false);
 
             yield return LoginSequence();
         }
@@ -187,6 +192,10 @@ namespace Potato
 
         private IEnumerator TransportSequence(Potato.Area.Transport.Notification notification)
         {
+            nowLoading.SetActive(true);
+
+            yield return new WaitForSeconds(1.0f);
+
             Debug.Log($"Area transport notification received: transport id:{notification.TransportId} area:{notification.AreaId} unit:{notification.UnitId}");
             var transport = Potato.RpcHolder.GetRpc<Potato.Area.Transport.Rpc>();
             yield return transport.RequestCoroutine(new Potato.Area.Transport.Request(new Potato.Area.Transport.Request() { TransportId = notification.TransportId }), (response) =>
@@ -197,6 +206,10 @@ namespace Potato
             yield return RequestAreaConstituteData(notification.AreaId);
 
             yield return RequestSpawnReady(notification.AreaId);
+
+            yield return new WaitForSeconds(1.0f);
+            
+            nowLoading.SetActive(false);
         }
 
         private IEnumerator RequestLogin(string userId, string password)
