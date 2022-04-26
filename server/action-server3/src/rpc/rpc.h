@@ -9,7 +9,7 @@ namespace potato::net
 	class Session;
 }
 
-namespace torikime
+namespace potato
 {
 	class RpcInterface
 	{

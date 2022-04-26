@@ -2,7 +2,7 @@ using Potato;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Torikime.Battle.SkillCast;
+using Potato.Battle.SkillCast;
 using UnityEngine;
 
 public class UnitService : MonoBehaviour
@@ -36,20 +36,20 @@ public class UnitService : MonoBehaviour
         Unregister(unit);
     }
 
-    public void OnReceiveSpawn(Torikime.Unit.Spawn.Notification notification)
+    public void OnReceiveSpawn(Potato.Unit.Spawn.Notification notification)
     {
         //Debug.Log($"spawn: area:{notification.AreaId} unit:{notification.UnitId}");
         var unit = new PlayerUnit(_networkService.Now, new UnitId(notification.UnitId), notification.Position.ToVector3(), notification.Direction, notification.Avatar);
         Register(unit);
     }
 
-    public void OnReceiveDespawn(Torikime.Unit.Despawn.Notification notification)
+    public void OnReceiveDespawn(Potato.Unit.Despawn.Notification notification)
     {
         //Debug.Log($"despawn: area:{notification.AreaId} unit:{notification.UnitId}");
         UnregisterByUnitId(new UnitId(notification.UnitId));
     }
 
-    public void OnReceiveMove(Torikime.Unit.Move.Notification notification)
+    public void OnReceiveMove(Potato.Unit.Move.Notification notification)
     {
         var unitId = new UnitId(notification.UnitId);
         var unit = units.Find((u) => { return u.UnitId.Equals(unitId); });
@@ -70,7 +70,7 @@ public class UnitService : MonoBehaviour
         unit.InputMove(moveCommand);
     }
 
-    public void OnReceiveStop(Torikime.Unit.Stop.Notification notification)
+    public void OnReceiveStop(Potato.Unit.Stop.Notification notification)
     {
         var unitId = new UnitId(notification.UnitId);
         var unit = units.Find((u) => { return u.UnitId.Equals(unitId); });
@@ -88,7 +88,7 @@ public class UnitService : MonoBehaviour
         unit.InputStop(stopCommand);
     }
 
-    public void OnReceiveKnockback(Torikime.Unit.Knockback.Notification notification)
+    public void OnReceiveKnockback(Potato.Unit.Knockback.Notification notification)
     {
         var unitId = new UnitId(notification.UnitId);
         var unit = units.Find((u) => { return u.UnitId.Equals(unitId); });
@@ -150,7 +150,7 @@ public class UnitService : MonoBehaviour
         }
     }
 
-    public void OnReceiveCharacterStatus(Torikime.Battle.SyncParameters.Notification notification)
+    public void OnReceiveCharacterStatus(Potato.Battle.SyncParameters.Notification notification)
     {
         var unitId = new UnitId(notification.UnitId);
         var unit = units.Find((u) => { return u.UnitId.Equals(unitId); });

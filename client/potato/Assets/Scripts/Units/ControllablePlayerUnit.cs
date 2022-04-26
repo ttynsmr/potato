@@ -132,8 +132,8 @@ public class ControllablePlayerUnit : IUnit, IHasStatus
                 command = stopCommand;
                 currentMove = null;
                 var currentMoveCommand = (MoveCommand)history.Last();
-                var unitStop = Torikime.RpcHolder.GetRpc<Torikime.Unit.Stop.Rpc>();
-                unitStop.Request(new Torikime.Unit.Stop.Request
+                var unitStop = Potato.RpcHolder.GetRpc<Potato.Unit.Stop.Rpc>();
+                unitStop.Request(new Potato.Unit.Stop.Request
                 {
                     UnitId = UnitId.RawValue,
                     Time = currentMoveCommand.StartTime,
@@ -170,8 +170,8 @@ public class ControllablePlayerUnit : IUnit, IHasStatus
                 };
                 command = moveCommand;
                 currentMove = moveCommand;
-                var unitMove = Torikime.RpcHolder.GetRpc<Torikime.Unit.Move.Rpc>();
-                unitMove.Request(new Torikime.Unit.Move.Request
+                var unitMove = Potato.RpcHolder.GetRpc<Potato.Unit.Move.Rpc>();
+                unitMove.Request(new Potato.Unit.Move.Request
                 {
                     UnitId = UnitId.RawValue,
                     Time = moveCommand.StartTime,
@@ -196,8 +196,8 @@ public class ControllablePlayerUnit : IUnit, IHasStatus
         {
             var context = SynchronizationContext.Current;
             prevAttackButton = true;
-            var skillCast = Torikime.RpcHolder.GetRpc<Torikime.Battle.SkillCast.Rpc>();
-            skillCast.Request(new Torikime.Battle.SkillCast.Request
+            var skillCast = Potato.RpcHolder.GetRpc<Potato.Battle.SkillCast.Rpc>();
+            skillCast.Request(new Potato.Battle.SkillCast.Request
             {
                 SkillId = 0,
                 TargetUnitId = 0,

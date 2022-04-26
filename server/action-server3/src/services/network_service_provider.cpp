@@ -114,7 +114,7 @@ void NetworkServiceProvider::setSessionStartedDelegate(SessionStartedDelegate ca
 	_sessionStartedDelegate = callback;
 }
 
-void NetworkServiceProvider::registerRpc(std::shared_ptr<torikime::RpcInterface> rpc)
+void NetworkServiceProvider::registerRpc(std::shared_ptr<potato::RpcInterface> rpc)
 {
 	_rpcs.emplace_back(rpc);
 }

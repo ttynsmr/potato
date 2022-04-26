@@ -85,7 +85,7 @@ void AreaTransporter::transport(std::shared_ptr<Area> fromArea, std::shared_ptr<
 	{
 		//add move_to_area Notification
 		{
-			using namespace torikime::unit::stop;
+			using namespace potato::unit::stop;
 			Notification notification;
 			notification.set_unit_id(unit->getUnitId().value_of());
 			auto lastMoveCommand = unit->getLastMoveCommand();
@@ -98,7 +98,7 @@ void AreaTransporter::transport(std::shared_ptr<Area> fromArea, std::shared_ptr<
 		}
 			
 		{
-			using namespace torikime::area::transport;
+			using namespace potato::area::transport;
 			Notification notification;
 			notification.set_transport_id(transportId);
 			notification.set_area_id(toArea->getAreaId().value_of());

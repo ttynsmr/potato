@@ -34,7 +34,7 @@ class Unit;
 class MoveCommand;
 class StopCommand;
 
-namespace torikime::unit::spawn_ready
+namespace potato::unit::spawn_ready
 {
 	class Response;
 }
@@ -61,7 +61,7 @@ public:
 	void sendSystemMessage(const std::string& message);
 
 	void sendAreacastSpawnUnit(potato::net::SessionId sessionId, std::shared_ptr<Unit> spawnUnit);
-	void appendNeighborUnits(torikime::unit::spawn_ready::Response& response, std::shared_ptr<Unit> spawnUnit);
+	void appendNeighborUnits(potato::unit::spawn_ready::Response& response, std::shared_ptr<Unit> spawnUnit);
 	void sendAreacastDespawnUnit(potato::net::SessionId sessionId, std::shared_ptr<Unit> despaenUnit);
 
 	void sendMove(potato::net::SessionId sessionId, std::shared_ptr<Unit> unit, std::shared_ptr<MoveCommand> moveCommand);

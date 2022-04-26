@@ -160,13 +160,37 @@ def convert_rpc_to_csharp(env, out_dir, params, args):
     write_cache(cache_filename, rendered_s, args)
 
 
-def convert_rpc_to_protobuf_define(env, out_dir, input, args):
-    tmpl = env.get_template("define.j2")
+def convert_rpc_to_protobuf_define_message(env, out_dir, input, args):
+    tmpl = env.get_template("define-message.j2")
 
     rendered_s = tmpl.render(input)
 
     # print(input)
     filename = f'{input["define"]}.proto'
+    out_filename = f"{out_dir}/{filename}"
+    cache_filename = f"{args.cache_dir}/{filename}.hash"
+    if is_cached(cache_filename, rendered_s, args):
+        return
+
+    if args.verbose:
+        print(f"output: {out_filename}")
+
+    os.makedirs(os.path.dirname(out_filename), exist_ok=True)
+    with open(out_filename, mode="w") as f:
+        f.write(rendered_s)
+        # print(rendered_s)
+
+    write_cache(cache_filename, rendered_s, args)
+
+
+def convert_rpc_to_protobuf_define_enum(env, out_dir, input, args):
+    tmpl = env.get_template("define-enum.j2")
+
+    rendered_s = tmpl.render(input)
+    # print(rendered_s)
+
+    # print(input)
+    filename = f'{input["enum"]}.proto'
     out_filename = f"{out_dir}/{filename}"
     cache_filename = f"{args.cache_dir}/{filename}.hash"
     if is_cached(cache_filename, rendered_s, args):
@@ -215,7 +239,6 @@ def params_to(input_params):
 
 
 def output_defines(defines, args, env):
-    tmpl = env.get_template("define.j2")
     # print("")
     # print(defines)
     for define in defines:
@@ -246,7 +269,29 @@ def output_defines(defines, args, env):
                     # print(f'after: {params_to(input_param["params"])}')
                     input_param["params"] = params_to(input_param["params"])
                     # print(input_param)
-                    convert_rpc_to_protobuf_define(
+                    convert_rpc_to_protobuf_define_message(
+                        env, args.proto_out_dir, input_param, args
+                    )
+
+        if "enum" in defines[define] and len(defines[define]["enum"]) > 0:
+            input_param = {}
+            input_param["namespace"] = args.namespace
+            input_param["enum"] = define
+            input_param["enums"] = {}
+            if type(defines[define]["enum"][0]) is str:
+                for enum_idx, enum in enumerate(defines[define]["enum"]):
+                    input_param["enums"][enum] = enum_idx
+            else:
+                for enum_obj in defines[define]["enum"]:
+                    for enum, enum_val in enum_obj.items():
+                        input_param["enums"][enum] = enum_val
+            # print(input_param)
+            if not args.dryrun:
+                if args.proto_out_dir:
+                    # print(f'before: {input_param["params"]}')
+                    # print(f'after: {params_to(input_param["params"])}')
+                    # print(input_param)
+                    convert_rpc_to_protobuf_define_enum(
                         env, args.proto_out_dir, input_param, args
                     )
 
@@ -343,8 +388,8 @@ def main():
         with open(rpc_file) as file:
             file = yaml.safe_load(file)
 
-            contracts = file["contracts"]
-            output_contracts(contracts, contract_idx, all_params, args, env)
+            if "contracts" in file:
+                output_contracts(file["contracts"], contract_idx, all_params, args, env)
             if "defines" in file:
                 output_defines(file["defines"], args, env)
 
