@@ -1,6 +1,6 @@
 # yaml -> torikime -> generate .proto & rpc code.
 defines:
-  trigger:
+  trigger_component:
     imports:
       - "message"
     params:
@@ -21,11 +21,11 @@ contracts:
         unit_id: uint64
     constituted_data:
       imports:
-        - "trigger"
+        - "trigger_component"
       request:
         area_id: uint32
       response:
         area_id: uint32
         triggers:
           container: array
-          type: torikime.Trigger
+          type: potato.TriggerComponent

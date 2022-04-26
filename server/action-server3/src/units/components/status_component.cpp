@@ -28,7 +28,7 @@ void StatusComponent::onSpawn(std::shared_ptr<Unit> unit, int64_t /*now*/)
 {
 	auto area = _gameServiceProvider.lock()->getAreaRegistry()->getArea(unit->getAreaId());
 
-	using namespace torikime::battle::sync_parameters;
+	using namespace potato::battle::sync_parameters;
 	Notification notification;
 	notification.set_unit_id(unit->getUnitId().value_of());
 	auto characterStatus = new potato::CharacterStatus();

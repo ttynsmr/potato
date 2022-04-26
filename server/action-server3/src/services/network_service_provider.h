@@ -18,7 +18,7 @@ namespace potato::net
 	class Session;
 }
 
-namespace torikime {
+namespace potato {
 	class RpcInterface;
 }
 
@@ -57,7 +57,7 @@ public:
 	using SessionStartedDelegate = std::function<void(std::shared_ptr<potato::net::Session>)>;
 	void setSessionStartedDelegate(SessionStartedDelegate callback);
 
-	void registerRpc(std::shared_ptr<torikime::RpcInterface> rpc);
+	void registerRpc(std::shared_ptr<potato::RpcInterface> rpc);
 
 	int32_t getConnectionCount() const;
 
@@ -81,7 +81,7 @@ private:
 	boost::asio::ip::tcp::acceptor _acceptor;
 	std::atomic_int _sessionIdGenerateCounter = 0;
 	std::unordered_map<potato::net::SessionId, std::shared_ptr<potato::net::Session>> _sessions;
-	std::vector<std::shared_ptr<torikime::RpcInterface>> _rpcs;
+	std::vector<std::shared_ptr<potato::RpcInterface>> _rpcs;
 	std::atomic<int32_t> _sendCount = 0;
 	std::atomic<int32_t> _receiveCount = 0;
 	AcceptedDelegate _acceptedDelegate;

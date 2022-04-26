@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Torikime
+namespace Potato
 {
 
     public interface IRpc

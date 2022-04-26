@@ -30,7 +30,7 @@ namespace Potato
         public string serverHost = "127.0.0.1";
         public string serverPort = "28888";
 
-        private Queue<Torikime.Diagnosis.Gizmo.Notification> gizmoQueue = new Queue<Torikime.Diagnosis.Gizmo.Notification>();
+        private Queue<Potato.Diagnosis.Gizmo.Notification> gizmoQueue = new Queue<Potato.Diagnosis.Gizmo.Notification>();
 
         private ConcurrentQueue<Action> queue = new ConcurrentQueue<Action>();
 
@@ -79,10 +79,10 @@ namespace Potato
 
             networkService = FindObjectOfType<Potato.Network.NetworkService>();
             var session = networkService.Connect(serverHost, int.Parse(serverPort));
-            Torikime.RpcHolder.Rpcs = Torikime.RpcBuilder.Build(session);
+            Potato.RpcHolder.Rpcs = Potato.RpcBuilder.Build(session);
             session.OnPayloadReceived = (Potato.Network.Protocol.Payload payload) =>
             {
-                var rpc = Torikime.RpcHolder.Rpcs.Find(x => x.ContractId == payload.Header.contract_id
+                var rpc = Potato.RpcHolder.Rpcs.Find(x => x.ContractId == payload.Header.contract_id
                  && x.RpcId == payload.Header.rpc_id);
 
                 if (rpc == null)
@@ -90,8 +90,8 @@ namespace Potato
                     Debug.LogError($"payload.Header.contract_id: {payload.Header.contract_id} not found {payload.Header}");
                 }
 
-                if (rpc != null && rpc.ContractId == Torikime.Diagnosis.PingPong.Rpc.StaticContractId
-                && rpc.RpcId == Torikime.Diagnosis.PingPong.Rpc.StaticRpcId)
+                if (rpc != null && rpc.ContractId == Potato.Diagnosis.PingPong.Rpc.StaticContractId
+                && rpc.RpcId == Potato.Diagnosis.PingPong.Rpc.StaticRpcId)
                 {
                     try
                     {
@@ -114,14 +114,14 @@ namespace Potato
             networkService.OnDisconnectedCallback += OnDisconnected;
 
             {
-                var sendMessage = Torikime.RpcHolder.GetRpc<Torikime.Chat.SendMessage.Rpc>();
+                var sendMessage = Potato.RpcHolder.GetRpc<Potato.Chat.SendMessage.Rpc>();
                 sendMessage.OnNotification += (notification) =>
                 {
                     //Debug.Log("Notification received: " + notification.From + "[" + notification.Message + "]");
                 };
 
                 Debug.Log("Request sent");
-                var request = new Torikime.Chat.SendMessage.Request();
+                var request = new Potato.Chat.SendMessage.Request();
                 request.Message = "Hello world";
                 sendMessage.Request(request, (response) =>
                 {
@@ -130,41 +130,41 @@ namespace Potato
             }
 
             {
-                var unitSpawn = Torikime.RpcHolder.GetRpc<Torikime.Unit.Spawn.Rpc>();
+                var unitSpawn = Potato.RpcHolder.GetRpc<Potato.Unit.Spawn.Rpc>();
                 unitSpawn.OnNotification += unitService.OnReceiveSpawn;
 
-                var unitDespawn = Torikime.RpcHolder.GetRpc<Torikime.Unit.Despawn.Rpc>();
+                var unitDespawn = Potato.RpcHolder.GetRpc<Potato.Unit.Despawn.Rpc>();
                 unitDespawn.OnNotification += unitService.OnReceiveDespawn;
 
-                var unitMove = Torikime.RpcHolder.GetRpc<Torikime.Unit.Move.Rpc>();
+                var unitMove = Potato.RpcHolder.GetRpc<Potato.Unit.Move.Rpc>();
                 unitMove.OnNotification += unitService.OnReceiveMove;
 
-                var unitStop = Torikime.RpcHolder.GetRpc<Torikime.Unit.Stop.Rpc>();
+                var unitStop = Potato.RpcHolder.GetRpc<Potato.Unit.Stop.Rpc>();
                 unitStop.OnNotification += unitService.OnReceiveStop;
 
-                var unitKnockback = Torikime.RpcHolder.GetRpc<Torikime.Unit.Knockback.Rpc>();
+                var unitKnockback = Potato.RpcHolder.GetRpc<Potato.Unit.Knockback.Rpc>();
                 unitKnockback.OnNotification += unitService.OnReceiveKnockback;
             }
 
             {
-                var gizmo = Torikime.RpcHolder.GetRpc<Torikime.Diagnosis.Gizmo.Rpc>();
+                var gizmo = Potato.RpcHolder.GetRpc<Potato.Diagnosis.Gizmo.Rpc>();
                 gizmo.OnNotification += (notification) => { gizmoQueue.Enqueue(notification); };
             }
 
             {
-                var battleSkillCast = Torikime.RpcHolder.GetRpc<Torikime.Battle.SkillCast.Rpc>();
+                var battleSkillCast = Potato.RpcHolder.GetRpc<Potato.Battle.SkillCast.Rpc>();
                 battleSkillCast.OnNotification += unitService.OnReceiveSkillCast;
             }
 
             {
-                var syncCharacterStatus = Torikime.RpcHolder.GetRpc<Torikime.Battle.SyncParameters.Rpc>();
+                var syncCharacterStatus = Potato.RpcHolder.GetRpc<Potato.Battle.SyncParameters.Rpc>();
                 syncCharacterStatus.OnNotification += unitService.OnReceiveCharacterStatus;
             }
 
             bool transportOrder = false;
             uint transportToAreaId = 0;
             {
-                var transport = Torikime.RpcHolder.GetRpc<Torikime.Area.Transport.Rpc>();
+                var transport = Potato.RpcHolder.GetRpc<Potato.Area.Transport.Rpc>();
                 transport.OnNotification += (notification) => {
                     Debug.Log(notification.ToString());
                     transportToAreaId = notification.AreaId;
@@ -185,11 +185,11 @@ namespace Potato
             yield return new WaitUntil(() => transportOrder);
         }
 
-        private IEnumerator TransportSequence(Torikime.Area.Transport.Notification notification)
+        private IEnumerator TransportSequence(Potato.Area.Transport.Notification notification)
         {
             Debug.Log($"Area transport notification received: transport id:{notification.TransportId} area:{notification.AreaId} unit:{notification.UnitId}");
-            var transport = Torikime.RpcHolder.GetRpc<Torikime.Area.Transport.Rpc>();
-            yield return transport.RequestCoroutine(new Torikime.Area.Transport.Request(new Torikime.Area.Transport.Request() { TransportId = notification.TransportId }), (response) =>
+            var transport = Potato.RpcHolder.GetRpc<Potato.Area.Transport.Rpc>();
+            yield return transport.RequestCoroutine(new Potato.Area.Transport.Request(new Potato.Area.Transport.Request() { TransportId = notification.TransportId }), (response) =>
             {
                 Debug.Log("Transport response");
             });
@@ -201,8 +201,8 @@ namespace Potato
 
         private IEnumerator RequestLogin(string userId, string password)
         {
-            return Torikime.RpcHolder.GetRpc<Torikime.Auth.Login.Rpc>().RequestCoroutine(
-                new Torikime.Auth.Login.Request { UserId = userId, Password = password },
+            return Potato.RpcHolder.GetRpc<Potato.Auth.Login.Rpc>().RequestCoroutine(
+                new Potato.Auth.Login.Request { UserId = userId, Password = password },
                 (response) =>
                 {
                     Debug.Log($"Login response {response.Ok}, {response.Token}");
@@ -211,8 +211,8 @@ namespace Potato
 
         private object RequestAreaConstituteData(uint transportToAreaId)
         {
-            var rpc = Torikime.RpcHolder.GetRpc<Torikime.Area.ConstitutedData.Rpc>();
-            return rpc.RequestCoroutine(new Torikime.Area.ConstitutedData.Request { AreaId = transportToAreaId }, (response) =>
+            var rpc = Potato.RpcHolder.GetRpc<Potato.Area.ConstitutedData.Rpc>();
+            return rpc.RequestCoroutine(new Potato.Area.ConstitutedData.Request { AreaId = transportToAreaId }, (response) =>
             {
                 foreach (var t in nodes.transform)
                 {
@@ -233,8 +233,8 @@ namespace Potato
 
         private IEnumerator RequestSpawnReady(uint transportToAreaId)
         {
-            var rpc = Torikime.RpcHolder.GetRpc<Torikime.Unit.SpawnReady.Rpc>();
-            return rpc.RequestCoroutine(new Torikime.Unit.SpawnReady.Request { AreaId = transportToAreaId }, (response) =>
+            var rpc = Potato.RpcHolder.GetRpc<Potato.Unit.SpawnReady.Rpc>();
+            return rpc.RequestCoroutine(new Potato.Unit.SpawnReady.Request { AreaId = transportToAreaId }, (response) =>
             {
                 var unit = new ControllablePlayerUnit(networkService, new UnitId(response.UnitId), response.Position.ToVector3(), response.Direction, response.Avatar);
                 unitService.Register(unit);
@@ -258,7 +258,7 @@ namespace Potato
                 return;
             }
 
-            Torikime.RpcHolder.Clear();
+            Potato.RpcHolder.Clear();
             unitService.Reset();
 
             hostInputField?.gameObject.SetActive(true);
@@ -283,8 +283,8 @@ namespace Potato
         {
             while (networkService != null && networkService.Session != null)
             {
-                var pingpong = Torikime.RpcHolder.GetRpc<Torikime.Diagnosis.PingPong.Rpc>();
-                var request = new Torikime.Diagnosis.PingPong.Request();
+                var pingpong = Potato.RpcHolder.GetRpc<Potato.Diagnosis.PingPong.Rpc>();
+                var request = new Potato.Diagnosis.PingPong.Request();
                 DateTime UnixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, 0);
                 request.SendTime = (long)(DateTime.UtcNow - UnixEpoch).TotalMilliseconds;
                 //Debug.Log("ping sent");
@@ -340,8 +340,8 @@ namespace Potato
             }
 
             {
-                var request = new Torikime.Diagnosis.SeverSessions.Request();
-                var rpc = Torikime.RpcHolder.GetRpc<Torikime.Diagnosis.SeverSessions.Rpc>();
+                var request = new Potato.Diagnosis.SeverSessions.Request();
+                var rpc = Potato.RpcHolder.GetRpc<Potato.Diagnosis.SeverSessions.Rpc>();
                 rpc.Request(request, (response) =>
                     {
                         sessionCountText.text = "Current session count is " + response.SessionCount;

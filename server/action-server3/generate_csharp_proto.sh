@@ -5,7 +5,7 @@ tmpd=$(mktemp -dt "$basepath.XXXXXXXX")/
 echo "$tmpd"
 
 pushd torikime || exit
-pipenv run python torikime.py -v -o "$tmpd"proto -s "../../../client/potato/Assets/Scripts/Rpc/Generated" -i "../rpc" --cache_dir "$tmpd"cache
+pipenv run python torikime.py -v --namespace "potato" -o "$tmpd"proto -s "../../../client/potato/Assets/Scripts/Rpc/Generated" -i "../rpc" --cache_dir "$tmpd"cache
 popd || exit
 
 cp ./proto/*.proto "$tmpd"proto/

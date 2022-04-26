@@ -2,38 +2,15 @@ syntax = "proto3";
 
 package potato;
 
+import "unit_type.proto";
+import "unit_direction.proto";
+
 message Vector3 {
   float x = 1;
   float y = 2;
   float z = 3;
 }
 
-enum UnitType {
-  UNIT_TYPE_NONE = 0;
-  UNIT_TYPE_PLAYER = 1;
-  UNIT_TYPE_ENEMY = 2;
-  UNIT_TYPE_BULLET = 3;
-  UNIT_TYPE_WALL = 4;
-  UNIT_TYPE_ITEM = 5;
-  UNIT_TYPE_MAX = 6;
-}
-
-enum UnitSpawnCause {
-  UNIT_SPAWN_CAUSE_NONE = 0;
-  UNIT_SPAWN_CAUSE_ASIS = 1;
-  UNIT_SPAWN_CAUSE_LOGGEDIN = 2;
-  UNIT_SPAWN_CAUSE_LOGGEDOUT = 3;
-  UNIT_SPAWN_CAUSE_FASTTRAVEL = 4;
-  UNIT_SPAWN_CAUSE_RETIRE = 5;
-}
-
-enum UnitDirection {
-  UNIT_DIRECTION_DOWN = 0;
-  UNIT_DIRECTION_UP = 1;
-  UNIT_DIRECTION_LEFT = 2;
-  UNIT_DIRECTION_RIGHT = 3;
-}
-
-message Individuality { UnitType type = 1; }
+message Individuality { potato.UnitType type = 1; }
 
 message Avatar { string name = 1; }
