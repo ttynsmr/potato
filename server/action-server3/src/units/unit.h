@@ -7,7 +7,8 @@
 
 #include "core/configured_eigen.h"
 
-#include "message.pb.h"
+#include "vector3.pb.h"
+#include "unit_direction.pb.h"
 
 #include "unit_types.h"
 #include "units/components/component_types.h"

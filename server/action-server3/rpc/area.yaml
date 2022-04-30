@@ -2,7 +2,7 @@
 defines:
   trigger_component:
     imports:
-      - "message"
+      - "vector3"
     params:
       area_id: uint32
       position: potato.Vector3

@@ -1,0 +1,14 @@
+defines:
+  vector3:
+    params:
+      x: float
+      y: float
+      z: float
+  individuality:
+    imports:
+      - "unit_type"
+    params:
+      type: potato.UnitType
+  avatar:
+    params:
+      name: string

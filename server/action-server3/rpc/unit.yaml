@@ -37,7 +37,9 @@ contracts:
   unit:
     spawn_ready:
       imports:
-        - "message"
+        - "vector3"
+        - "individuality"
+        - "avatar"
         - "neighbor"
         - "unit_direction"
         - "unit_spawn_cause"
@@ -56,7 +58,9 @@ contracts:
           type: potato.Neighbor
     spawn:
       imports:
-        - "message"
+        - "vector3"
+        - "individuality"
+        - "avatar"
         - "unit_direction"
         - "unit_spawn_cause"
       notification:
@@ -70,7 +74,7 @@ contracts:
         avatar: potato.Avatar
     despawn:
       imports:
-        - "message"
+        - "vector3"
         - "unit_direction"
         - "unit_spawn_cause"
       notification:
@@ -82,7 +86,7 @@ contracts:
         cause: potato.UnitSpawnCause
     move:
       imports:
-        - "message"
+        - "vector3"
         - "unit_direction"
       request:
         unit_id: uint64
@@ -105,7 +109,6 @@ contracts:
         move_id: uint64
     stop:
       imports:
-        - "message"
         - "unit_direction"
       request:
         unit_id: uint64
@@ -124,7 +127,7 @@ contracts:
         move_id: uint64
     knockback:
       imports:
-        - "message"
+        - "vector3"
         - "unit_direction"
       notification:
         unit_id: uint64

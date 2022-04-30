@@ -377,10 +377,20 @@ def main():
     env.filters["camelize"] = camelize
     env.filters["lower_camelize"] = lower_camelize
 
+    rpc_files = sorted(glob.glob(args.input_dir + "/*.yaml"))
+    for contract_idx, rpc_file in enumerate(rpc_files):
+        if args.verbose:
+            print(f"{contract_idx}  {rpc_file}")
+
+        with open(rpc_file) as file:
+            file = yaml.safe_load(file)
+
+            if "defines" in file:
+                output_defines(file["defines"], args, env)
+
     all_params = {}
     all_params["namespace"] = args.namespace
     all_params["contracts"] = []
-    rpc_files = sorted(glob.glob(args.input_dir + "/*.yaml"))
     for contract_idx, rpc_file in enumerate(rpc_files):
         if args.verbose:
             print(f"{contract_idx}  {rpc_file}")
@@ -390,8 +400,6 @@ def main():
 
             if "contracts" in file:
                 output_contracts(file["contracts"], contract_idx, all_params, args, env)
-            if "defines" in file:
-                output_defines(file["defines"], args, env)
 
     if not args.dryrun:
         if args.cpp_out_dir:
