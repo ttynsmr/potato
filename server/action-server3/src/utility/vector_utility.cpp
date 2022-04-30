@@ -1,7 +1,7 @@
 #include "vector_utility.h"
 
 #include "core/configured_eigen.h"
-#include "message.pb.h"
+#include "vector3.pb.h"
 
 potato::Vector3* newVector3(const Eigen::Vector3f& v)
 {

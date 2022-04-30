@@ -8,9 +8,6 @@
 #include "session/session.h"
 
 #include "rpc/rpc.h"
-#include "message.pb.h"
-#include "unit_despawn.pb.h"
-#include "unit_despawn.h"
 
 #include "area/area.h"
 

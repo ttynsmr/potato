@@ -9,7 +9,9 @@
 #include "session/session.h"
 #include "services/network_service_provider.h"
 
-#include "message.pb.h"
+#include "vector3.pb.h"
+#include "individuality.pb.h"
+#include "avatar.pb.h"
 #include "neighbor.pb.h"
 #include "area_transport.pb.h"
 #include "area_constituted_data.pb.h"

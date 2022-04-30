@@ -15,7 +15,7 @@ contracts:
         receive_time: int64
     gizmo:
       imports:
-        - "message"
+        - "vector3"
       notification:
         name: string
         begin: potato.Vector3

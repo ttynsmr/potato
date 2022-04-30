@@ -5,8 +5,6 @@
 #include "session/session.h"
 #include "services/network_service_provider.h"
 
-#include "message.pb.h"
-
 {% for contract in contracts %}
 {%- for name in contract.names %}
 #include "{{ contract.name }}_{{ name }}.pb.h"
