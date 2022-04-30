@@ -1,9 +1,27 @@
 # yaml -> torikime -> generate .proto & rpc code.
+defines:
+  skill_result:
+    params:
+      receiver_unit_id: uint64
+      damage: int64
+      heal: int64
+      miss: bool
+      dodged: bool
+  character_status:
+    params:
+      hitpoint: int64
+      max_hitpoint: int64
+      stamina: int64
+      max_stamina: int64
+      exp: int64
+      level: int64
+      gold: int64
+
 contracts:
   battle:
     skill_cast:
       imports:
-        - "battle"
+        - "skill_result"
       request:
         trigger_time: int64
         skill_id: uint32
@@ -21,7 +39,7 @@ contracts:
           type: potato.SkillResult
     sync_parameters:
       imports:
-        - "battle"
+        - "character_status"
       notification:
         unit_id: uint64
         parameters: potato.CharacterStatus
