@@ -74,6 +74,7 @@ public:
 	}
 
 private:
+	void sendToInternal(potato::net::SessionId sessionId, std::shared_ptr<potato::net::protocol::Payload> payload);
 	void doAccept();
 
 	std::thread _thread;
