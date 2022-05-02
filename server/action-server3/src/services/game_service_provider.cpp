@@ -152,26 +152,22 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::Session> sessi
 {
 	_rpcBuilder->build(_networkServiceProvider.lock(), session);
 
-	auto weakSession = std::weak_ptr(session);
-	subscribeRequestAuthLogin(weakSession);
-	subscribeRequestChatSendMessage(weakSession);
+	subscribeRequestAuthLogin();
+	subscribeRequestChatSendMessage();
 	subscribeRequestDiagnosisServerSessions();
 	subscribeRequestDiagnosisPingPong();
 	subscribeRequestAreaTransport();
 	subscribeRequestAreaConstitutedData();
-	subscribrRequestUnitSpawnReady(weakSession);
-	subscribeRequestUnitMove(weakSession);
-	subscribeRequestUnitStop(weakSession);
-	subscribeRequestBattleSkillCast(weakSession);
+	subscribrRequestUnitSpawnReady();
+	subscribeRequestUnitMove();
+	subscribeRequestUnitStop();
+	subscribeRequestBattleSkillCast();
 }
 
-void GameServiceProvider::subscribrRequestUnitSpawnReady(const std::weak_ptr<potato::net::Session>& weakSession)
+void GameServiceProvider::subscribrRequestUnitSpawnReady()
 {
-	_rpcBuilder->unit.spawnReady->subscribeRequest([this, weakSession](const auto& request, auto& responser)
+	_rpcBuilder->unit.spawnReady->subscribeRequest([this](std::shared_ptr<potato::net::Session>& session, const auto& request, auto& responser)
 		{
-			auto session = weakSession.lock();
-			assert(session);
-
 			bool rebind = false;
 			std::shared_ptr<Unit> newUnit;
 			auto& session_index = _idMapper.get<potato::net::session_id>();
@@ -233,7 +229,7 @@ void GameServiceProvider::subscribrRequestUnitSpawnReady(const std::weak_ptr<pot
 
 void GameServiceProvider::subscribeRequestAreaConstitutedData()
 {
-	_rpcBuilder->area.constitutedData->subscribeRequest([this](const auto& requestParcel, auto& responser)
+	_rpcBuilder->area.constitutedData->subscribeRequest([this](std::shared_ptr<potato::net::Session>&, const auto& requestParcel, auto& responser)
 		{
 			auto area = _areaRegistry->getArea(potato::AreaId(requestParcel.request().area_id()));
 			potato::area::constituted_data::Response response;
@@ -264,7 +260,7 @@ void GameServiceProvider::subscribeRequestAreaConstitutedData()
 
 void GameServiceProvider::subscribeRequestAreaTransport()
 {
-	_rpcBuilder->area.transport->subscribeRequest([this](const auto& requestParcel, auto& responser)
+	_rpcBuilder->area.transport->subscribeRequest([this](std::shared_ptr<potato::net::Session>&, const auto& requestParcel, auto& responser)
 		{
 			responser->send(true, potato::area::transport::Response());
 			_onTransportRequest(requestParcel.request().transport_id());
@@ -273,7 +269,7 @@ void GameServiceProvider::subscribeRequestAreaTransport()
 
 void GameServiceProvider::subscribeRequestDiagnosisServerSessions()
 {
-	_rpcBuilder->diagnosis.severSessions->subscribeRequest([this](const auto&, auto& responser)
+	_rpcBuilder->diagnosis.severSessions->subscribeRequest([this](std::shared_ptr<potato::net::Session>&, const auto&, auto& responser)
 		{
 			potato::diagnosis::sever_sessions::Response response;
 			response.set_session_count(_networkServiceProvider.lock()->getConnectionCount());
@@ -281,14 +277,11 @@ void GameServiceProvider::subscribeRequestDiagnosisServerSessions()
 		});
 }
 
-void GameServiceProvider::subscribeRequestChatSendMessage(const std::weak_ptr<potato::net::Session>& weakSession)
+void GameServiceProvider::subscribeRequestChatSendMessage()
 {
 	std::weak_ptr<potato::chat::send_message::Rpc> weak_chat = _rpcBuilder->chat.sendMessage;
-	_rpcBuilder->chat.sendMessage->subscribeRequest([this, weak_chat, weakSession](const auto& requestParcel, auto& responser)
+	_rpcBuilder->chat.sendMessage->subscribeRequest([this, weak_chat](std::shared_ptr<potato::net::Session>& session, const auto& requestParcel, auto& responser)
 		{
-			auto session = weakSession.lock();
-			assert(session);
-
 			//std::cout << "receive RequestParcel\n";
 			const auto& message = requestParcel.request().message();
 			potato::chat::send_message::Response response;
@@ -304,13 +297,10 @@ void GameServiceProvider::subscribeRequestChatSendMessage(const std::weak_ptr<po
 		});
 }
 
-void GameServiceProvider::subscribeRequestAuthLogin(const std::weak_ptr<potato::net::Session>& weakSession)
+void GameServiceProvider::subscribeRequestAuthLogin()
 {
-	_rpcBuilder->auth.login->subscribeRequest([this, weakSession](const auto& requestParcel, auto& responser)
+	_rpcBuilder->auth.login->subscribeRequest([this](std::shared_ptr<potato::net::Session>& session, const auto& requestParcel, auto& responser)
 		{
-			auto session = weakSession.lock();
-			assert(session);
-
 			UserAuthenticator authenticator;
 			auto r = authenticator.DoAuth(requestParcel.request().user_id(), requestParcel.request().password());
 			if (r.has_value())
@@ -366,7 +356,7 @@ void GameServiceProvider::subscribeRequestAuthLogin(const std::weak_ptr<potato::
 void GameServiceProvider::subscribeRequestDiagnosisPingPong()
 {
 	auto& pingPong = _rpcBuilder->diagnosis.pingPong;
-	pingPong->subscribeRequest([this, pingPong](const auto& requestParcel, auto& responser)
+	pingPong->subscribeRequest([this, pingPong](std::shared_ptr<potato::net::Session>&, const auto& requestParcel, auto& responser)
 		{
 			_unitRegistry->process([&requestParcel, &pingPong](std::shared_ptr<Unit> unit) {
 				if (pingPong->getSession()->getSessionId() != unit->getSessionId())
@@ -385,13 +375,10 @@ void GameServiceProvider::subscribeRequestDiagnosisPingPong()
 		});
 }
 
-void GameServiceProvider::subscribeRequestUnitMove(const std::weak_ptr<potato::net::Session>& weakSession)
+void GameServiceProvider::subscribeRequestUnitMove()
 {
-	_rpcBuilder->unit.move->subscribeRequest([this, weakSession](const auto& requestParcel, auto& responser)
+	_rpcBuilder->unit.move->subscribeRequest([this](std::shared_ptr<potato::net::Session>& session, const auto& requestParcel, auto& responser)
 		{
-			auto session = weakSession.lock();
-			assert(session);
-
 			{
 				potato::unit::move::Response response;
 				response.set_ok(true);
@@ -434,13 +421,10 @@ void GameServiceProvider::subscribeRequestUnitMove(const std::weak_ptr<potato::n
 		});
 }
 
-void GameServiceProvider::subscribeRequestUnitStop(const std::weak_ptr<potato::net::Session>& weakSession)
+void GameServiceProvider::subscribeRequestUnitStop()
 {
-	_rpcBuilder->unit.stop->subscribeRequest([this, weakSession](const auto& requestParcel, auto& responser)
+	_rpcBuilder->unit.stop->subscribeRequest([this](std::shared_ptr<potato::net::Session>& session, const auto& requestParcel, auto& responser)
 		{
-			auto session = weakSession.lock();
-			assert(session);
-
 			{
 				potato::unit::stop::Response response;
 				response.set_ok(true);
@@ -474,14 +458,11 @@ void GameServiceProvider::subscribeRequestUnitStop(const std::weak_ptr<potato::n
 		});
 }
 
-void GameServiceProvider::subscribeRequestBattleSkillCast(const std::weak_ptr<potato::net::Session>& weakSession)
+void GameServiceProvider::subscribeRequestBattleSkillCast()
 {
-	_rpcBuilder->battle.skillCast->subscribeRequest([this, weakSession](const auto& requestParcel, auto& responser)
+	_rpcBuilder->battle.skillCast->subscribeRequest([this](std::shared_ptr<potato::net::Session>& session, const auto& requestParcel, auto& responser)
 		{
 			using namespace potato::battle::skill_cast;
-
-			auto session = weakSession.lock();
-			assert(session);
 
 			uint64_t attackId = ++_attackId;
 			uint32_t skillId = requestParcel.request().skill_id();

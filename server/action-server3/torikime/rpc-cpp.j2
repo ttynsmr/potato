@@ -60,7 +60,7 @@ namespace {{ namespace }}::{{ contract }}::{{ name }}
 		deserialize(payload, requestParcel);
 
 		auto responser = std::make_shared<Responser>(_session, requestParcel.request_id());
-		_requestDelegate(requestParcel, responser);
+		_requestDelegate(_session, requestParcel, responser);
 	}
 
 	void Rpc::subscribeRequest(Rpc::RequestDelegate callback)
