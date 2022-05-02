@@ -182,7 +182,7 @@ public class PlayerUnit : IUnit, IHasStatus
             var lastCommand = history.Count > 0 ? history.Last() : null;
             if (lastCommand != null)
             {
-                if (lastCommand is StopCommand stopCommand)
+                if (lastCommand is StopCommand stopCommand && stopCommand.LastMoveCommand != null)
                 {
                     Position = stopCommand.LastMoveCommand.CalcCurrentPosition(stopCommand.StopTime);
                 }
