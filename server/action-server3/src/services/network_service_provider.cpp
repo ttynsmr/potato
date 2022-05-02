@@ -41,43 +41,55 @@ enum class Send
 	Broadcast
 };
 
-void NetworkServiceProvider::sendTo(potato::net::SessionId sessionId, std::shared_ptr<potato::net::protocol::Payload> payload)
+void NetworkServiceProvider::sendToInternal(potato::net::SessionId sessionId, std::shared_ptr<potato::net::protocol::Payload> payload)
 {
 	if (potato::net::Session::getSystemSessionId() == sessionId)
 	{
 		return;
 	}
+	
+	auto session = _sessions.find(sessionId);
+	if (session == _sessions.end())
+	{
+		return;
+	}
 
-	boost::asio::post(_io_context.get_executor(), [this, sessionId, payload]() {
-		auto session = _sessions.find(sessionId);
-		if (session == _sessions.end())
+	session->second->sendPayload(payload);
+	++_sendCount;
+}
+
+void NetworkServiceProvider::sendTo(potato::net::SessionId sessionId, std::shared_ptr<potato::net::protocol::Payload> payload)
+{
+	boost::asio::post(_io_context.get_executor(), [this, sessionId, payload]()
 		{
-			return;
-		}
-
-		session->second->sendPayload(payload);
-		++_sendCount;
+			sendToInternal(sessionId, payload);
 		});
 }
 
 void NetworkServiceProvider::sendMulticast(const std::vector<potato::net::SessionId>& sessionIds, std::shared_ptr<potato::net::protocol::Payload> payload)
 {
-	for (auto& sessionId : sessionIds)
-	{
-		sendTo(sessionId, payload);
-	}
+	boost::asio::post(_io_context.get_executor(), [this, sessionIds, payload]()
+		{
+			for (auto& sessionId : sessionIds)
+			{
+				sendToInternal(sessionId, payload);
+			}
+		});
 }
 
 void NetworkServiceProvider::sendAreacast(const potato::net::SessionId fromSessionId, const std::shared_ptr<potato::Area> targetArea, std::shared_ptr<potato::net::protocol::Payload> payload)
 {
-	for (auto& sessionId : targetArea->getSessionIds())
-	{
-		if (fromSessionId == sessionId)
+	boost::asio::post(_io_context.get_executor(), [this, fromSessionId, sessionIds = std::move(targetArea->getSessionIds()), payload]()
 		{
-			continue;
-		}
-		sendTo(sessionId, payload);
-	}
+			for (auto& sessionId : sessionIds)
+			{
+				if (fromSessionId == sessionId)
+				{
+					continue;
+				}
+				sendToInternal(sessionId, payload);
+			}
+		});
 }
 
 void NetworkServiceProvider::sendBroadcast(potato::net::SessionId fromSessionId, std::shared_ptr<potato::net::protocol::Payload> payload)
