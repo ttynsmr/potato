@@ -28,6 +28,7 @@ jobs:
       - name: 🔒Auth
         id: "auth"
         uses: "google-github-actions/auth@v0"
+        if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
         with:
           credentials_json: "${{ secrets.GCP_CREDENTIALS }}"
       - uses: google-github-actions/setup-gcloud@v0
