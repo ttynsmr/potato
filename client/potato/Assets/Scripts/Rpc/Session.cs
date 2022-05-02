@@ -15,7 +15,7 @@ namespace Potato
             public Action<Session> OnDisconnectedCallback { get; set; }
             public Action<Payload> OnPayloadReceived { get; set; }
 
-            private CancellationTokenSource tokenSource = new CancellationTokenSource();
+            private CancellationTokenSource tokenSource = new();
             private UniTask receiverTask;
 
             private TcpClient client;
@@ -60,7 +60,7 @@ namespace Potato
                             }
                             Debug.Assert(readHeaderSize == PayloadHeader.Size);
 
-                            Payload payload = new Payload
+                            var payload = new Payload
                             {
                                 Header = PayloadHeader.Deserialize(headerBuffer)
                             };

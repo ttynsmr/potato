@@ -9,8 +9,8 @@ public class PlayerUnit : IUnit, IHasStatus
 {
     public UnitView Appearance { get; set; }
 
-    private Queue<ICommand> inputQueue = new Queue<ICommand>();
-    private List<ICommand> history = new List<ICommand>();
+    private Queue<ICommand> inputQueue = new();
+    private List<ICommand> history = new();
     private MoveCommand currentMove;
     private long simulatedNow = 0;
     private Potato.Avatar avatar;
@@ -76,9 +76,9 @@ public class PlayerUnit : IUnit, IHasStatus
         if (history.Count > 0)
         {
             var lastCommand = history.Last();
-            if (lastCommand is MoveCommand)
+            if (lastCommand is MoveCommand command)
             {
-                stopCommand.LastMoveCommand = (MoveCommand)lastCommand;
+                stopCommand.LastMoveCommand = command;
             }
         }
         inputQueue.Enqueue(stopCommand);
@@ -97,16 +97,7 @@ public class PlayerUnit : IUnit, IHasStatus
     // Update is called once per frame
     public void Update(long now)
     {
-        ProcessInput(now);
         ProcessCommand(now);
-        if (currentMove != null)
-        {
-            //Debug.Log(currentMove);
-        }
-    }
-
-    private void ProcessInput(long now)
-    {
     }
 
     private void InterveneHistory(ICommand interveneCommand)
@@ -191,10 +182,8 @@ public class PlayerUnit : IUnit, IHasStatus
             var lastCommand = history.Count > 0 ? history.Last() : null;
             if (lastCommand != null)
             {
-                if (lastCommand is StopCommand)
+                if (lastCommand is StopCommand stopCommand)
                 {
-                    var last = history.Last();
-                    var stopCommand = (StopCommand)last;
                     Position = stopCommand.LastMoveCommand.CalcCurrentPosition(stopCommand.StopTime);
                 }
             }
@@ -208,7 +197,7 @@ public class PlayerUnit : IUnit, IHasStatus
         {
             Appearance.transform.position = Position;
             Appearance.Direction = Direction;
-            Appearance.Moving = !(history.Last() is StopCommand);
+            Appearance.Moving = history.Last() is not StopCommand;
         }
     }
 
