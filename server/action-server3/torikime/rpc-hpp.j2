@@ -43,7 +43,7 @@ namespace {{ namespace }}::{{ contract }}::{{ name }}
 		Rpc(std::shared_ptr<potato::net::Session> session);
 
 {%- if "request" in rpc %}
-		using RequestDelegate = std::function<void(const {{ namespace }}::{{ contract }}::{{ name }}::RequestParcel& request, std::shared_ptr<Responser>& responser)>;
+		using RequestDelegate = std::function<void(std::shared_ptr<potato::net::Session>& session, const {{ namespace }}::{{ contract }}::{{ name }}::RequestParcel& request, std::shared_ptr<Responser>& responser)>;
 		void subscribeRequest(RequestDelegate callback);
 {% endif %}
 
@@ -60,7 +60,7 @@ namespace {{ namespace }}::{{ contract }}::{{ name }}
 		static void deserialize(const potato::net::protocol::Payload& payload, {{ namespace }}::{{ contract }}::{{ name }}::RequestParcel& outRequest);
 		void on{{ name | camelize }}Request(const potato::net::protocol::Payload& payload);
 
-		RequestDelegate _requestDelegate = [](const {{ namespace }}::{{ contract }}::{{ name }}::RequestParcel&, std::shared_ptr<Responser>&) {};
+		RequestDelegate _requestDelegate = [](std::shared_ptr<potato::net::Session>&, const {{ namespace }}::{{ contract }}::{{ name }}::RequestParcel&, std::shared_ptr<Responser>&) {};
 {% endif %}
 		std::shared_ptr<potato::net::Session> _session;
 {% if "notification" in rpc %}

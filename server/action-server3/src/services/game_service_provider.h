@@ -55,15 +55,15 @@ public:
 	void onAccepted(std::shared_ptr<potato::net::Session> session);
 
 	void subscribeRequestDiagnosisPingPong();
-	void subscribeRequestAuthLogin(const std::weak_ptr<potato::net::Session>& weakSession);
-	void subscribeRequestChatSendMessage(const std::weak_ptr<potato::net::Session>& weakSession);
+	void subscribeRequestAuthLogin();
+	void subscribeRequestChatSendMessage();
 	void subscribeRequestDiagnosisServerSessions();
 	void subscribeRequestAreaTransport();
 	void subscribeRequestAreaConstitutedData();
-	void subscribrRequestUnitSpawnReady(const std::weak_ptr<potato::net::Session>& weakSession);
-	void subscribeRequestUnitMove(const std::weak_ptr<potato::net::Session>& weakSession);
-	void subscribeRequestUnitStop(const std::weak_ptr<potato::net::Session>& weakSession);
-	void subscribeRequestBattleSkillCast(const std::weak_ptr<potato::net::Session>& weakSession);
+	void subscribrRequestUnitSpawnReady();
+	void subscribeRequestUnitMove();
+	void subscribeRequestUnitStop();
+	void subscribeRequestBattleSkillCast();
 
 	void onSessionStarted(std::shared_ptr<potato::net::Session> session);
 
