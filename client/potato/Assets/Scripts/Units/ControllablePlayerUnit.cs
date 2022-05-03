@@ -15,8 +15,8 @@ public class ControllablePlayerUnit : IUnit, IHasStatus
 
     private bool prevAttackButton = false;
 
-    private Queue<ICommand> inputQueue = new Queue<ICommand>();
-    private List<ICommand> history = new List<ICommand>();
+    private Queue<ICommand> inputQueue = new();
+    private List<ICommand> history = new();
 
     private MoveCommand currentMove;
     private Potato.Avatar avatar;
@@ -159,7 +159,7 @@ public class ControllablePlayerUnit : IUnit, IHasStatus
                 }
 
                 // change move
-                MoveCommand moveCommand = new MoveCommand
+                var moveCommand = new MoveCommand
                 {
                     LastMoveCommand = currentMove,
                     StartTime = now,
@@ -218,9 +218,8 @@ public class ControllablePlayerUnit : IUnit, IHasStatus
         var lastCommand = history.Count > 0 ? history.Last() : null;
         if (currentMove == null)
         {
-            if (lastCommand is StopCommand)
+            if (lastCommand is StopCommand stopCommand)
             {
-                var stopCommand = (StopCommand)lastCommand;
                 Position = stopCommand.LastMoveCommand.CalcCurrentPosition(stopCommand.StopTime);
             }
         }
@@ -233,7 +232,7 @@ public class ControllablePlayerUnit : IUnit, IHasStatus
         {
             Appearance.transform.position = Position;
             Appearance.Direction = Direction;
-            Appearance.Moving = !(lastCommand is StopCommand);
+            Appearance.Moving = lastCommand is not StopCommand;
         }
     }
 

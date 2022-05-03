@@ -31,9 +31,9 @@ namespace Potato
         public string serverHost = "127.0.0.1";
         public string serverPort = "28888";
 
-        private Queue<Potato.Diagnosis.Gizmo.Notification> gizmoQueue = new Queue<Potato.Diagnosis.Gizmo.Notification>();
+        private readonly Queue<Diagnosis.Gizmo.Notification> gizmoQueue = new();
 
-        private ConcurrentQueue<Action> queue = new ConcurrentQueue<Action>();
+        private readonly ConcurrentQueue<Action> queue = new();
 
         private GameObject nodes;
 
@@ -126,8 +126,10 @@ namespace Potato
                 };
 
                 Debug.Log("Request sent");
-                var request = new Potato.Chat.SendMessage.Request();
-                request.Message = "Hello world";
+                var request = new Chat.SendMessage.Request
+                {
+                    Message = "Hello world"
+                };
                 sendMessage.Request(request, (response) =>
                 {
                     Debug.Log("Response");
@@ -275,7 +277,7 @@ namespace Potato
             unitService.Reset();
 
             hostInputField?.gameObject.SetActive(true);
-            nameInputField.gameObject.SetActive(true);
+            nameInputField?.gameObject.SetActive(true);
             connectButton?.gameObject.SetActive(true);
             panel?.SetActive(true);
 
@@ -296,15 +298,16 @@ namespace Potato
         {
             while (networkService != null && networkService.Session != null)
             {
-                var pingpong = Potato.RpcHolder.GetRpc<Potato.Diagnosis.PingPong.Rpc>();
-                var request = new Potato.Diagnosis.PingPong.Request();
-                DateTime UnixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, 0);
-                request.SendTime = (long)(DateTime.UtcNow - UnixEpoch).TotalMilliseconds;
+                var pingpong = RpcHolder.GetRpc<Diagnosis.PingPong.Rpc>();
+                var request = new Diagnosis.PingPong.Request
+                {
+                    SendTime = (long)(DateTime.UtcNow - TimeHelpers.UnixEpoch).TotalMilliseconds
+                };
                 //Debug.Log("ping sent");
                 var context = SynchronizationContext.Current;
                 yield return pingpong.RequestCoroutine(request, (response) =>
                 {
-                    __now = (long)(DateTime.UtcNow - UnixEpoch).TotalMilliseconds;
+                    __now = (long)(DateTime.UtcNow - TimeHelpers.UnixEpoch).TotalMilliseconds;
                     __sendGap = response.ReceiveTime - request.SendTime;
                     __receiveGap = __now - response.ReceiveTime;
                     __latency = __now - request.SendTime;
@@ -326,7 +329,7 @@ namespace Potato
 
                     context.Post(_ => {
                         //Debug.Log("pong received");
-                        __subjectiveLatency = (long)(DateTime.UtcNow - UnixEpoch).TotalMilliseconds - request.SendTime;
+                        __subjectiveLatency = (long)(DateTime.UtcNow - TimeHelpers.UnixEpoch).TotalMilliseconds - request.SendTime;
                         pingText.text = str + $"subjective latency: {__subjectiveLatency}\n";
                         networkService.ServerTimeDifference = __diffTime;
                         timeSynchronized = true;
@@ -360,10 +363,6 @@ namespace Potato
                         sessionCountText.text = "Current session count is " + response.SessionCount;
                     });
             }
-        }
-
-        private void OnDestroy()
-        {
         }
 
         private void OnDrawGizmos()

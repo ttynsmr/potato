@@ -10,7 +10,7 @@ public class UnitService : MonoBehaviour
     public GameObject TestAvatar;
 
     private Potato.Network.NetworkService _networkService;
-    private List<IUnit> units = new List<IUnit>();
+    private List<IUnit> units = new();
 
     private void Start()
     {
@@ -59,7 +59,7 @@ public class UnitService : MonoBehaviour
             return;
         }
 
-        MoveCommand moveCommand = new MoveCommand
+        var moveCommand = new MoveCommand
         {
             StartTime = notification.Time,
             From = notification.From.ToVector3(),
@@ -80,7 +80,7 @@ public class UnitService : MonoBehaviour
             return;
         }
 
-        StopCommand stopCommand = new StopCommand
+        var stopCommand = new StopCommand
         {
             StopTime = notification.StopTime,
             Direction = notification.Direction,
@@ -98,7 +98,7 @@ public class UnitService : MonoBehaviour
             return;
         }
 
-        KnockbackCommand moveCommand = new KnockbackCommand
+        var moveCommand = new KnockbackCommand
         {
             StartTime = notification.StartTime,
             EndTime = notification.EndTime,
