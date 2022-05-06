@@ -164,4 +164,9 @@ public class UnitService : MonoBehaviour
             iunit.CharacterStatus = notification.Parameters;
         }
     }
+
+    public ControllablePlayerUnit GetControllableUnit()
+    {
+        return units.Find((u) => { return u is ControllablePlayerUnit; }) as ControllablePlayerUnit;
+    }
 }

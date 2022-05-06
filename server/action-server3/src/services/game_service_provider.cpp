@@ -108,7 +108,7 @@ void GameServiceProvider::generateNPCs()
 		{
 			area = _areaRegistry->addArea(areaId);
 			area->requestLoad();
-		}
+			}
 		area->enter(newUnit);
 	};
 
@@ -122,7 +122,7 @@ void GameServiceProvider::generateNPCs()
 		newUnit->setDisplayName(fmt::format("NONAME{}", newUnit->getUnitId()));
 		newUnit->addComponent<NpcComponent>(shared_from_this());
 		newUnit->addComponent<StatusComponent>(shared_from_this(), _networkServiceProvider.lock());
-		addToArea(potato::AreaId(0), newUnit);
+		addToArea(potato::AreaId(1), newUnit);
 	}
 }
 
@@ -223,7 +223,7 @@ void GameServiceProvider::subscribrRequestUnitSpawnReady()
 			{
 				sendAreacastSpawnUnit(session->getSessionId(), newUnit);
 			}
-			_onSpawnReadyRequest();
+			_onSpawnReadyRequest(newUnit);
 		});
 }
 
@@ -339,7 +339,7 @@ void GameServiceProvider::subscribeRequestAuthLogin()
 					responser->send(true, std::move(response));
 
 					potato::area::transport::Notification notification;
-					notification.set_area_id(0);
+					notification.set_area_id(1);
 					notification.set_unit_id(user->getUnitId().value_of());
 					_networkServiceProvider.lock()->sendTo(user->getSessionId(), potato::area::transport::Rpc::serializeNotification(notification));
 					});
@@ -498,7 +498,7 @@ void GameServiceProvider::subscribeRequestBattleSkillCast()
 							auto range = 1.0f;
 							if ((receiverUnitPositionAtTheTime - casterUnitPositionAtTheTime).squaredNorm() > range * range)
 							{
-								fmt::print("too far {} > {}\n", (receiverUnitPositionAtTheTime - casterUnitPositionAtTheTime).norm(), range);
+								//fmt::print("too far {} > {}\n", (receiverUnitPositionAtTheTime - casterUnitPositionAtTheTime).norm(), range);
 								return;
 							}
 
@@ -626,9 +626,8 @@ void GameServiceProvider::appendNeighborUnits(potato::unit::spawn_ready::Respons
 	assert(area);
 
 	const auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-	area->process([now, &response, spawnUnit](auto weakUnit)
+	area->process([now, &response, spawnUnit](auto unit)
 	{
-		auto unit = weakUnit.lock();
 		if (unit->getUnitId() == spawnUnit->getUnitId())
 		{
 			return;
@@ -725,9 +724,8 @@ void GameServiceProvider::sendAreacastDespawnUnit(potato::net::SessionId session
 	_networkServiceProvider.lock()->sendAreacast(sessionId, _areaRegistry->getArea(despawnUnit->getAreaId()), potato::unit::despawn::Rpc::serializeNotification(notification));
 
 	auto area = _areaRegistry->getArea(despawnUnit->getAreaId());
-	area->process([this, sessionId](auto weakUnit)
+	area->process([this, sessionId](auto unit)
 		{
-			auto unit = weakUnit.lock();
 			potato::unit::despawn::Notification notification;
 			notification.set_session_id(unit->getSessionId().value_of());
 			notification.set_unit_id(unit->getUnitId().value_of());

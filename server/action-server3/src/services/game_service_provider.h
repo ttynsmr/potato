@@ -91,14 +91,14 @@ public:
 	using SynchronizedAction = std::function<void()>;
 	void enqueueSynchronizedAction(SynchronizedAction action);
 
-	using OnSpawnReadyRequestDelegate = std::function<void()>;
+	using OnSpawnReadyRequestDelegate = std::function<void(std::shared_ptr<Unit> unit)>;
 	boost::signals2::connection subscribeOnSpawnReadyRequest(OnSpawnReadyRequestDelegate onSpawnReadyRequestRequest);
 
 	using OnTransportRequestDelegate = std::function<void(uint64_t transportId)>;
 	boost::signals2::connection subscribeOnTransportRequest(OnTransportRequestDelegate onTransportRequest);
 
 private:
-	boost::signals2::signal<void()> _onSpawnReadyRequest;
+	boost::signals2::signal<void(std::shared_ptr<Unit> unit)> _onSpawnReadyRequest;
 	boost::signals2::signal<void(uint64_t transportId)> _onTransportRequest;
 	std::shared_ptr<ServiceRegistry> _service;
 	std::shared_ptr<potato::UserRegistry> _userRegistry;

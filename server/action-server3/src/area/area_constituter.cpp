@@ -28,7 +28,7 @@ boost::future<bool> AreaConsituter::load(std::shared_ptr<Area> area, const std::
 			// load area resources
 			switch (currentArea->getAreaId().value_of())
 			{
-			case 0:
+			case 1:
 				{
 					auto node = std::make_shared<Node>();
 					auto trigger = node->addComponent<TriggerableComponent>(node);
@@ -37,26 +37,27 @@ boost::future<bool> AreaConsituter::load(std::shared_ptr<Area> area, const std::
 					trigger->size = Eigen::Vector3f(1, 1, 1);
 					trigger->setOnTrigger([currentArea](std::shared_ptr<Unit> unit, auto now)
 						{
-					// TODO: Move unit to another area(1)
-					auto gameServiceProvider = ServiceRegistry::instance().findServiceProvider<GameServiceProvider>();
-					auto areaRegistory = gameServiceProvider->getAreaRegistry();
-					auto nextArea = areaRegistory->getArea(AreaId(1));
+							if (unit->hasComponent<AreaTransporterComponent>())
+							{
+								return;
+							}
+							// TODO: Move unit to another area(1)
+							auto gameServiceProvider = ServiceRegistry::instance().findServiceProvider<GameServiceProvider>();
+							auto areaRegistory = gameServiceProvider->getAreaRegistry();
+							auto nextArea = areaRegistory->getArea(AreaId(2));
 
-					if (!nextArea)
-					{
-						nextArea = areaRegistory->addArea(AreaId(1));
-						nextArea->requestLoad();
-					}
+							if (!nextArea)
+							{
+								nextArea = areaRegistory->addArea(AreaId(2));
+								nextArea->requestLoad();
+							}
 
-					if (!unit->hasComponent<AreaTransporterComponent>())
-					{
-						unit->addComponent<AreaTransporterComponent>(areaRegistory->transportUnit(currentArea, nextArea, unit, now));
-					}
-					});
+							unit->addComponent<AreaTransporterComponent>(areaRegistory->transportUnit(currentArea, nextArea, unit, now));
+						});
 					currentArea->getNodeRoot()->addNode(node);
 				}
 				break;
-			case 1:
+			case 2:
 				{
 					auto node = std::make_shared<Node>();
 					auto trigger = node->addComponent<TriggerableComponent>(node);
@@ -65,21 +66,23 @@ boost::future<bool> AreaConsituter::load(std::shared_ptr<Area> area, const std::
 					trigger->size = Eigen::Vector3f(1, 1, 1);
 					trigger->setOnTrigger([currentArea](std::shared_ptr<Unit> unit, auto now)
 						{
+							if (!unit->hasComponent<AreaTransporterComponent>())
+							{
+								return;
+							}
+
 							// TODO: Move unit to another area(0)
 							auto gameServiceProvider = ServiceRegistry::instance().findServiceProvider<GameServiceProvider>();
 							auto areaRegistory = gameServiceProvider->getAreaRegistry();
-							auto nextArea = areaRegistory->getArea(AreaId(0));
+							auto nextArea = areaRegistory->getArea(AreaId(1));
 
 							if (!nextArea)
 							{
-								nextArea = areaRegistory->addArea(AreaId(0));
+								nextArea = areaRegistory->addArea(AreaId(1));
 								nextArea->requestLoad();
 							}
 
-							if (!unit->hasComponent<AreaTransporterComponent>())
-							{
-								unit->addComponent<AreaTransporterComponent>(areaRegistory->transportUnit(currentArea, nextArea, unit, now));
-							}
+							unit->addComponent<AreaTransporterComponent>(areaRegistory->transportUnit(currentArea, nextArea, unit, now));
 						});
 					currentArea->getNodeRoot()->addNode(node);
 				}

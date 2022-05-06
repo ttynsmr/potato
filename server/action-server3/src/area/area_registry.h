@@ -1,5 +1,7 @@
 #pragma once
 
+#include <mutex>
+
 #include "area_types.h"
 
 class Unit;
@@ -26,5 +28,6 @@ namespace potato
 		void removeArea(AreaId areaId);
 
 		std::unordered_map<AreaId, std::shared_ptr<Area>> _areas;
+		std::recursive_mutex _areasMutex;
 	};
 }

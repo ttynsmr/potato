@@ -196,6 +196,12 @@ namespace Potato
         {
             nowLoading.SetActive(true);
 
+            var controllableUnit = unitService.GetControllableUnit();
+            if (controllableUnit != null)
+            {
+                controllableUnit.ControlLock = false;
+            }
+
             yield return new WaitForSeconds(1.0f);
 
             Debug.Log($"Area transport notification received: transport id:{notification.TransportId} area:{notification.AreaId} unit:{notification.UnitId}");
@@ -210,7 +216,13 @@ namespace Potato
             yield return RequestSpawnReady(notification.AreaId);
 
             yield return new WaitForSeconds(1.0f);
-            
+
+            controllableUnit = unitService.GetControllableUnit();
+            if (controllableUnit != null)
+            {
+                controllableUnit.ControlLock = true;
+            }
+
             nowLoading.SetActive(false);
         }
 

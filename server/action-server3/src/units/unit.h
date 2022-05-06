@@ -32,11 +32,15 @@ public:
 	void interveneHistory(std::shared_ptr<ICommand> command);
 
 
+	void onEnterArea(int64_t now, potato::AreaId areaId);
+	void onLeaveArea(int64_t now, potato::AreaId areaId);
 	void onSpawn(int64_t now);
 	void onDespawn(int64_t now);
 	void onConnected(int64_t now);
 	void onDisconnected(int64_t now);
 	void update(int64_t now);
+
+	void resetCommands();
 
 	std::shared_ptr<ICommand> getLastCommand();
 
