@@ -361,14 +361,21 @@ void Unit::setPosition(const Eigen::Vector3f& position)
 	_currentMove.reset();
 }
 
-void Unit::dump(int64_t now) const
+std::string Unit::toString(int64_t now) const
 {
+	std::string str;
 	for (auto& input : _inputQueue)
 	{
-		fmt::print("InputQueue: CommandType: {}, Expired: {}, ActionTime: {}\n", static_cast<int32_t>(input->getCommandType()), input->isExpired(now), input->getActionTime());
+		str.append(fmt::format("InputQueue: CommandType: {}, Expired: {}, ActionTime: {}\n", static_cast<int32_t>(input->getCommandType()), input->isExpired(now), input->getActionTime()));
 	}
 	for (auto& command : _history)
 	{
-		fmt::print("History: CommandType: {}, Expired: {}, ActionTime: {}\n", static_cast<int32_t>(command->getCommandType()), command->isExpired(now), command->getActionTime());
+		str.append(fmt::format("History: CommandType: {}, Expired: {}, ActionTime: {}\n", static_cast<int32_t>(command->getCommandType()), command->isExpired(now), command->getActionTime()));
 	}
+	return str;
+}
+
+void Unit::dump(int64_t now) const
+{
+	fmt::print(toString(now));
 }

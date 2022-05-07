@@ -385,7 +385,8 @@ void GameServiceProvider::subscribeRequestDiagnosisCommand()
 		{
 			using namespace potato::diagnosis::command;
 			
-			std::unordered_map<std::string, std::function<std::string(const Request& request)>> commands = {
+			const auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+			const std::unordered_map<std::string, std::function<std::string(const Request& request)>> commands = {
 				{ "test", [](auto request)
 					{
 						std::vector<std::string> args;
@@ -394,7 +395,18 @@ void GameServiceProvider::subscribeRequestDiagnosisCommand()
 							args.emplace_back(request.arguments(i));
 						};
 						return fmt::format("test: {}", args);
-					} 
+					}
+				},
+				{ "dump-unit", [this, now](auto request)
+					{
+						UnitId unitId = UnitId(std::stoll(request.arguments(0)));
+						auto unit = _unitRegistry->findUnitByUnitId(unitId);
+						if (unit == nullptr)
+						{
+							return fmt::format("dump-unit: unit:{} not found", unitId);
+						}
+						return fmt::format("dump-unit: {}", unit->toString(now));
+					}
 				},
 			};
 

@@ -152,6 +152,7 @@ public:
 		_components.erase(typeid(T).hash_code());
 	}
 
+	std::string toString(int64_t now) const;
 	void dump(int64_t now) const;
 
 private:
