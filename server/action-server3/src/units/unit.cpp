@@ -322,6 +322,11 @@ Eigen::Vector3f Unit::getTrackbackPosition(int64_t now) const
 		break;
 	}
 
+	if (lastMoveCommand == nullptr)
+	{
+		dump(now);
+	}
+
 	auto distance = (lastMoveCommand->to - lastMoveCommand->from).norm();
 	auto progress = lastMoveCommand->speed > 0 ? std::min(1.0f, (lastActionTime - lastMoveCommand->startTime) / (distance / lastMoveCommand->speed)) : 0;
 	return lerp(lastMoveCommand->from, lastMoveCommand->to, progress);
