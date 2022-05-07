@@ -27,6 +27,7 @@ namespace Potato
                 new Battle.SyncParameters.Rpc(session),
                 new Diagnosis.SeverSessions.Rpc(session),
                 new Diagnosis.PingPong.Rpc(session),
+                new Diagnosis.Command.Rpc(session),
                 new Diagnosis.Gizmo.Rpc(session),
                 new Unit.SpawnReady.Rpc(session),
                 new Unit.Spawn.Rpc(session),

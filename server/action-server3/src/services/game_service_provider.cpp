@@ -19,6 +19,7 @@
 #include "chat_send_message.pb.h"
 #include "diagnosis_sever_sessions.pb.h"
 #include "diagnosis_ping_pong.pb.h"
+#include "diagnosis_command.pb.h"
 #include "diagnosis_gizmo.pb.h"
 #include "unit_spawn_ready.pb.h"
 #include "unit_spawn.pb.h"
@@ -54,6 +55,7 @@
 #include "chat_send_message.h"
 #include "diagnosis_sever_sessions.h"
 #include "diagnosis_ping_pong.h"
+#include "diagnosis_command.h"
 #include "diagnosis_gizmo.h"
 #include "unit_spawn_ready.h"
 #include "unit_spawn.h"
@@ -156,6 +158,7 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::Session> sessi
 	subscribeRequestChatSendMessage();
 	subscribeRequestDiagnosisServerSessions();
 	subscribeRequestDiagnosisPingPong();
+	subscribeRequestDiagnosisCommand();
 	subscribeRequestAreaTransport();
 	subscribeRequestAreaConstitutedData();
 	subscribrRequestUnitSpawnReady();
@@ -371,6 +374,40 @@ void GameServiceProvider::subscribeRequestDiagnosisPingPong()
 			potato::diagnosis::ping_pong::Response response;
 			response.set_receive_time(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
 			response.set_send_time(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
+			responser->send(true, std::move(response));
+		});
+}
+
+void GameServiceProvider::subscribeRequestDiagnosisCommand()
+{
+	auto& command = _rpcBuilder->diagnosis.command;
+	command->subscribeRequest([this, command](auto&, const auto& requestParcel, auto& responser)
+		{
+			using namespace potato::diagnosis::command;
+			
+			std::unordered_map<std::string, std::function<std::string(const Request& request)>> commands = {
+				{ "test", [](auto request)
+					{
+						std::vector<std::string> args;
+						for (int i = 0; i < request.arguments_size(); i++)
+						{
+							args.emplace_back(request.arguments(i));
+						};
+						return fmt::format("test: {}", args);
+					} 
+				},
+			};
+
+			auto registerdCommand = commands.find(requestParcel.request().name());
+			if(registerdCommand == commands.end())
+			{
+				return;
+			}
+
+			std::string result = registerdCommand->second(requestParcel.request());
+
+			Response response;
+			response.set_result(result);
 			responser->send(true, std::move(response));
 		});
 }

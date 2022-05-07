@@ -21,3 +21,11 @@ contracts:
         begin: potato.Vector3
         end: potato.Vector3
         color: uint32
+    command:
+      request:
+        name: string
+        arguments:
+          container: array
+          type: string
+      response:
+        result: string

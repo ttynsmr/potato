@@ -54,10 +54,11 @@ public:
 
 	void onAccepted(std::shared_ptr<potato::net::Session> session);
 
+	void subscribeRequestDiagnosisServerSessions();
 	void subscribeRequestDiagnosisPingPong();
+	void subscribeRequestDiagnosisCommand();
 	void subscribeRequestAuthLogin();
 	void subscribeRequestChatSendMessage();
-	void subscribeRequestDiagnosisServerSessions();
 	void subscribeRequestAreaTransport();
 	void subscribeRequestAreaConstitutedData();
 	void subscribrRequestUnitSpawnReady();
