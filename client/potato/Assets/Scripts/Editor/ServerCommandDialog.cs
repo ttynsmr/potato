@@ -66,5 +66,6 @@ public class ServerCommandDialog : EditorWindow
         logsPane.makeItem = () => new Label();
         logsPane.bindItem = (item, index) => { (item as Label).text = allLogs[index].Name; };
         logsPane.itemsSource = allLogs;
+        logsPane.virtualizationMethod = CollectionVirtualizationMethod.DynamicHeight;
     }
 }
