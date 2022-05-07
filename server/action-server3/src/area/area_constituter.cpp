@@ -41,7 +41,7 @@ boost::future<bool> AreaConsituter::load(std::shared_ptr<Area> area, const std::
 							{
 								return;
 							}
-							// TODO: Move unit to another area(1)
+							// TODO: Move unit to another area(2)
 							auto gameServiceProvider = ServiceRegistry::instance().findServiceProvider<GameServiceProvider>();
 							auto areaRegistory = gameServiceProvider->getAreaRegistry();
 							auto nextArea = areaRegistory->getArea(AreaId(2));
@@ -71,7 +71,7 @@ boost::future<bool> AreaConsituter::load(std::shared_ptr<Area> area, const std::
 								return;
 							}
 
-							// TODO: Move unit to another area(0)
+							// TODO: Move unit to another area(1)
 							auto gameServiceProvider = ServiceRegistry::instance().findServiceProvider<GameServiceProvider>();
 							auto areaRegistory = gameServiceProvider->getAreaRegistry();
 							auto nextArea = areaRegistory->getArea(AreaId(1));
