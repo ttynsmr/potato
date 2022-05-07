@@ -66,7 +66,7 @@ boost::future<bool> AreaConsituter::load(std::shared_ptr<Area> area, const std::
 					trigger->size = Eigen::Vector3f(1, 1, 1);
 					trigger->setOnTrigger([currentArea](std::shared_ptr<Unit> unit, auto now)
 						{
-							if (!unit->hasComponent<AreaTransporterComponent>())
+							if (unit->hasComponent<AreaTransporterComponent>())
 							{
 								return;
 							}
