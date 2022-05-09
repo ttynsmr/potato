@@ -199,7 +199,7 @@ namespace Potato
             var controllableUnit = unitService.GetControllableUnit();
             if (controllableUnit != null)
             {
-                controllableUnit.ControlLock = false;
+                controllableUnit.ControlLock = true;
             }
 
             yield return new WaitForSeconds(1.0f);
@@ -220,7 +220,7 @@ namespace Potato
             controllableUnit = unitService.GetControllableUnit();
             if (controllableUnit != null)
             {
-                controllableUnit.ControlLock = true;
+                controllableUnit.ControlLock = false;
             }
 
             nowLoading.SetActive(false);

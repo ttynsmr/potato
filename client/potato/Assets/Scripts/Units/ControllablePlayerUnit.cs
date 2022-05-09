@@ -29,7 +29,7 @@ public class ControllablePlayerUnit : IUnit, IHasStatus
     public Potato.UnitDirection Direction { get; set; }
     public Potato.CharacterStatus CharacterStatus { get; set; }
 
-    public bool ControlLock { get; set; }
+    public bool ControlLock { get; set; } = true;
 
     public ControllablePlayerUnit(Potato.Network.NetworkService networkService, UnitId unitId, Vector3 position, Potato.UnitDirection direction, Potato.Avatar avatar)
     {
@@ -77,7 +77,7 @@ public class ControllablePlayerUnit : IUnit, IHasStatus
         int moveX = (Input.GetKey(KeyCode.D) ? 1 : 0) - (Input.GetKey(KeyCode.A) ? 1 : 0);
         int moveY = (Input.GetKey(KeyCode.W) ? 1 : 0) - (Input.GetKey(KeyCode.S) ? 1 : 0);
         
-        if (!ControlLock)
+        if (ControlLock)
         {
             moveX = 0;
             moveY = 0;
