@@ -24,7 +24,7 @@ namespace {{ namespace | camelize }}
                     this.session = session;
                 }
 
-                public bool ReceievePayload(Potato.Network.Protocol.Payload payload)
+                public Google.Protobuf.IMessage ReceievePayload(Potato.Network.Protocol.Payload payload)
                 {
                     switch (payload.Header.rpc_id)
                     {
@@ -33,19 +33,17 @@ namespace {{ namespace | camelize }}
                             {
 {%- if "request" in rpc %}
                                 case Potato.Network.Protocol.Meta.Response:
-                                    on{{ name | camelize }}Response(payload);
-                                    return true;
+                                    return on{{ name | camelize }}Response(payload);
 {% endif %}
 {% if "notification" in rpc %}
                                 case Potato.Network.Protocol.Meta.Notification:
-                                    on{{ name | camelize }}Notification(payload);
-                                    return true;
+                                    return on{{ name | camelize }}Notification(payload);
 {% endif %}
                                 default:
-                                    return false;
+                                    return null;
                             }
                         default:
-                            return false;
+                            return null;
                     }
                 }
 
@@ -102,26 +100,41 @@ namespace {{ namespace | camelize }}
                     return new Response();
                 } #}
 
-                void on{{ name | camelize }}Response(Potato.Network.Protocol.Payload payload)
+                private Google.Protobuf.IMessage on{{ name | camelize }}Response(Potato.Network.Protocol.Payload payload)
                 {
                     ResponseParcel responseParcel = new ResponseParcel();
                     responseParcel.MergeFrom(new Google.Protobuf.CodedInputStream(payload.GetBuffer(), Potato.Network.Protocol.PayloadHeader.Size, payload.GetBuffer().Length - Potato.Network.Protocol.PayloadHeader.Size));
 
                     if (responseCallbacks.TryGetValue(responseParcel.RequestId, out var callback))
                     {
-                        callback(responseParcel.Response);
+                        try
+                        {
+                            callback(responseParcel.Response);
+                        }
+                        catch (Exception)
+                        {
+                        }
                         responseCallbacks.Remove(responseParcel.RequestId);
                     }
+
+                    return responseParcel.Response;
                 }
 {% endif %}
 
 {% if "notification" in rpc %}
                 public event Action<Notification> OnNotification;
-                void on{{ name | camelize }}Notification(Potato.Network.Protocol.Payload payload)
+                private Google.Protobuf.IMessage on{{ name | camelize }}Notification(Potato.Network.Protocol.Payload payload)
                 {
                     NotificationParcel notificationParcel = new NotificationParcel();
                     notificationParcel.MergeFrom(new Google.Protobuf.CodedInputStream(payload.GetBuffer(), Potato.Network.Protocol.PayloadHeader.Size, payload.GetBuffer().Length - Potato.Network.Protocol.PayloadHeader.Size));
-                    OnNotification?.Invoke(notificationParcel.Notification);
+                    try
+                    {
+                        OnNotification?.Invoke(notificationParcel.Notification);
+                    }
+                    catch (Exception)
+                    {
+                    }
+                    return notificationParcel.Notification;
                 }
 {% endif %}
             }

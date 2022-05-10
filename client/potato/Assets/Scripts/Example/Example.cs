@@ -31,6 +31,8 @@ namespace Potato
         public string serverHost = "127.0.0.1";
         public string serverPort = "28888";
 
+        public Action<Google.Protobuf.IMessage> OnReceiveMessage { get; set; }
+
         private readonly Queue<Diagnosis.Gizmo.Notification> gizmoQueue = new();
 
         private readonly ConcurrentQueue<Action> queue = new();
@@ -85,18 +87,16 @@ namespace Potato
             networkService = FindObjectOfType<Potato.Network.NetworkService>();
             var session = networkService.Connect(serverHost, int.Parse(serverPort));
             Potato.RpcHolder.Rpcs = Potato.RpcBuilder.Build(session);
-            session.OnPayloadReceived = (Potato.Network.Protocol.Payload payload) =>
+            session.OnPayloadReceived = (payload) =>
             {
-                var rpc = Potato.RpcHolder.Rpcs.Find(x => x.ContractId == payload.Header.contract_id
-                 && x.RpcId == payload.Header.rpc_id);
+                var rpc = Potato.RpcHolder.GetRpc(payload);
 
                 if (rpc == null)
                 {
                     Debug.LogError($"payload.Header.contract_id: {payload.Header.contract_id} not found {payload.Header}");
                 }
 
-                if (rpc != null && rpc.ContractId == Potato.Diagnosis.PingPong.Rpc.StaticContractId
-                && rpc.RpcId == Potato.Diagnosis.PingPong.Rpc.StaticRpcId)
+                if (rpc is Diagnosis.PingPong.Rpc)
                 {
                     try
                     {
@@ -111,7 +111,12 @@ namespace Potato
 
                 if (rpc != null)
                 {
-                    queue.Enqueue(() => { rpc.ReceievePayload(payload); });
+                    queue.Enqueue(() => {
+                        var message = rpc.ReceievePayload(payload);
+#if UNITY_EDITOR
+                        OnReceiveMessage(message);
+#endif
+                    });
                 }
             };
 
@@ -125,15 +130,15 @@ namespace Potato
                     //Debug.Log("Notification received: " + notification.From + "[" + notification.Message + "]");
                 };
 
-                Debug.Log("Request sent");
-                var request = new Chat.SendMessage.Request
-                {
-                    Message = "Hello world"
-                };
-                sendMessage.Request(request, (response) =>
-                {
-                    Debug.Log("Response");
-                });
+                //Debug.Log("Request sent");
+                //var request = new Chat.SendMessage.Request
+                //{
+                //    Message = "Hello world"
+                //};
+                //sendMessage.Request(request, (response) =>
+                //{
+                //    Debug.Log("Response");
+                //});
             }
 
             {
@@ -269,8 +274,16 @@ namespace Potato
                 foreach (var neighbor in response.Neighbors)
                 {
                     unitService.OnReceiveSpawn(neighbor.Spawn);
-                    unitService.OnReceiveMove(neighbor.Move);
-                    unitService.OnReceiveStop(neighbor.Stop);
+
+                    if (neighbor.Move != null)
+                    {
+                        unitService.OnReceiveMove(neighbor.Move);
+                    }
+
+                    if (neighbor.Stop != null)
+                    {
+                        unitService.OnReceiveStop(neighbor.Stop);
+                    }
                 }
             });
         }

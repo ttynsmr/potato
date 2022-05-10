@@ -7,7 +7,7 @@ namespace {{ namespace | camelize }}
     {
         ushort ContractId { get; }
         ushort RpcId { get; }
-        bool ReceievePayload(Potato.Network.Protocol.Payload payload);
+        Google.Protobuf.IMessage ReceievePayload(Potato.Network.Protocol.Payload payload);
     }
 
     public static class RpcBuilder
@@ -38,6 +38,11 @@ namespace {{ namespace | camelize }}
         public static T GetRpc<T>() where T : IRpc
         {
             return (T)Rpcs.Find(x => x is T);
+        }
+
+        public static IRpc GetRpc(Network.Protocol.Payload payload)
+        {
+            return Rpcs.Find(x => x.ContractId == payload.Header.contract_id && x.RpcId == payload.Header.rpc_id);
         }
     }
 }
