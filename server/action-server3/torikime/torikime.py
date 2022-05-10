@@ -160,6 +160,28 @@ def convert_rpc_to_csharp(env, out_dir, params, args):
     write_cache(cache_filename, rendered_s, args)
 
 
+def convert_rpc_builder_to_csharp(env, out_dir, all_params, args):
+    print(all_params)
+    tmpl = env.get_template("rpc-builder-csharp.j2")
+
+    rendered_s = tmpl.render(all_params)
+
+    filename = f"RpcBuilder.cs"
+    out_filename = f"{out_dir}/{filename}"
+    cache_filename = f"{args.cache_dir}/{filename}.hash"
+    if is_cached(cache_filename, rendered_s, args):
+        return
+
+    if args.verbose:
+        print(f"output: {out_filename}")
+
+    os.makedirs(os.path.dirname(out_filename), exist_ok=True)
+    with open(out_filename, mode="w") as f:
+        f.write(rendered_s)
+
+    write_cache(cache_filename, rendered_s, args)
+
+
 def convert_rpc_to_protobuf_define_message(env, out_dir, input, args):
     tmpl = env.get_template("define-message.j2")
 
@@ -307,6 +329,7 @@ def output_contracts(contracts, contract_idx, all_params, args, env):
         c = {}
         c["name"] = contract
         c["names"] = []
+        c["names_with_notifications"] = []
         all_params["contracts"].append(c)
         for rpc_idx, rpc in enumerate(contracts[contract]):
             # print(rpc)
@@ -315,15 +338,15 @@ def output_contracts(contracts, contract_idx, all_params, args, env):
             rpc_def = {}
             if "request" in contracts[contract][rpc]:
                 rpc_def["request"] = params_to(contracts[contract][rpc]["request"])
+                c["names"].append(rpc)
+                c["names_with_notifications"].append(rpc)
             if "response" in contracts[contract][rpc]:
                 rpc_def["response"] = params_to(contracts[contract][rpc]["response"])
             if "notification" in contracts[contract][rpc]:
                 rpc_def["notification"] = params_to(
                     contracts[contract][rpc]["notification"]
                 )
-
-            if "request" in contracts[contract][rpc]:
-                c["names"].append(rpc)
+                c["names_with_notifications"].append(rpc)
 
             params = {
                 "namespace": args.namespace,
@@ -405,6 +428,8 @@ def main():
         if args.cpp_out_dir:
             convert_rpc_builder_to_hpp(env, args.cpp_out_dir, all_params, args)
             convert_rpc_builder_to_cpp(env, args.cpp_out_dir, all_params, args)
+        if args.csharp_out_dir:
+            convert_rpc_builder_to_csharp(env, args.csharp_out_dir, all_params, args)
 
 
 if __name__ == "__main__":
