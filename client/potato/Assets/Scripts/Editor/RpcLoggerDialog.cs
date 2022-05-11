@@ -78,6 +78,7 @@ public class RpcLoggerDialog : EditorWindow
         };
 
         logsPane = new ListView();
+        logsPane.horizontalScrollingEnabled = true;
         splitView.Add(logsPane);
 
         logsPane.makeItem = () => new Label();
