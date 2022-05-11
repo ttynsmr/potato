@@ -55,6 +55,10 @@ public class RpcLoggerDialog : EditorWindow
                     info += $"   {field.Name} = {field.Accessor.GetValue(message)}\n";
                 }
                 logsPane.itemsSource.Add(new Log { Name = info });
+                if (logsPane.itemsSource.Count > 10000)
+                {
+                    logsPane.itemsSource.RemoveAt(0);
+                }
                 logsPane.RefreshItems();
                 logsPane.ScrollToItem(logsPane.itemsSource.Count - 1);
             });
@@ -72,6 +76,10 @@ public class RpcLoggerDialog : EditorWindow
                     info += $"   {field.Name} = {field.Accessor.GetValue(message)}\n";
                 }
                 logsPane.itemsSource.Add(new Log { Name = info });
+                if (logsPane.itemsSource.Count > 10000)
+                {
+                    logsPane.itemsSource.RemoveAt(0);
+                }
                 logsPane.RefreshItems();
                 logsPane.ScrollToItem(logsPane.itemsSource.Count - 1);
             });
