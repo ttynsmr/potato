@@ -49,7 +49,12 @@ public class RpcLoggerDialog : EditorWindow
         {
             example.OnReceiveMessage = (message => {
                 MessageDescriptor desc = message.Descriptor;
-                logsPane.itemsSource.Add(new Log { Name = "<< " + desc.FullName });
+                string info = $"<< {desc.FullName}\n";
+                foreach (var field in desc.Fields.InDeclarationOrder())
+                {
+                    info += $"   {field.Name} = {field.Accessor.GetValue(message)}\n";
+                }
+                logsPane.itemsSource.Add(new Log { Name = info });
                 logsPane.RefreshItems();
                 logsPane.ScrollToItem(logsPane.itemsSource.Count - 1);
             });
@@ -61,7 +66,12 @@ public class RpcLoggerDialog : EditorWindow
             Potato.RpcHolder.SubscribeRequest((message) =>
             {
                 MessageDescriptor desc = message.Descriptor;
-                logsPane.itemsSource.Add(new Log { Name = ">> " + desc.FullName });
+                string info = $">> {desc.FullName}\n";
+                foreach (var field in desc.Fields.InDeclarationOrder())
+                {
+                    info += $"   {field.Name} = {field.Accessor.GetValue(message)}\n";
+                }
+                logsPane.itemsSource.Add(new Log { Name = info });
                 logsPane.RefreshItems();
                 logsPane.ScrollToItem(logsPane.itemsSource.Count - 1);
             });
