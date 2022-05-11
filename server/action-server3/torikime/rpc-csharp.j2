@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 
 namespace {{ namespace | camelize }}
 {
+    using OnSubscribeRequestDelegate = Action<Google.Protobuf.IMessage>;
+
     namespace {{ contract | camelize }}
     {
         namespace {{ name | camelize }}
@@ -22,6 +24,12 @@ namespace {{ namespace | camelize }}
                 public Rpc(Potato.Network.Session session)
                 {
                     this.session = session;
+                }
+
+                private OnSubscribeRequestDelegate onSubscribeRequest;
+                public void SubscribeRequest(OnSubscribeRequestDelegate callback)
+                {
+                    onSubscribeRequest = callback;
                 }
 
                 public Google.Protobuf.IMessage ReceievePayload(Potato.Network.Protocol.Payload payload)
@@ -73,6 +81,8 @@ namespace {{ namespace | camelize }}
                         ms.Read(payload.GetBuffer(), Potato.Network.Protocol.PayloadHeader.Size, (int)ms.Length);
                         session.SendPayload(payload);
                     }
+
+                    onSubscribeRequest?.Invoke(request);
                 }
 
                 public IEnumerator RequestCoroutine(Request request, ResponseCallback callback)

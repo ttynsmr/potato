@@ -32,6 +32,7 @@ namespace Potato
         public string serverPort = "28888";
 
         public Action<Google.Protobuf.IMessage> OnReceiveMessage { get; set; }
+        public Action OnRpcReady { get; set; }
 
         private readonly Queue<Diagnosis.Gizmo.Notification> gizmoQueue = new();
 
@@ -87,6 +88,7 @@ namespace Potato
             networkService = FindObjectOfType<Potato.Network.NetworkService>();
             var session = networkService.Connect(serverHost, int.Parse(serverPort));
             Potato.RpcHolder.Rpcs = Potato.RpcBuilder.Build(session);
+            OnRpcReady?.Invoke();
             session.OnPayloadReceived = (payload) =>
             {
                 var rpc = Potato.RpcHolder.GetRpc(payload);

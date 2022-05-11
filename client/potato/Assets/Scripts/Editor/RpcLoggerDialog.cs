@@ -49,11 +49,23 @@ public class RpcLoggerDialog : EditorWindow
         {
             example.OnReceiveMessage = (message => {
                 MessageDescriptor desc = message.Descriptor;
-                logsPane.itemsSource.Add(new Log { Name = desc.FullName });
+                logsPane.itemsSource.Add(new Log { Name = "<< " + desc.FullName });
                 logsPane.RefreshItems();
                 logsPane.ScrollToItem(logsPane.itemsSource.Count - 1);
             });
         }
+
+        var networkService = FindObjectOfType<Potato.Network.NetworkService>();
+        example.OnRpcReady += () =>
+        {
+            Potato.RpcHolder.SubscribeRequest((message) =>
+            {
+                MessageDescriptor desc = message.Descriptor;
+                logsPane.itemsSource.Add(new Log { Name = ">> " + desc.FullName });
+                logsPane.RefreshItems();
+                logsPane.ScrollToItem(logsPane.itemsSource.Count - 1);
+            });
+        };
 
         logsPane = new ListView();
         splitView.Add(logsPane);

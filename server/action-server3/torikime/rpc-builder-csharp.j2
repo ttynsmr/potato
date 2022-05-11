@@ -1,13 +1,16 @@
+using System;
 using System.Collections.Generic;
 
 namespace {{ namespace | camelize }}
 {
+    using OnSubscribeRequestDelegate = Action<Google.Protobuf.IMessage>;
 
     public interface IRpc
     {
         ushort ContractId { get; }
         ushort RpcId { get; }
         Google.Protobuf.IMessage ReceievePayload(Potato.Network.Protocol.Payload payload);
+        void SubscribeRequest(OnSubscribeRequestDelegate onSubscribeRequest);
     }
 
     public static class RpcBuilder
@@ -43,6 +46,16 @@ namespace {{ namespace | camelize }}
         public static IRpc GetRpc(Network.Protocol.Payload payload)
         {
             return Rpcs.Find(x => x.ContractId == payload.Header.contract_id && x.RpcId == payload.Header.rpc_id);
+        }
+
+        static private OnSubscribeRequestDelegate onSubscribeRequest;
+        static public void SubscribeRequest(OnSubscribeRequestDelegate callback)
+        {
+            onSubscribeRequest = callback;
+            foreach (var rpc in Rpcs)
+            {
+                rpc.SubscribeRequest(onSubscribeRequest);
+            }
         }
     }
 }
