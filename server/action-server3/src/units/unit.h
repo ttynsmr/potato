@@ -22,6 +22,11 @@
 class MoveCommand;
 class StopCommand;
 
+namespace potato
+{
+	class Area;
+}
+
 class Unit
 	: public std::enable_shared_from_this<Unit>
 {
@@ -34,8 +39,8 @@ public:
 
 	void onEnterArea(int64_t now, potato::AreaId areaId);
 	void onLeaveArea(int64_t now, potato::AreaId areaId);
-	void onSpawn(int64_t now);
-	void onDespawn(int64_t now);
+	void onSpawn(int64_t now, std::shared_ptr<potato::Area> area);
+	void onDespawn(int64_t now, std::shared_ptr<potato::Area> area);
 	void onConnected(int64_t now);
 	void onDisconnected(int64_t now);
 	void update(int64_t now);

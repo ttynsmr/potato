@@ -76,6 +76,7 @@ namespace potato
 	{
 		fmt::print("unit:{} enter area:{}\n", unit->getUnitId(), getAreaId());
 		unit->setAreaId(getAreaId());
+		std::scoped_lock l(_unitsMutex);
 		_units.push_back(unit);
 		_sessionIds.emplace(unit->getSessionId());
 
@@ -89,6 +90,7 @@ namespace potato
 		const auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 		unit->onLeaveArea(now, _areaId);
 		_sessionIds.erase(unit->getSessionId());
+		std::scoped_lock l(_unitsMutex);
 		_units.remove_if([unit = std::move(unit)](auto& u)
 			{
 				auto unit = u.lock();
@@ -131,6 +133,7 @@ namespace potato
 
 	void Area::process(Processor processor)
 	{
+		std::scoped_lock l(_unitsMutex);
 		std::for_each(_units.begin(), _units.end(), [&processor](auto weakUnit)
 			{
 				auto unit = weakUnit.lock();

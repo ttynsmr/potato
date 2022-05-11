@@ -142,7 +142,7 @@ void GameServiceProvider::onUnregisterUser(std::shared_ptr<potato::User> user)
 		_unitRegistry->unregisterUnit(unit);
 
 		const auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-		unit->onDespawn(now);
+		unit->onDespawn(now, area);
 	}
 
 	auto& user_index = _idMapper.get<user_id>();
@@ -675,12 +675,12 @@ void GameServiceProvider::appendNeighborUnits(potato::unit::spawn_ready::Respons
 	assert(area);
 
 	const auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-	area->process([now, &response, spawnUnit](auto unit)
+	area->process([now, area, &response, spawnUnit](auto unit)
 	{
-		if (unit->getUnitId() == spawnUnit->getUnitId())
-		{
-			return;
-		}
+		//if (unit->getUnitId() == spawnUnit->getUnitId())
+		//{
+		//	return;
+		//}
 
 		auto neighbor = response.add_neighbors();
 
@@ -703,10 +703,11 @@ void GameServiceProvider::appendNeighborUnits(potato::unit::spawn_ready::Respons
 			neighbor->set_allocated_spawn(notification);
 		}
 
-		unit->onSpawn(now);
+		unit->onSpawn(now, area);
 
-		// current move state
+		if (unit->getUnitId() != spawnUnit->getUnitId())
 		{
+			// current move state
 			auto moveCommand = unit->getLastMoveCommand();
 			if (moveCommand != nullptr)
 			{
@@ -832,7 +833,7 @@ void GameServiceProvider::main()
 		queue.process();
 		ServiceRegistry::instance().getQueue().process();
 
-		sendSystemMessage("hey");
+		//sendSystemMessage("hey");
 
 		_userRegistry->update(nowUpdate);
 		_areaRegistry->update(nowUpdate);
@@ -852,6 +853,7 @@ void GameServiceProvider::main()
 				frameProcessingTime.clear();
 				networkServiceProvider->resetCounters();
 				fps = 0;
+				//sendSystemMessage("hey");
 				nextSecond = std::chrono::high_resolution_clock::now() + std::chrono::seconds(1);
 			}
 			const auto spareTime = std::chrono::high_resolution_clock::now() - prev;

@@ -4,6 +4,7 @@
 #include <set>
 #include <memory>
 #include <future>
+#include <mutex>
 
 #include "area_types.h"
 #include "session/session_types.h"
@@ -51,6 +52,8 @@ namespace potato
 		boost::future<bool> futureForLoading;
 		boost::future<bool> futureForUnloading;
 		const AreaId _areaId;
+
+		std::recursive_mutex _unitsMutex;
 		std::list<std::weak_ptr<Unit>> _units;
 		std::set<potato::net::SessionId> _sessionIds;
 		std::shared_ptr<NodeRoot> _nodeRoot;

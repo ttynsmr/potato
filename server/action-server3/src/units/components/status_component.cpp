@@ -24,10 +24,8 @@ StatusComponent::StatusComponent(
 
 StatusComponent::~StatusComponent() {}
 
-void StatusComponent::onSpawn(std::shared_ptr<Unit> unit, int64_t /*now*/)
+void StatusComponent::onSpawn(std::shared_ptr<Unit> unit, int64_t /*now*/, std::shared_ptr<potato::Area> area)
 {
-	auto area = _gameServiceProvider.lock()->getAreaRegistry()->getArea(unit->getAreaId());
-
 	using namespace potato::battle::sync_parameters;
 	Notification notification;
 	notification.set_unit_id(unit->getUnitId().value_of());

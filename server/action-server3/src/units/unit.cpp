@@ -9,6 +9,8 @@
 #include "commands/command_knockback.h"
 #include "commands/command_stop.h"
 
+#include "area/area.h"
+
 Unit::Unit(UnitId unitId, potato::net::SessionId sessionId)
 	: _unitId(unitId), _sessionId(sessionId)
 {
@@ -110,19 +112,19 @@ void Unit::onLeaveArea(int64_t now, potato::AreaId areaId)
 	resetCommands();
 }
 
-void Unit::onSpawn(int64_t now)
+void Unit::onSpawn(int64_t now, std::shared_ptr<potato::Area> area)
 {
 	for (auto& component : _components)
 	{
-		component.second->onSpawn(shared_from_this(), now);
+		component.second->onSpawn(shared_from_this(), now, area);
 	}
 }
 
-void Unit::onDespawn(int64_t now)
+void Unit::onDespawn(int64_t now, std::shared_ptr<potato::Area> area)
 {
 	for (auto& component : _components)
 	{
-		component.second->onDespawn(shared_from_this(), now);
+		component.second->onDespawn(shared_from_this(), now, area);
 	}
 }
 
