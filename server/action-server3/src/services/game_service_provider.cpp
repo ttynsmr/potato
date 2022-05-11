@@ -16,6 +16,7 @@
 #include "area_transport.pb.h"
 #include "area_constituted_data.pb.h"
 #include "auth_login.pb.h"
+#include "auth_server_ready.pb.h"
 #include "chat_send_message.pb.h"
 #include "diagnosis_sever_sessions.pb.h"
 #include "diagnosis_ping_pong.pb.h"
@@ -52,6 +53,7 @@
 #include "area_transport.h"
 #include "area_constituted_data.h"
 #include "auth_login.h"
+#include "auth_server_ready.h"
 #include "chat_send_message.h"
 #include "diagnosis_sever_sessions.h"
 #include "diagnosis_ping_pong.h"
@@ -165,6 +167,10 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::Session> sessi
 	subscribeRequestUnitMove();
 	subscribeRequestUnitStop();
 	subscribeRequestBattleSkillCast();
+
+	potato::auth::server_ready::Notification notification;
+	notification.set_ok(true);
+	session->sendPayload(potato::auth::server_ready::Rpc::serializeNotification(notification));
 }
 
 void GameServiceProvider::subscribrRequestUnitSpawnReady()

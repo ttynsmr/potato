@@ -88,7 +88,6 @@ namespace Potato
             networkService = FindObjectOfType<Potato.Network.NetworkService>();
             var session = networkService.Connect(serverHost, int.Parse(serverPort));
             Potato.RpcHolder.Rpcs = Potato.RpcBuilder.Build(session);
-            OnRpcReady?.Invoke();
             session.OnPayloadReceived = (payload) =>
             {
                 var rpc = Potato.RpcHolder.GetRpc(payload);
@@ -121,7 +120,7 @@ namespace Potato
                     });
                 }
             };
-
+            OnRpcReady?.Invoke();
 
             networkService.OnDisconnectedCallback += OnDisconnected;
 
@@ -175,6 +174,13 @@ namespace Potato
                 syncCharacterStatus.OnNotification += unitService.OnReceiveCharacterStatus;
             }
 
+            bool serverIsReady = false;
+            {
+                RpcHolder.GetRpc<Auth.ServerReady.Rpc>().OnNotification += (notification) => {
+                    serverIsReady = true;
+                };
+            }
+
             bool transportOrder = false;
             uint transportToAreaId = 0;
             {
@@ -189,6 +195,8 @@ namespace Potato
             }
 
             networkService.StartReceive();
+            yield return new WaitUntil(() => serverIsReady);
+
             StartCoroutine(DoPingPong());
 
             yield return new WaitUntil(() => timeSynchronized);
@@ -382,6 +390,7 @@ namespace Potato
                 return;
             }
 
+            if (Time.frameCount % 600 == 0)
             {
                 var request = new Potato.Diagnosis.SeverSessions.Request();
                 var rpc = Potato.RpcHolder.GetRpc<Potato.Diagnosis.SeverSessions.Rpc>();

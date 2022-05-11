@@ -20,6 +20,7 @@ namespace Potato
             public void StartReceive()
             {
                 session.Start();
+                OnConnectedCallback?.Invoke(session);
             }
 
             private void OnDisconnected(Session session)
@@ -47,6 +48,7 @@ namespace Potato
 
             public long Now => (long)(DateTime.UtcNow - UnixEpoch).TotalMilliseconds + ServerTimeDifference;
             public long ServerTimeDifference { get; set; }
+            public Action<Session> OnConnectedCallback { get; set; }
             public Action<Session> OnDisconnectedCallback { get; set; }
 
             public readonly DateTime UnixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, 0);
