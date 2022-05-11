@@ -217,6 +217,9 @@ void GameServiceProvider::subscribrRequestUnitSpawnReady()
 				avatar->set_name(user->getDisplayName());
 				response.set_allocated_avatar(avatar);
 
+				const auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+				newUnit->onSpawn(now, area);
+
 				appendNeighborUnits(response, newUnit);
 
 				responser->send(true, std::move(response));
@@ -676,11 +679,15 @@ void GameServiceProvider::appendNeighborUnits(potato::unit::spawn_ready::Respons
 
 	const auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 	area->process([now, area, &response, spawnUnit](auto unit)
+		{
+			fmt::print("NeighborUnits[{}]\n", unit->getUnitId());
+		});
+	area->process([now, area, &response, spawnUnit](auto unit)
 	{
-		//if (unit->getUnitId() == spawnUnit->getUnitId())
-		//{
-		//	return;
-		//}
+		if (unit->getUnitId() == spawnUnit->getUnitId())
+		{
+			return;
+		}
 
 		auto neighbor = response.add_neighbors();
 
@@ -703,9 +710,6 @@ void GameServiceProvider::appendNeighborUnits(potato::unit::spawn_ready::Respons
 			neighbor->set_allocated_spawn(notification);
 		}
 
-		unit->onSpawn(now, area);
-
-		if (unit->getUnitId() != spawnUnit->getUnitId())
 		{
 			// current move state
 			auto moveCommand = unit->getLastMoveCommand();
