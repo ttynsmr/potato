@@ -193,9 +193,6 @@ void GameServiceProvider::subscribrRequestUnitSpawnReady()
 				newUnit->addComponent<StatusComponent>(shared_from_this(), _networkServiceProvider.lock());
 			}
 
-			auto user = _userRegistry->find(binderIt->userId);
-			newUnit->setDisplayName(user->getDisplayName());
-
 			// update unit id
 			if (binderIt != session_index.end())
 			{
@@ -203,6 +200,9 @@ void GameServiceProvider::subscribrRequestUnitSpawnReady()
 				auto user = _userRegistry->find(binderIt->userId);
 				user->setUnitId(newUnit->getUnitId());
 			}
+
+			auto user = _userRegistry->findByUnitId(newUnit->getUnitId());
+			newUnit->setDisplayName(user->getDisplayName());
 
 			const auto areaId = static_cast<potato::AreaId>(request.request().area_id());
 			// response
@@ -335,15 +335,16 @@ void GameServiceProvider::subscribeRequestAuthLogin()
 						// rebind session
 						user_index.replace(binderIt, { r.value(), session->getSessionId(), binderIt->unitId });
 						user = _userRegistry->find(r.value());
+						user->setUnitId(binderIt->unitId);
 					}
 					else
 					{
 						// new session
 						_idMapper.insert({ r.value(), session->getSessionId(), UnitId(0) });
 						user = _userRegistry->registerUser(r.value());
+						user->setUnitId(UnitId(0));
 					}
 					user->setSession(session);
-					user->setUnitId(binderIt->unitId);
 					user->setDisplayName(user_id_name);
 
 					fmt::print("session id[{}] user_id: {}({}) logged in\n", session->getSessionId(), r.value(), user_id_name);
