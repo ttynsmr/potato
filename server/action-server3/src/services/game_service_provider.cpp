@@ -538,15 +538,25 @@ void GameServiceProvider::subscribeRequestBattleSkillCast()
 			uint32_t skillId = requestParcel.request().skill_id();
 			int64_t triggerTime = requestParcel.request().trigger_time();
 			Response response;
-			response.set_ok(true);
-			response.set_attack_id(attackId);
-			responser->send(true, std::move(response));
+			auto casterUnit = _unitRegistry->findUnitBySessionId(session->getSessionId());
+			if (casterUnit->getAreaId() != potato::AreaId(0))
+			{
+				response.set_ok(true);
+				response.set_attack_id(attackId);
+				responser->send(true, std::move(response));
+			}
+			else
+			{
+				response.set_ok(false);
+				response.set_attack_id(attackId);
+				responser->send(true, std::move(response));
+				return;
+			}
 
-			queue.enqueue(0, [this, session, attackId, skillId, triggerTime]()
+			queue.enqueue(0, [this, session, attackId, skillId, triggerTime, casterUnit = std::move(casterUnit)]()
 				{
 					std::vector<std::shared_ptr<potato::net::protocol::Payload>> knockbackPayloads;
 
-					auto casterUnit = _unitRegistry->findUnitBySessionId(session->getSessionId());
 					fmt::print("attack received caster:{} trigger_time:{} skill_id:{} attack_id:{}\n", casterUnit->getUnitId(), triggerTime, skillId, attackId);
 
 					Notification notification;

@@ -200,7 +200,7 @@ public class ControllablePlayerUnit : IUnit, IHasStatus
         prevInputX = moveX;
         prevInputY = moveY;
 
-        if (!prevAttackButton && Input.GetKey(KeyCode.P))
+        if (!ControlLock && !prevAttackButton && Input.GetKey(KeyCode.P))
         {
             var context = SynchronizationContext.Current;
             prevAttackButton = true;
