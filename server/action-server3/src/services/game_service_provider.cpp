@@ -181,28 +181,25 @@ void GameServiceProvider::subscribrRequestUnitSpawnReady()
 			std::shared_ptr<Unit> newUnit;
 			auto& session_index = _idMapper.get<potato::net::session_id>();
 			auto binderIt = session_index.find(session->getSessionId());
-			if (binderIt != session_index.end() && binderIt->unitId != UnitId(0))
-			{
-				newUnit = _unitRegistry->findUnitByUnitId(binderIt->unitId);
-				newUnit->setSessionId(session->getSessionId());
-				rebind = true;
-			}
-			else
-			{
-				newUnit = _unitRegistry->createUnit(session->getSessionId());
-				newUnit->addComponent<StatusComponent>(shared_from_this(), _networkServiceProvider.lock());
-			}
-
-			// update unit id
 			if (binderIt != session_index.end())
 			{
+				if (binderIt->unitId != UnitId(0))
+				{
+					newUnit = _unitRegistry->findUnitByUnitId(binderIt->unitId);
+					newUnit->setSessionId(session->getSessionId());
+					rebind = true;
+				}
+				else
+				{
+					newUnit = _unitRegistry->createUnit(session->getSessionId());
+					newUnit->addComponent<StatusComponent>(shared_from_this(), _networkServiceProvider.lock());
+				}
+				// update unit id
 				session_index.replace(binderIt, { binderIt->userId, binderIt->sessionId, newUnit->getUnitId() });
 				auto user = _userRegistry->find(binderIt->userId);
 				user->setUnitId(newUnit->getUnitId());
+				newUnit->setDisplayName(user->getDisplayName());
 			}
-
-			auto user = _userRegistry->findByUnitId(newUnit->getUnitId());
-			newUnit->setDisplayName(user->getDisplayName());
 
 			const auto areaId = static_cast<potato::AreaId>(request.request().area_id());
 			// response
@@ -220,7 +217,7 @@ void GameServiceProvider::subscribrRequestUnitSpawnReady()
 				response.set_allocated_individuality(individuality);
 				response.set_cause(potato::UNIT_SPAWN_CAUSE_LOGGEDIN);
 				auto avatar = new potato::Avatar();
-				avatar->set_name(user->getDisplayName());
+				avatar->set_name(newUnit->getDisplayName());
 				response.set_allocated_avatar(avatar);
 
 				const auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
