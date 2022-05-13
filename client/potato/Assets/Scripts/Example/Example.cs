@@ -219,6 +219,9 @@ namespace Potato
 
             yield return new WaitForSeconds(1.0f);
 
+            // destroy all units
+            unitService.Reset();
+
             Debug.Log($"Area transport notification received: transport id:{notification.TransportId} area:{notification.AreaId} unit:{notification.UnitId}");
             var transport = Potato.RpcHolder.GetRpc<Potato.Area.Transport.Rpc>();
             yield return transport.RequestCoroutine(new Potato.Area.Transport.Request(new Potato.Area.Transport.Request() { TransportId = notification.TransportId }), (response) =>
