@@ -200,6 +200,15 @@ void GameServiceProvider::subscribrRequestUnitSpawnReady()
 				user->setUnitId(newUnit->getUnitId());
 				newUnit->setDisplayName(user->getDisplayName());
 			}
+			else
+			{
+				fmt::print("SpawnReadyRequest received, but SessionId:{} is not found in IdMapper.\n", session->getSessionId().value_of());
+				for (auto it = _idMapper.begin(); it != _idMapper.end(); ++it)
+				{
+					fmt::print("Id mapped sessionId:{} unitId:{} userId:{}\n", (*it).sessionId, (*it).unitId, (*it).userId);
+				}
+				return;
+			}
 
 			const auto areaId = static_cast<potato::AreaId>(request.request().area_id());
 			// response
@@ -337,7 +346,11 @@ void GameServiceProvider::subscribeRequestAuthLogin()
 					else
 					{
 						// new session
-						_idMapper.insert({ r.value(), session->getSessionId(), UnitId(0) });
+						auto result = _idMapper.insert({ r.value(), session->getSessionId(), UnitId(0) });
+						if (!result.second)
+						{
+							fmt::print("IdMapper insert failed. sessionId{} user_id: {}({}) logged in\n", session->getSessionId(), r.value(), user_id_name);
+						}
 						user = _userRegistry->registerUser(r.value());
 						user->setUnitId(UnitId(0));
 					}
@@ -346,6 +359,7 @@ void GameServiceProvider::subscribeRequestAuthLogin()
 
 					fmt::print("session id[{}] user_id: {}({}) logged in\n", session->getSessionId(), r.value(), user_id_name);
 					response.set_ok(true);
+					response.set_token(std::to_string(r.value().value_of()));
 					responser->send(true, std::move(response));
 
 					potato::area::transport::Notification notification;
