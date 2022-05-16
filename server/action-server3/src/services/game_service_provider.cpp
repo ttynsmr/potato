@@ -707,10 +707,6 @@ void GameServiceProvider::appendNeighborUnits(potato::unit::spawn_ready::Respons
 
 	const auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 	area->process([now, area, &response, spawnUnit](auto unit)
-		{
-			fmt::print("NeighborUnits[{}]\n", unit->getUnitId());
-		});
-	area->process([now, area, &response, spawnUnit](auto unit)
 	{
 		if (unit->getUnitId() == spawnUnit->getUnitId())
 		{

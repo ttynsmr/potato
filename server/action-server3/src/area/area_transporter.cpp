@@ -44,7 +44,6 @@ void AreaTransporter::transport(std::shared_ptr<Area> fromArea, std::shared_ptr<
 	{
 		gameServiceProvider->sendAreacastSpawnUnit(unit->getSessionId(), unit);
 		unit->removeComponent<AreaTransporterComponent>();
-		fmt::print("sendAreacastSpawnUnit -> removeComponent<AreaTransporterComponent>\n");
 	};
 
 	auto onSpawnReadyRequest = [this, unit, sendAreacastSpawnUnit = std::move(sendAreacastSpawnUnit)](std::shared_ptr<Unit> receivedUnit)
@@ -56,7 +55,6 @@ void AreaTransporter::transport(std::shared_ptr<Area> fromArea, std::shared_ptr<
 		//spawn_ready to next area
 		_spawnReadyRequest.disconnect();
 		sendAreacastSpawnUnit();
-		fmt::print("onSpawnReadyRequest -> sendAreacastSpawnUnit\n");
 	};
 
 	_spawnReadyRequest = gameServiceProvider->subscribeOnSpawnReadyRequest(onSpawnReadyRequest);
@@ -64,7 +62,6 @@ void AreaTransporter::transport(std::shared_ptr<Area> fromArea, std::shared_ptr<
 	auto unloadCirrentAreaAndLoadNextArea = []()
 	{
 		//unload current areaand load next area
-		fmt::print("unloadCirrentAreaAndLoadNextArea\n");
 	};
 
 	auto sendAreacastDespawnUnit = [unloadCirrentAreaAndLoadNextArea = std::move(unloadCirrentAreaAndLoadNextArea), gameServiceProvider, fromArea, unit]()
@@ -73,7 +70,6 @@ void AreaTransporter::transport(std::shared_ptr<Area> fromArea, std::shared_ptr<
 		gameServiceProvider->sendAreacastDespawnUnit(unit->getSessionId(), unit);
 		fromArea->leave(unit);
 
-		fmt::print("sendAreacastDespawnUnit -> unloadCirrentAreaAndLoadNextArea\n");
 		unloadCirrentAreaAndLoadNextArea();
 	};
 
@@ -85,7 +81,6 @@ void AreaTransporter::transport(std::shared_ptr<Area> fromArea, std::shared_ptr<
 		}
 		_transportRequest.disconnect();
 		sendAreacastDespawnUnit();
-		fmt::print("onTransportRequestReceived -> sendAreacastDespawnUnit\n");
 	};
 	
 	_transportRequest = gameServiceProvider->subscribeOnTransportRequest(onTransportRequestReceived);
@@ -115,9 +110,7 @@ void AreaTransporter::transport(std::shared_ptr<Area> fromArea, std::shared_ptr<
 			networkServiceProvider->sendTo(unit->getSessionId(), Rpc::serializeNotification(notification));
 		}
 
-		fmt::print("sendAreaTransportNotification -> sendAreacast/sendTo\n");
 	};
 
-	fmt::print("sendAreaTransportNotification\n");
 	sendAreaTransportNotification();
 }
