@@ -84,14 +84,14 @@ namespace potato
 		unit->onEnterArea(now, _areaId);
 	}
 
-	void Area::leave(std::shared_ptr<Unit> unit)
+	void Area::leave(std::shared_ptr<Unit> leaveUnit)
 	{
-		fmt::print("unit:{} leave area:{}\n", unit->getUnitId(), getAreaId());
+		fmt::print("unit:{} leave area:{}\n", leaveUnit->getUnitId(), getAreaId());
 		const auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-		unit->onLeaveArea(now, _areaId);
-		_sessionIds.erase(unit->getSessionId());
+		leaveUnit->onLeaveArea(now, _areaId);
+		_sessionIds.erase(leaveUnit->getSessionId());
 		std::scoped_lock l(_unitsMutex);
-		_units.remove_if([unit = std::move(unit)](auto& u)
+		_units.remove_if([leaveUnit = std::move(leaveUnit)](auto& u)
 			{
 				auto unit = u.lock();
 				if (unit == nullptr)
@@ -99,7 +99,7 @@ namespace potato
 					return true;
 				}
 				
-				return unit->getUnitId() == unit->getUnitId();
+				return leaveUnit->getUnitId() == unit->getUnitId();
 			});
 	}
 
