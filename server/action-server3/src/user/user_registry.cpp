@@ -33,7 +33,27 @@ namespace potato
 
 	std::shared_ptr<User> UserRegistry::find(UserId userId)
 	{
+		if (userId == UserId(0))
+		{
+			return std::shared_ptr<User>();
+		}
+		
 		auto userIt = std::find_if(_users.begin(), _users.end(), [userId](auto& user) { return user->getUserId() == userId; });
+		if (userIt == _users.end())
+		{
+			return std::shared_ptr<User>();
+		}
+		return *userIt;
+	}
+
+	std::shared_ptr<User> UserRegistry::findByUnitId(UnitId unitId)
+	{
+		if (unitId == UnitId(0))
+		{
+			return std::shared_ptr<User>();
+		}
+
+		auto userIt = std::find_if(_users.begin(), _users.end(), [unitId](auto& user) { return user->getUnitId() == unitId; });
 		if (userIt == _users.end())
 		{
 			return std::shared_ptr<User>();

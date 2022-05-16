@@ -22,6 +22,11 @@
 class MoveCommand;
 class StopCommand;
 
+namespace potato
+{
+	class Area;
+}
+
 class Unit
 	: public std::enable_shared_from_this<Unit>
 {
@@ -32,11 +37,15 @@ public:
 	void interveneHistory(std::shared_ptr<ICommand> command);
 
 
-	void onSpawn(int64_t now);
-	void onDespawn(int64_t now);
+	void onEnterArea(int64_t now, potato::AreaId areaId);
+	void onLeaveArea(int64_t now, potato::AreaId areaId);
+	void onSpawn(int64_t now, std::shared_ptr<potato::Area> area);
+	void onDespawn(int64_t now, std::shared_ptr<potato::Area> area);
 	void onConnected(int64_t now);
 	void onDisconnected(int64_t now);
 	void update(int64_t now);
+
+	void resetCommands();
 
 	std::shared_ptr<ICommand> getLastCommand();
 
@@ -148,6 +157,7 @@ public:
 		_components.erase(typeid(T).hash_code());
 	}
 
+	std::string toString(int64_t now) const;
 	void dump(int64_t now) const;
 
 private:

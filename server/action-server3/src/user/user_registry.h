@@ -23,6 +23,7 @@ namespace potato
 		void unregisterUserByUserId(UserId userId);
 
 		std::shared_ptr<User> find(UserId userId);
+		std::shared_ptr<User> findByUnitId(UnitId unitId);
 
 		void update(int64_t now);
 

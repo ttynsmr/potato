@@ -20,6 +20,11 @@ namespace potato
 
 	void Area::requestLoad()
 	{
+		if (loaded)
+		{
+			return;
+		}
+
 		assert(!asyncOperating);
 		assert(!futureForLoading.valid());
 		assert(!futureForUnloading.valid());
@@ -30,10 +35,17 @@ namespace potato
 			shared_this->asyncOperating = false;
 			return f.get();
 			});
+		futureForLoading.wait();
+		loaded = true;
 	}
 
 	void Area::requestUnload()
 	{
+		if (!loaded)
+		{
+			return;
+		}
+
 		assert(!asyncOperating);
 		assert(!futureForLoading.valid());
 		assert(!futureForUnloading.valid());
@@ -45,6 +57,8 @@ namespace potato
 			shared_this->asyncOperating = false;
 			return f.get();
 		});
+		futureForUnloading.wait();
+		loaded = false;
 	}
 
 	boost::future<bool> Area::unload()
@@ -60,14 +74,23 @@ namespace potato
 
 	void Area::enter(std::shared_ptr<Unit> unit)
 	{
+		fmt::print("unit:{} enter area:{}\n", unit->getUnitId(), getAreaId());
 		unit->setAreaId(getAreaId());
+		std::scoped_lock l(_unitsMutex);
 		_units.push_back(unit);
 		_sessionIds.emplace(unit->getSessionId());
+
+		const auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+		unit->onEnterArea(now, _areaId);
 	}
 
 	void Area::leave(std::shared_ptr<Unit> leaveUnit)
 	{
+		fmt::print("unit:{} leave area:{}\n", leaveUnit->getUnitId(), getAreaId());
+		const auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+		leaveUnit->onLeaveArea(now, _areaId);
 		_sessionIds.erase(leaveUnit->getSessionId());
+		std::scoped_lock l(_unitsMutex);
 		_units.remove_if([leaveUnit = std::move(leaveUnit)](auto& u)
 			{
 				auto unit = u.lock();
@@ -82,30 +105,25 @@ namespace potato
 
 	void Area::update(time_t now)
 	{
-		_nodeRoot->process([this, now](std::shared_ptr<Node> node) {
-			auto trigger = node->getComponent<TriggerableComponent>();
-			if (trigger)
+		_nodeRoot->process([this, now](std::shared_ptr<Node> node)
 			{
-				process([trigger, now](auto weakUnit) {
-					std::shared_ptr<Unit> unit = weakUnit.lock();
+				auto trigger = node->getComponent<TriggerableComponent>();
+				if (trigger)
+				{
+					process([trigger, now](std::shared_ptr<Unit> unit)
+						{
+							if (unit->hasComponent<NpcComponent>())
+							{
+								return;
+							}
 
-					if (unit == nullptr)
-					{
-						return;
-					}
-					
-					if (unit->hasComponent<NpcComponent>())
-					{
-						return;
-					}
-
-					if (trigger->containsAABB(unit->getPosition()))
-					{
-						trigger->invokeOnTrigger(unit, now);
-					}
-				});
-			}
-		});
+							if (trigger->containsAABB(unit->getPosition()))
+							{
+								trigger->invokeOnTrigger(unit, now);
+							}
+						});
+				}
+			});
 	}
 
 	const std::set<potato::net::SessionId> Area::getSessionIds() const
@@ -115,7 +133,16 @@ namespace potato
 
 	void Area::process(Processor processor)
 	{
-		std::for_each(_units.begin(), _units.end(), processor);
+		std::scoped_lock l(_unitsMutex);
+		std::for_each(_units.begin(), _units.end(), [&processor](auto weakUnit)
+			{
+				auto unit = weakUnit.lock();
+				if (!unit)
+				{
+					return;
+				}
+				processor(unit);
+			});
 	}
 
 	std::shared_ptr<NodeRoot> Area::getNodeRoot()

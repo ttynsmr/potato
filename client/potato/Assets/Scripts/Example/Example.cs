@@ -31,6 +31,9 @@ namespace Potato
         public string serverHost = "127.0.0.1";
         public string serverPort = "28888";
 
+        public Action<Google.Protobuf.IMessage> OnReceiveMessage { get; set; }
+        public Action OnRpcReady { get; set; }
+
         private readonly Queue<Diagnosis.Gizmo.Notification> gizmoQueue = new();
 
         private readonly ConcurrentQueue<Action> queue = new();
@@ -85,18 +88,16 @@ namespace Potato
             networkService = FindObjectOfType<Potato.Network.NetworkService>();
             var session = networkService.Connect(serverHost, int.Parse(serverPort));
             Potato.RpcHolder.Rpcs = Potato.RpcBuilder.Build(session);
-            session.OnPayloadReceived = (Potato.Network.Protocol.Payload payload) =>
+            session.OnPayloadReceived = (payload) =>
             {
-                var rpc = Potato.RpcHolder.Rpcs.Find(x => x.ContractId == payload.Header.contract_id
-                 && x.RpcId == payload.Header.rpc_id);
+                var rpc = Potato.RpcHolder.GetRpc(payload);
 
                 if (rpc == null)
                 {
                     Debug.LogError($"payload.Header.contract_id: {payload.Header.contract_id} not found {payload.Header}");
                 }
 
-                if (rpc != null && rpc.ContractId == Potato.Diagnosis.PingPong.Rpc.StaticContractId
-                && rpc.RpcId == Potato.Diagnosis.PingPong.Rpc.StaticRpcId)
+                if (rpc is Diagnosis.PingPong.Rpc)
                 {
                     try
                     {
@@ -111,10 +112,15 @@ namespace Potato
 
                 if (rpc != null)
                 {
-                    queue.Enqueue(() => { rpc.ReceievePayload(payload); });
+                    queue.Enqueue(() => {
+                        var message = rpc.ReceievePayload(payload);
+#if UNITY_EDITOR
+                        OnReceiveMessage(message);
+#endif
+                    });
                 }
             };
-
+            OnRpcReady?.Invoke();
 
             networkService.OnDisconnectedCallback += OnDisconnected;
 
@@ -125,15 +131,15 @@ namespace Potato
                     //Debug.Log("Notification received: " + notification.From + "[" + notification.Message + "]");
                 };
 
-                Debug.Log("Request sent");
-                var request = new Chat.SendMessage.Request
-                {
-                    Message = "Hello world"
-                };
-                sendMessage.Request(request, (response) =>
-                {
-                    Debug.Log("Response");
-                });
+                //Debug.Log("Request sent");
+                //var request = new Chat.SendMessage.Request
+                //{
+                //    Message = "Hello world"
+                //};
+                //sendMessage.Request(request, (response) =>
+                //{
+                //    Debug.Log("Response");
+                //});
             }
 
             {
@@ -168,6 +174,13 @@ namespace Potato
                 syncCharacterStatus.OnNotification += unitService.OnReceiveCharacterStatus;
             }
 
+            bool serverIsReady = false;
+            {
+                RpcHolder.GetRpc<Auth.ServerReady.Rpc>().OnNotification += (notification) => {
+                    serverIsReady = true;
+                };
+            }
+
             bool transportOrder = false;
             uint transportToAreaId = 0;
             {
@@ -182,6 +195,8 @@ namespace Potato
             }
 
             networkService.StartReceive();
+            yield return new WaitUntil(() => serverIsReady);
+
             StartCoroutine(DoPingPong());
 
             yield return new WaitUntil(() => timeSynchronized);
@@ -196,7 +211,16 @@ namespace Potato
         {
             nowLoading.SetActive(true);
 
+            var controllableUnit = unitService.GetControllableUnit();
+            if (controllableUnit != null)
+            {
+                controllableUnit.ControlLock = true;
+            }
+
             yield return new WaitForSeconds(1.0f);
+
+            // destroy all units
+            unitService.Reset();
 
             Debug.Log($"Area transport notification received: transport id:{notification.TransportId} area:{notification.AreaId} unit:{notification.UnitId}");
             var transport = Potato.RpcHolder.GetRpc<Potato.Area.Transport.Rpc>();
@@ -210,7 +234,13 @@ namespace Potato
             yield return RequestSpawnReady(notification.AreaId);
 
             yield return new WaitForSeconds(1.0f);
-            
+
+            controllableUnit = unitService.GetControllableUnit();
+            if (controllableUnit != null)
+            {
+                controllableUnit.ControlLock = false;
+            }
+
             nowLoading.SetActive(false);
         }
 
@@ -257,8 +287,16 @@ namespace Potato
                 foreach (var neighbor in response.Neighbors)
                 {
                     unitService.OnReceiveSpawn(neighbor.Spawn);
-                    unitService.OnReceiveMove(neighbor.Move);
-                    unitService.OnReceiveStop(neighbor.Stop);
+
+                    if (neighbor.Move != null)
+                    {
+                        unitService.OnReceiveMove(neighbor.Move);
+                    }
+
+                    if (neighbor.Stop != null)
+                    {
+                        unitService.OnReceiveStop(neighbor.Stop);
+                    }
                 }
             });
         }
@@ -355,6 +393,7 @@ namespace Potato
                 return;
             }
 
+            if (Time.frameCount % 600 == 0)
             {
                 var request = new Potato.Diagnosis.SeverSessions.Request();
                 var rpc = Potato.RpcHolder.GetRpc<Potato.Diagnosis.SeverSessions.Rpc>();

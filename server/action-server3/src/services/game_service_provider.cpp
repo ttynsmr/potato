@@ -16,9 +16,11 @@
 #include "area_transport.pb.h"
 #include "area_constituted_data.pb.h"
 #include "auth_login.pb.h"
+#include "auth_server_ready.pb.h"
 #include "chat_send_message.pb.h"
 #include "diagnosis_sever_sessions.pb.h"
 #include "diagnosis_ping_pong.pb.h"
+#include "diagnosis_command.pb.h"
 #include "diagnosis_gizmo.pb.h"
 #include "unit_spawn_ready.pb.h"
 #include "unit_spawn.pb.h"
@@ -51,9 +53,11 @@
 #include "area_transport.h"
 #include "area_constituted_data.h"
 #include "auth_login.h"
+#include "auth_server_ready.h"
 #include "chat_send_message.h"
 #include "diagnosis_sever_sessions.h"
 #include "diagnosis_ping_pong.h"
+#include "diagnosis_command.h"
 #include "diagnosis_gizmo.h"
 #include "unit_spawn_ready.h"
 #include "unit_spawn.h"
@@ -108,7 +112,7 @@ void GameServiceProvider::generateNPCs()
 		{
 			area = _areaRegistry->addArea(areaId);
 			area->requestLoad();
-		}
+			}
 		area->enter(newUnit);
 	};
 
@@ -122,7 +126,7 @@ void GameServiceProvider::generateNPCs()
 		newUnit->setDisplayName(fmt::format("NONAME{}", newUnit->getUnitId()));
 		newUnit->addComponent<NpcComponent>(shared_from_this());
 		newUnit->addComponent<StatusComponent>(shared_from_this(), _networkServiceProvider.lock());
-		addToArea(potato::AreaId(0), newUnit);
+		addToArea(potato::AreaId(1), newUnit);
 	}
 }
 
@@ -140,7 +144,7 @@ void GameServiceProvider::onUnregisterUser(std::shared_ptr<potato::User> user)
 		_unitRegistry->unregisterUnit(unit);
 
 		const auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-		unit->onDespawn(now);
+		unit->onDespawn(now, area);
 	}
 
 	auto& user_index = _idMapper.get<user_id>();
@@ -156,12 +160,17 @@ void GameServiceProvider::onAccepted(std::shared_ptr<potato::net::Session> sessi
 	subscribeRequestChatSendMessage();
 	subscribeRequestDiagnosisServerSessions();
 	subscribeRequestDiagnosisPingPong();
+	subscribeRequestDiagnosisCommand();
 	subscribeRequestAreaTransport();
 	subscribeRequestAreaConstitutedData();
 	subscribrRequestUnitSpawnReady();
 	subscribeRequestUnitMove();
 	subscribeRequestUnitStop();
 	subscribeRequestBattleSkillCast();
+
+	potato::auth::server_ready::Notification notification;
+	notification.set_ok(true);
+	session->sendPayload(potato::auth::server_ready::Rpc::serializeNotification(notification));
 }
 
 void GameServiceProvider::subscribrRequestUnitSpawnReady()
@@ -172,27 +181,33 @@ void GameServiceProvider::subscribrRequestUnitSpawnReady()
 			std::shared_ptr<Unit> newUnit;
 			auto& session_index = _idMapper.get<potato::net::session_id>();
 			auto binderIt = session_index.find(session->getSessionId());
-			if (binderIt != session_index.end() && binderIt->unitId != UnitId(0))
-			{
-				newUnit = _unitRegistry->findUnitByUnitId(binderIt->unitId);
-				newUnit->setSessionId(session->getSessionId());
-				rebind = true;
-			}
-			else
-			{
-				newUnit = _unitRegistry->createUnit(session->getSessionId());
-				newUnit->addComponent<StatusComponent>(shared_from_this(), _networkServiceProvider.lock());
-			}
-
-			auto user = _userRegistry->find(binderIt->userId);
-			newUnit->setDisplayName(user->getDisplayName());
-
-			// update unit id
 			if (binderIt != session_index.end())
 			{
+				if (binderIt->unitId != UnitId(0))
+				{
+					newUnit = _unitRegistry->findUnitByUnitId(binderIt->unitId);
+					newUnit->setSessionId(session->getSessionId());
+					rebind = true;
+				}
+				else
+				{
+					newUnit = _unitRegistry->createUnit(session->getSessionId());
+					newUnit->addComponent<StatusComponent>(shared_from_this(), _networkServiceProvider.lock());
+				}
+				// update unit id
 				session_index.replace(binderIt, { binderIt->userId, binderIt->sessionId, newUnit->getUnitId() });
 				auto user = _userRegistry->find(binderIt->userId);
 				user->setUnitId(newUnit->getUnitId());
+				newUnit->setDisplayName(user->getDisplayName());
+			}
+			else
+			{
+				fmt::print("SpawnReadyRequest received, but SessionId:{} is not found in IdMapper.\n", session->getSessionId().value_of());
+				for (auto it = _idMapper.begin(); it != _idMapper.end(); ++it)
+				{
+					fmt::print("Id mapped sessionId:{} unitId:{} userId:{}\n", (*it).sessionId, (*it).unitId, (*it).userId);
+				}
+				return;
 			}
 
 			const auto areaId = static_cast<potato::AreaId>(request.request().area_id());
@@ -211,8 +226,11 @@ void GameServiceProvider::subscribrRequestUnitSpawnReady()
 				response.set_allocated_individuality(individuality);
 				response.set_cause(potato::UNIT_SPAWN_CAUSE_LOGGEDIN);
 				auto avatar = new potato::Avatar();
-				avatar->set_name(user->getDisplayName());
+				avatar->set_name(newUnit->getDisplayName());
 				response.set_allocated_avatar(avatar);
+
+				const auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+				newUnit->onSpawn(now, area);
 
 				appendNeighborUnits(response, newUnit);
 
@@ -223,7 +241,7 @@ void GameServiceProvider::subscribrRequestUnitSpawnReady()
 			{
 				sendAreacastSpawnUnit(session->getSessionId(), newUnit);
 			}
-			_onSpawnReadyRequest();
+			_onSpawnReadyRequest(newUnit);
 		});
 }
 
@@ -323,23 +341,29 @@ void GameServiceProvider::subscribeRequestAuthLogin()
 						// rebind session
 						user_index.replace(binderIt, { r.value(), session->getSessionId(), binderIt->unitId });
 						user = _userRegistry->find(r.value());
+						user->setUnitId(binderIt->unitId);
 					}
 					else
 					{
 						// new session
-						_idMapper.insert({ r.value(), session->getSessionId(), UnitId(0) });
+						auto result = _idMapper.insert({ r.value(), session->getSessionId(), UnitId(0) });
+						if (!result.second)
+						{
+							fmt::print("IdMapper insert failed. sessionId{} user_id: {}({}) logged in\n", session->getSessionId(), r.value(), user_id_name);
+						}
 						user = _userRegistry->registerUser(r.value());
+						user->setUnitId(UnitId(0));
 					}
 					user->setSession(session);
-					user->setUnitId(binderIt->unitId);
 					user->setDisplayName(user_id_name);
 
 					fmt::print("session id[{}] user_id: {}({}) logged in\n", session->getSessionId(), r.value(), user_id_name);
 					response.set_ok(true);
+					response.set_token(std::to_string(r.value().value_of()));
 					responser->send(true, std::move(response));
 
 					potato::area::transport::Notification notification;
-					notification.set_area_id(0);
+					notification.set_area_id(1);
 					notification.set_unit_id(user->getUnitId().value_of());
 					_networkServiceProvider.lock()->sendTo(user->getSessionId(), potato::area::transport::Rpc::serializeNotification(notification));
 					});
@@ -371,6 +395,52 @@ void GameServiceProvider::subscribeRequestDiagnosisPingPong()
 			potato::diagnosis::ping_pong::Response response;
 			response.set_receive_time(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
 			response.set_send_time(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
+			responser->send(true, std::move(response));
+		});
+}
+
+void GameServiceProvider::subscribeRequestDiagnosisCommand()
+{
+	auto& command = _rpcBuilder->diagnosis.command;
+	command->subscribeRequest([this, command](auto&, const auto& requestParcel, auto& responser)
+		{
+			using namespace potato::diagnosis::command;
+			
+			const auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+			const std::unordered_map<std::string, std::function<std::string(const Request& request)>> commands = {
+				{ "test", [](auto request)
+					{
+						std::vector<std::string> args;
+						for (int i = 0; i < request.arguments_size(); i++)
+						{
+							args.emplace_back(request.arguments(i));
+						};
+						return fmt::format("test: {}", args);
+					}
+				},
+				{ "dump-unit", [this, now](auto request)
+					{
+						UnitId unitId = UnitId(std::stoll(request.arguments(0)));
+						auto unit = _unitRegistry->findUnitByUnitId(unitId);
+						if (unit == nullptr)
+						{
+							return fmt::format("dump-unit: unit:{} not found", unitId);
+						}
+						return fmt::format("dump-unit: {}", unit->toString(now));
+					}
+				},
+			};
+
+			auto registerdCommand = commands.find(requestParcel.request().name());
+			if(registerdCommand == commands.end())
+			{
+				return;
+			}
+
+			std::string result = registerdCommand->second(requestParcel.request());
+
+			Response response;
+			response.set_result(result);
 			responser->send(true, std::move(response));
 		});
 }
@@ -468,15 +538,25 @@ void GameServiceProvider::subscribeRequestBattleSkillCast()
 			uint32_t skillId = requestParcel.request().skill_id();
 			int64_t triggerTime = requestParcel.request().trigger_time();
 			Response response;
-			response.set_ok(true);
-			response.set_attack_id(attackId);
-			responser->send(true, std::move(response));
+			auto casterUnit = _unitRegistry->findUnitBySessionId(session->getSessionId());
+			if (casterUnit->getAreaId() != potato::AreaId(0))
+			{
+				response.set_ok(true);
+				response.set_attack_id(attackId);
+				responser->send(true, std::move(response));
+			}
+			else
+			{
+				response.set_ok(false);
+				response.set_attack_id(attackId);
+				responser->send(true, std::move(response));
+				return;
+			}
 
-			queue.enqueue(0, [this, session, attackId, skillId, triggerTime]()
+			queue.enqueue(0, [this, session, attackId, skillId, triggerTime, casterUnit = std::move(casterUnit)]()
 				{
 					std::vector<std::shared_ptr<potato::net::protocol::Payload>> knockbackPayloads;
 
-					auto casterUnit = _unitRegistry->findUnitBySessionId(session->getSessionId());
 					fmt::print("attack received caster:{} trigger_time:{} skill_id:{} attack_id:{}\n", casterUnit->getUnitId(), triggerTime, skillId, attackId);
 
 					Notification notification;
@@ -498,7 +578,7 @@ void GameServiceProvider::subscribeRequestBattleSkillCast()
 							auto range = 1.0f;
 							if ((receiverUnitPositionAtTheTime - casterUnitPositionAtTheTime).squaredNorm() > range * range)
 							{
-								fmt::print("too far {} > {}\n", (receiverUnitPositionAtTheTime - casterUnitPositionAtTheTime).norm(), range);
+								//fmt::print("too far {} > {}\n", (receiverUnitPositionAtTheTime - casterUnitPositionAtTheTime).norm(), range);
 								return;
 							}
 
@@ -626,9 +706,8 @@ void GameServiceProvider::appendNeighborUnits(potato::unit::spawn_ready::Respons
 	assert(area);
 
 	const auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-	area->process([now, &response, spawnUnit](auto weakUnit)
+	area->process([now, area, &response, spawnUnit](auto unit)
 	{
-		auto unit = weakUnit.lock();
 		if (unit->getUnitId() == spawnUnit->getUnitId())
 		{
 			return;
@@ -655,10 +734,8 @@ void GameServiceProvider::appendNeighborUnits(potato::unit::spawn_ready::Respons
 			neighbor->set_allocated_spawn(notification);
 		}
 
-		unit->onSpawn(now);
-
-		// current move state
 		{
+			// current move state
 			auto moveCommand = unit->getLastMoveCommand();
 			if (moveCommand != nullptr)
 			{
@@ -725,9 +802,8 @@ void GameServiceProvider::sendAreacastDespawnUnit(potato::net::SessionId session
 	_networkServiceProvider.lock()->sendAreacast(sessionId, _areaRegistry->getArea(despawnUnit->getAreaId()), potato::unit::despawn::Rpc::serializeNotification(notification));
 
 	auto area = _areaRegistry->getArea(despawnUnit->getAreaId());
-	area->process([this, sessionId](auto weakUnit)
+	area->process([this, sessionId](auto unit)
 		{
-			auto unit = weakUnit.lock();
 			potato::unit::despawn::Notification notification;
 			notification.set_session_id(unit->getSessionId().value_of());
 			notification.set_unit_id(unit->getUnitId().value_of());
@@ -785,7 +861,7 @@ void GameServiceProvider::main()
 		queue.process();
 		ServiceRegistry::instance().getQueue().process();
 
-		sendSystemMessage("hey");
+		//sendSystemMessage("hey");
 
 		_userRegistry->update(nowUpdate);
 		_areaRegistry->update(nowUpdate);
@@ -805,6 +881,7 @@ void GameServiceProvider::main()
 				frameProcessingTime.clear();
 				networkServiceProvider->resetCounters();
 				fps = 0;
+				//sendSystemMessage("hey");
 				nextSecond = std::chrono::high_resolution_clock::now() + std::chrono::seconds(1);
 			}
 			const auto spareTime = std::chrono::high_resolution_clock::now() - prev;

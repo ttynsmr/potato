@@ -46,8 +46,12 @@ void AreaTransporter::transport(std::shared_ptr<Area> fromArea, std::shared_ptr<
 		unit->removeComponent<AreaTransporterComponent>();
 	};
 
-	auto onSpawnReadyRequest = [this, sendAreacastSpawnUnit = std::move(sendAreacastSpawnUnit)]()
+	auto onSpawnReadyRequest = [this, unit, sendAreacastSpawnUnit = std::move(sendAreacastSpawnUnit)](std::shared_ptr<Unit> receivedUnit)
 	{
+		if (unit->getUnitId() != receivedUnit->getUnitId())
+		{
+			return;
+		}
 		//spawn_ready to next area
 		_spawnReadyRequest.disconnect();
 		sendAreacastSpawnUnit();
@@ -105,6 +109,7 @@ void AreaTransporter::transport(std::shared_ptr<Area> fromArea, std::shared_ptr<
 			notification.set_unit_id(unit->getUnitId().value_of());
 			networkServiceProvider->sendTo(unit->getSessionId(), Rpc::serializeNotification(notification));
 		}
+
 	};
 
 	sendAreaTransportNotification();

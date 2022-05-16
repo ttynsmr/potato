@@ -49,7 +49,7 @@ namespace potato::net
 		auto headerSize = sizeof(protocol::PayloadHeader);
 		_receive_buffer.consume(headerSize);
 
-		const auto percelSize = static_cast<int32_t>(sizeof(protocol::PayloadHeader) + header.payloadSize);
+		const auto percelSize = header.payloadSize;
 		auto needsPercelSize = std::max(0, percelSize - static_cast<int32_t>(_receive_buffer.size()));
 		if (needsPercelSize > 0)
 		{

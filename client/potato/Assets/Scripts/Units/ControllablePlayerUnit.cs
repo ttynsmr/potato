@@ -29,6 +29,8 @@ public class ControllablePlayerUnit : IUnit, IHasStatus
     public Potato.UnitDirection Direction { get; set; }
     public Potato.CharacterStatus CharacterStatus { get; set; }
 
+    public bool ControlLock { get; set; } = true;
+
     public ControllablePlayerUnit(Potato.Network.NetworkService networkService, UnitId unitId, Vector3 position, Potato.UnitDirection direction, Potato.Avatar avatar)
     {
         _networkService = networkService;
@@ -74,6 +76,12 @@ public class ControllablePlayerUnit : IUnit, IHasStatus
     {
         int moveX = (Input.GetKey(KeyCode.D) ? 1 : 0) - (Input.GetKey(KeyCode.A) ? 1 : 0);
         int moveY = (Input.GetKey(KeyCode.W) ? 1 : 0) - (Input.GetKey(KeyCode.S) ? 1 : 0);
+        
+        if (ControlLock)
+        {
+            moveX = 0;
+            moveY = 0;
+        }
 
         if (inputQueue.Count > 0)
         {
@@ -192,7 +200,7 @@ public class ControllablePlayerUnit : IUnit, IHasStatus
         prevInputX = moveX;
         prevInputY = moveY;
 
-        if (!prevAttackButton && Input.GetKey(KeyCode.P))
+        if (!ControlLock && !prevAttackButton && Input.GetKey(KeyCode.P))
         {
             var context = SynchronizationContext.Current;
             prevAttackButton = true;

@@ -20,8 +20,8 @@ using IdLookupContainer = boost::multi_index_container<
 	boost::multi_index::indexed_by<
 	boost::multi_index::hashed_unique<boost::multi_index::tag<user_id>, boost::multi_index::member<IdBinder, UserId, &IdBinder::userId> >,
 	boost::multi_index::hashed_unique<boost::multi_index::tag<potato::net::session_id>, boost::multi_index::member<IdBinder, potato::net::SessionId, &IdBinder::sessionId> >,
-	boost::multi_index::hashed_unique<boost::multi_index::tag<unit_id>, boost::multi_index::member<IdBinder, UnitId, &IdBinder::unitId> >	>
->;
+	boost::multi_index::hashed_non_unique<boost::multi_index::tag<unit_id>, boost::multi_index::member<IdBinder, UnitId, &IdBinder::unitId> >	>
+>; 
 
 class UserAuthenticator
 {

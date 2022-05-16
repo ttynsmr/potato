@@ -16,10 +16,10 @@ sequenceDiagram
     Server-->>Client: Login Response
     Server->>Client: Transport Notification 
     Client->>Client: Setup for transport
-    Client->>Server: Transport Request
-    Server-->>Client: Transport Response
     Client->>Server: Area constituted data Request
     Server-->>Client: Area constituted data Response
+    Client->>Server: Transport Request
+    Server-->>Client: Transport Response
     Client->>Client: Load scene
     Client->>Server: SpawnReady Request
     Server-->>Client: SpawnReady Response
