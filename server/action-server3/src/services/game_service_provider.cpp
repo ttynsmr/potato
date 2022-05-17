@@ -429,6 +429,21 @@ void GameServiceProvider::subscribeRequestDiagnosisCommand()
 						return fmt::format("dump-unit: {}", unit->toString(now));
 					}
 				},
+					{ "dump-area", [this, now](auto request)
+						{
+							std::string dumps;
+							std::vector<int64_t> unitIds;
+							_areaRegistry->process([&dumps , &unitIds](auto& area)
+								{
+									area->process([&unitIds](auto unit)
+										{
+											unitIds.emplace_back(unit->getUnitId().value_of());
+										});
+									dumps += fmt::format("AreaId:{} UnitIds[{}]\n", area->getAreaId(), fmt::join(unitIds, ","));
+								});
+							return dumps;
+						}
+					},
 			};
 
 			auto registerdCommand = commands.find(requestParcel.request().name());
