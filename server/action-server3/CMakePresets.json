@@ -24,6 +24,28 @@
       }
     },
     {
+      "name": "linux-release",
+      "displayName": "Linux Release",
+      "description": "Linux 用 Windows サブシステム (WSL) またはリモート Linux システムをターゲットとします。",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}"
+      },
+      "vendor": {
+        "microsoft.com/VisualStudioSettings/CMake/1.0": { "hostOS": [ "Linux" ] },
+        "microsoft.com/VisualStudioRemoteSettings/CMake/1.0": {
+          "sourceDir": "$env{HOME}/.vs/$ms{projectDirName}",
+          "copySourcesOptions.concurrentCopies": 10,
+          "copyAdditionalIncludeDirectoriesList": [
+            "$env{HOME}/.vs/$ms{projectDirName}/out/build/linux-default/proto",
+            "$env{HOME}/.vs/$ms{projectDirName}/out/build/linux-default/rpc/generated"
+          ]
+        }
+      }
+    },
+    {
       "name": "windows-default",
       "displayName": "Windows x64 Debug",
       "description": "Visual Studio 開発環境のある Windows をターゲットにします。",
