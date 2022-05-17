@@ -10,6 +10,7 @@ using UnityEngine.UIElements;
 public class RpcLoggerDialog : EditorWindow
 {
     private ListView logsPane;
+    private Label serverSyncedTimeLabel;
 
     [MenuItem("Tools/RpcLoggerDialog")]
     public static void ShowRpcLoggerDialog()
@@ -43,6 +44,9 @@ public class RpcLoggerDialog : EditorWindow
         });
         commandSendButton.text = "Clear";
         controlPane.Add(commandSendButton);
+
+        serverSyncedTimeLabel = new Label();
+        controlPane.Add(serverSyncedTimeLabel);
 
         Example example = FindObjectOfType<Example>();
         if (example)
@@ -93,5 +97,14 @@ public class RpcLoggerDialog : EditorWindow
         logsPane.bindItem = (item, index) => { (item as Label).text = allLogs[index].Name; };
         logsPane.itemsSource = allLogs;
         logsPane.virtualizationMethod = CollectionVirtualizationMethod.DynamicHeight;
+    }
+
+    void Update()
+    {
+        var networkService = FindObjectOfType<Potato.Network.NetworkService>();
+        if (networkService != null)
+        {
+            serverSyncedTimeLabel.text = $"Server synced time: {networkService.Now}";
+        }
     }
 }
