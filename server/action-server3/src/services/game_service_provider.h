@@ -39,6 +39,12 @@ namespace potato::unit::spawn_ready
 	class Response;
 }
 
+enum QueueProcessStage : int
+{
+	OnUpdate,
+	OnSleep,
+};
+
 class GameServiceProvider : public IServiceProvider, public std::enable_shared_from_this<GameServiceProvider>
 {
 public:
