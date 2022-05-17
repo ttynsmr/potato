@@ -46,8 +46,23 @@ namespace Potato
                 session?.Disconnect();
             }
 
-            public long Now => (long)(DateTime.UtcNow - UnixEpoch).TotalMilliseconds + ServerTimeDifference;
-            public long ServerTimeDifference { get; set; }
+            public long Now {
+                get
+                {
+                    return Math.Max(LastSyncronizedTime, (long)(DateTime.UtcNow - UnixEpoch).TotalMilliseconds + ServerTimeDifference);
+                }
+            }
+
+            private long serverTimeDifference;
+            public long ServerTimeDifference {
+                get { return serverTimeDifference; }
+                set
+                {
+                    serverTimeDifference = value;
+                    LastSyncronizedTime = Now;
+                }
+            }
+            public long LastSyncronizedTime { get; private set; }
             public Action<Session> OnConnectedCallback { get; set; }
             public Action<Session> OnDisconnectedCallback { get; set; }
 
