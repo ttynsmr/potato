@@ -70,3 +70,13 @@ void AreaRegistry::update(time_t now)
 		}
 	);
 }
+
+void AreaRegistry::process(AreaProcessor processor)
+{
+	std::scoped_lock l(_areasMutex);
+	std::for_each(_areas.begin(), _areas.end(), [&](auto& area)
+		{
+			processor(area.second);
+		}
+	);
+}

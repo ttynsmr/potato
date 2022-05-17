@@ -23,6 +23,9 @@ namespace potato
 		std::shared_ptr<AreaTransporter> transportUnit(std::shared_ptr<Area> fromArea, std::shared_ptr<Area> toArea, std::shared_ptr<Unit> unit, time_t now);
 
 		void update(time_t now);
+		
+		using AreaProcessor = std::function<void(std::shared_ptr<Area>& area)>;
+		void process(AreaProcessor processor);
 
 	private:
 		void removeArea(AreaId areaId);
