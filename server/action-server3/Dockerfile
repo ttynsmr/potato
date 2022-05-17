@@ -24,7 +24,7 @@ COPY . /opt/app/action-server3
 RUN cd /opt/app/action-server3 \
     && mkdir -p build.docker \
     && cmake -H. -Bbuild.docker -GNinja \
-    && cmake --build build.docker/ --target all
+    && cmake --build build.docker/ --target action-server3 --config Release
 
 FROM ubuntu:20.04 AS action_server3_application
 COPY --from=action_server3_build /opt/app/action-server3/build.docker/action-server3 ./
