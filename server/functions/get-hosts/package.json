@@ -4,7 +4,7 @@
   "description": "",
   "main": "entrypoint.js",
   "scripts": {
-    "dev": "nodemon",
+    "dev": "nodemon --watch . --exec npm run start",
     "start": "npx functions-framework --target=getHosts --signature-type=http",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
