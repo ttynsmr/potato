@@ -98,6 +98,8 @@ namespace Potato
                 OnDisconnectedCallback?.Invoke(this);
                 client.Close();
                 client.Dispose();
+                client = null;
+                Disconnect();
                 await UniTask.SwitchToThreadPool();
             }
 
