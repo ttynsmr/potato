@@ -1,0 +1,19 @@
+{
+  "name": "get-hosts",
+  "version": "1.0.0",
+  "description": "",
+  "main": "entrypoint.js",
+  "scripts": {
+    "dev": "nodemon --watch . --exec npm run start",
+    "start": "npx functions-framework --target=getHosts --signature-type=http",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "googleapis": "^97.0.0"
+  },
+  "devDependencies": {
+    "@google-cloud/functions-framework": "^3.1.1"
+  }
+}
