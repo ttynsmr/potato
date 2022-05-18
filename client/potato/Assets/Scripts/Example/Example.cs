@@ -115,7 +115,7 @@ namespace Potato
                     queue.Enqueue(() => {
                         var message = rpc.ReceievePayload(payload);
 #if UNITY_EDITOR
-                        OnReceiveMessage(message);
+                        OnReceiveMessage?.Invoke(message);
 #endif
                     });
                 }
