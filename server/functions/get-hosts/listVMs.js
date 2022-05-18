@@ -16,7 +16,7 @@
 
 // [START complete]
 // [START initialize]
-const {google} = require('googleapis');
+const { google } = require('googleapis');
 const compute = google.compute('v1');
 // [END initialize]
 
@@ -40,7 +40,7 @@ async function listVMs() {
     project: projectId,
   });
   const vms = result.data;
-  console.log(JSON.stringify(vms));
+  // console.log(JSON.stringify(vms));
   // [END list]
   return vms
 }
