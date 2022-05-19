@@ -9,6 +9,10 @@ updates:
     directory: "/server/action-server3/torikime" # Location of package manifests
     schedule:
       interval: "daily"
+  - package-ecosystem: "npm" # See documentation for possible values
+    directory: "/server/functions/get-hosts" # Location of package manifests
+    schedule:
+      interval: "daily"
   - package-ecosystem: "github-actions" # See documentation for possible values
     directory: "/" # Location of package manifests
     schedule:
