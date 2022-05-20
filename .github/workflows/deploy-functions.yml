@@ -19,4 +19,5 @@ jobs:
         with:
           name: getHosts
           runtime: node16
+          region: asia-northeast1
           source_dir: server/functions/get-hosts
