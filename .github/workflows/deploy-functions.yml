@@ -1,0 +1,22 @@
+name: Deploy Cloud Functions
+on:
+  workflow_dispatch: {}
+
+jobs:
+  deploy:
+    name: Deploy Functions
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: 🔒Auth
+        id: "auth"
+        uses: "google-github-actions/auth@v0"
+        with:
+          credentials_json: "${{ secrets.GCP_CREDENTIALS }}"
+      - name: 🚀Deploy
+        id: "deploy"
+        uses: google-github-actions/deploy-cloud-functions@v0
+        with:
+          name: getHosts
+          runtime: node16
+          source_dir: server/functions/get-hosts
