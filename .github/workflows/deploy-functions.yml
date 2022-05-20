@@ -18,5 +18,6 @@ jobs:
         uses: google-github-actions/deploy-cloud-functions@v0
         with:
           name: getHosts
-          runtime: node16
+          runtime: nodejs16
+          region: asia-northeast1
           source_dir: server/functions/get-hosts

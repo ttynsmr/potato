@@ -61,7 +61,7 @@ namespace Potato
             connectButton.enabled = false;
             nameInputField.Select();
 
-            var web = UnityWebRequest.Get("https://asia-northeast1-potato-343314.cloudfunctions.net/function-1");
+            var web = UnityWebRequest.Get("https://asia-northeast1-potato-343314.cloudfunctions.net/getHosts");
             yield return web.SendWebRequest();
             Debug.Log(web.result);
             Debug.Log(web.downloadHandler.text);
