@@ -48,7 +48,7 @@ public class RpcLoggerDialog : EditorWindow
         serverSyncedTimeLabel = new Label();
         controlPane.Add(serverSyncedTimeLabel);
 
-        Example example = FindObjectOfType<Example>();
+        GameController example = FindObjectOfType<GameController>();
         if (example)
         {
             example.OnReceiveMessage = (message => {

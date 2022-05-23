@@ -10,7 +10,7 @@ using UnityEngine.UI;
 
 namespace Potato
 {
-    public class Example : MonoBehaviour
+    public class GameController : MonoBehaviour
     {
         private Potato.Network.NetworkService networkService;
         private UnitService unitService;
