@@ -31,8 +31,6 @@ async function listVMs() {
   });
   // [END auth]
 
-  // authClient.apiKey = "AIzaSyB9TSTxK--kfbPwSjexSqXUcvfRisk1Z88";
-
   // [START list]
   const projectId = await google.auth.getProjectId();
   const result = await compute.instances.aggregatedList({
