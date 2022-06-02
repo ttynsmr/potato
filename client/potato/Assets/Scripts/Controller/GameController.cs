@@ -94,7 +94,7 @@ namespace Potato
 
                 if (rpc == null)
                 {
-                    Debug.LogError($"payload.Header.contract_id: {payload.Header.contract_id} not found {payload.Header}");
+                    Debug.LogError($"payload.Header.contract_id: {payload.Header.ContractId} not found {payload.Header}");
                 }
 
                 if (rpc is Diagnosis.PingPong.Rpc)

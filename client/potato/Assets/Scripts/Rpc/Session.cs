@@ -39,6 +39,14 @@ namespace Potato
             public void SendPayload(Payload payload)
             {
                 // Debug.Log("sent: " + payload.GetBuffer().Length + " bytes");
+                client.GetStream().Write(BitConverter.GetBytes((ushort)payload.Header.CalculateSize()), 0, 2);
+                Debug.Log($"payload header size: {payload.Header.CalculateSize()}");
+                var buffer = new byte[payload.Header.CalculateSize()];
+                var buf = new Google.Protobuf.CodedOutputStream(buffer);
+                payload.Header.WriteTo(buf);
+                buf.Flush();
+                client.GetStream().Write(buffer, 0, buffer.Length);
+                buf.Dispose();
                 client.GetStream().Write(payload.GetBuffer(), 0, payload.GetBuffer().Length);
             }
 
@@ -50,29 +58,36 @@ namespace Potato
                     {
                         try
                         {
-                            byte[] headerBuffer = new byte[PayloadHeader.Size];
-                            //Debug.Log($"waiting read header {PayloadHeader.Size}bytes");
-                            var readHeaderSize = await client.GetStream().ReadAsync(headerBuffer, 0, PayloadHeader.Size, tokenSource.Token);
-                            if (!client.Connected || readHeaderSize == 0 || tokenSource.IsCancellationRequested)
+                            byte[] payloadSizeBuffer = new byte[2];
+                            var readPayloadSizeBufferSize = await client.GetStream().ReadAsync(payloadSizeBuffer, 0, 2, tokenSource.Token);
+                            if (!client.Connected || readPayloadSizeBufferSize == 0 || tokenSource.IsCancellationRequested)
                             {
                                 await OnDisconnect();
                                 break;
                             }
-                            Debug.Assert(readHeaderSize == PayloadHeader.Size);
+                            Debug.Assert(readPayloadSizeBufferSize == 2);
 
-                            var payload = new Payload
+                            var payloadSize = BitConverter.ToUInt16(payloadSizeBuffer, 0);
+
+                            byte[] headerBuffer = new byte[payloadSize];
+                            //Debug.Log($"waiting read header {PayloadHeader.Size}bytes");
+                            var readPayloadHeaderSize = await client.GetStream().ReadAsync(headerBuffer, 0, payloadSize, tokenSource.Token);
+                            if (!client.Connected || readPayloadHeaderSize == 0 || tokenSource.IsCancellationRequested)
                             {
-                                Header = PayloadHeader.Deserialize(headerBuffer)
-                            };
-                            payload.SetBufferSize(payload.Header.payloadSize);
+                                await OnDisconnect();
+                                break;
+                            }
+                            Debug.Assert(readPayloadHeaderSize == payloadSize);
+
+                            var payload = new Payload(PayloadHeader.Parser.ParseFrom(headerBuffer));
                             //Debug.Log($"waiting rayload header {payload.Header.payloadSize}bytes");
-                            var readSize = await client.GetStream().ReadAsync(payload.GetBuffer(), PayloadHeader.Size, payload.Header.payloadSize, tokenSource.Token);
+                            var readSize = await client.GetStream().ReadAsync(payload.GetBuffer(), 0, payload.Header.PayloadSize, tokenSource.Token);
                             if (!client.Connected || readSize == 0 || tokenSource.IsCancellationRequested)
                             {
                                 await OnDisconnect();
                                 break;
                             }
-                            Debug.Assert(readSize == payload.Header.payloadSize);
+                            Debug.Assert(readSize == payload.Header.PayloadSize);
 
                             OnPayloadReceived?.Invoke(payload);
                         }

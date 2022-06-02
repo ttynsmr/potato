@@ -14,11 +14,11 @@ namespace {{ namespace | camelize }}
         {
             public class Rpc : {{ namespace | camelize }}.IRpc
             {
-                public static ushort StaticContractId = {{ contract_id }};
-                public static ushort StaticRpcId = {{ rpc_id }};
+                public static uint StaticContractId = {{ contract_id }};
+                public static uint StaticRpcId = {{ rpc_id }};
 
-                public ushort ContractId => StaticContractId;
-                public ushort RpcId => StaticRpcId;
+                public uint ContractId => StaticContractId;
+                public uint RpcId => StaticRpcId;
 
                 private Potato.Network.Session session;
                 public Rpc(Potato.Network.Session session)
@@ -34,17 +34,17 @@ namespace {{ namespace | camelize }}
 
                 public Google.Protobuf.IMessage ReceievePayload(Potato.Network.Protocol.Payload payload)
                 {
-                    switch (payload.Header.rpc_id)
+                    switch (payload.Header.RpcId)
                     {
                         case {{ rpc_id }}:
-                            switch ((Potato.Network.Protocol.Meta) payload.Header.meta)
+                            switch (payload.Header.Meta)
                             {
 {%- if "request" in rpc %}
-                                case Potato.Network.Protocol.Meta.Response:
+                                case Meta.Response:
                                     return on{{ name | camelize }}Response(payload);
 {% endif %}
 {% if "notification" in rpc %}
-                                case Potato.Network.Protocol.Meta.Notification:
+                                case Meta.Notification:
                                     return on{{ name | camelize }}Notification(payload);
 {% endif %}
                                 default:
@@ -67,18 +67,19 @@ namespace {{ namespace | camelize }}
 
                     responseCallbacks.Add(parcel.RequestId, (response) => { callback(response); });
 
-                    Potato.Network.Protocol.Payload payload = new Potato.Network.Protocol.Payload();
                     using (System.IO.MemoryStream ms = new System.IO.MemoryStream())
                     using (Google.Protobuf.CodedOutputStream output = new Google.Protobuf.CodedOutputStream(ms))
                     {
+                        PayloadHeader header = new PayloadHeader {
+                            Meta = Meta.Request,
+                            PayloadSize = parcel.CalculateSize(),
+                        };
+
+                        Potato.Network.Protocol.Payload payload = new Potato.Network.Protocol.Payload(header);
                         parcel.WriteTo(output);
                         output.Flush();
-                        payload.SetBufferSize((int)ms.Length);
-                        payload.Header.contract_id = ContractId;
-                        payload.Header.rpc_id = RpcId;
-                        payload.Header.SerializeTo(payload.GetBuffer());
                         ms.Position = 0;
-                        ms.Read(payload.GetBuffer(), Potato.Network.Protocol.PayloadHeader.Size, (int)ms.Length);
+                        ms.Read(payload.GetBuffer(), 0, (int)ms.Length);
                         session.SendPayload(payload);
                     }
 
@@ -113,7 +114,7 @@ namespace {{ namespace | camelize }}
                 private Google.Protobuf.IMessage on{{ name | camelize }}Response(Potato.Network.Protocol.Payload payload)
                 {
                     ResponseParcel responseParcel = new ResponseParcel();
-                    responseParcel.MergeFrom(new Google.Protobuf.CodedInputStream(payload.GetBuffer(), Potato.Network.Protocol.PayloadHeader.Size, payload.GetBuffer().Length - Potato.Network.Protocol.PayloadHeader.Size));
+                    responseParcel.MergeFrom(new Google.Protobuf.CodedInputStream(payload.GetBuffer(), 0, payload.GetBuffer().Length));
 
                     if (responseCallbacks.TryGetValue(responseParcel.RequestId, out var callback))
                     {
@@ -136,7 +137,7 @@ namespace {{ namespace | camelize }}
                 private Google.Protobuf.IMessage on{{ name | camelize }}Notification(Potato.Network.Protocol.Payload payload)
                 {
                     NotificationParcel notificationParcel = new NotificationParcel();
-                    notificationParcel.MergeFrom(new Google.Protobuf.CodedInputStream(payload.GetBuffer(), Potato.Network.Protocol.PayloadHeader.Size, payload.GetBuffer().Length - Potato.Network.Protocol.PayloadHeader.Size));
+                    notificationParcel.MergeFrom(new Google.Protobuf.CodedInputStream(payload.GetBuffer(), 0, payload.GetBuffer().Length));
                     try
                     {
                         OnNotification?.Invoke(notificationParcel.Notification);
