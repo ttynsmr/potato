@@ -8,8 +8,12 @@
 
 namespace potato::net::protocol
 {
-	struct PayloadHeader;
 	struct Payload;
+}
+
+namespace potato
+{
+	class PayloadHeader;
 }
 
 namespace potato::net
@@ -42,8 +46,9 @@ namespace potato::net
 		static constexpr SessionId getSystemSessionId() { return SessionId(0); }
 
 	private:
-		void readHeader();
-		void readParcel(const protocol::PayloadHeader& header);
+		void readPayloadHeaderSize(uint16_t payloadHeaderSize);
+		void readHeader(int32_t payloadHeaderSize);
+		void readParcel(potato::PayloadHeader&& header);
 		void doRead();
 
 		boost::asio::ip::tcp::socket _socket;

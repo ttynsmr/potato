@@ -5,6 +5,7 @@
 #include "{{ contract }}_{{ name }}.h"
 
 #include "{{ contract }}_{{ name }}.pb.h"
+#include "meta.pb.h"
 {% if "imports" in rpc -%}
 {%- for import in imports %}
 #include "{{ import }}.pb.h"
@@ -31,12 +32,14 @@ namespace {{ namespace }}::{{ contract }}::{{ name }}
 		responseParcel.set_allocated_response(&response);
 		responseParcel.set_success(success);
 
-		std::shared_ptr<potato::net::protocol::Payload> payload = std::make_shared<potato::net::protocol::Payload>();
-		payload->getHeader().contract_id = {{ contract_id }};
-		payload->getHeader().rpc_id = {{ rpc_id }};
-		payload->getHeader().meta = static_cast<uint8_t>(potato::net::protocol::Meta::Response);
-		payload->setBufferSize(responseParcel.ByteSize());
-		responseParcel.SerializeToArray(payload->getPayloadData(), payload->getHeader().payloadSize);
+		potato::PayloadHeader header;
+		header.set_contract_id({{ contract_id }});
+		header.set_rpc_id({{ rpc_id }});
+		header.set_meta(potato::Meta::RESPONSE);
+		header.set_payload_size(responseParcel.ByteSize());
+
+		std::shared_ptr<potato::net::protocol::Payload> payload = std::make_shared<potato::net::protocol::Payload>(header);
+		responseParcel.SerializeToArray(payload->getPayloadData(), payload->getHeader().payload_size());
 		responseParcel.release_response();
 
 		_session->sendPayload(payload);
@@ -76,12 +79,14 @@ namespace {{ namespace }}::{{ contract }}::{{ name }}
 		notificationParcel.set_allocated_notification(&notification);
 		notificationParcel.set_notification_id(++_notificationId);
 
-		std::shared_ptr<potato::net::protocol::Payload> payload = std::make_shared<potato::net::protocol::Payload>();
-		payload->getHeader().contract_id = {{ contract_id }};
-		payload->getHeader().rpc_id = {{ rpc_id }};
-		payload->getHeader().meta = static_cast<uint8_t>(potato::net::protocol::Meta::Notification);
-		payload->setBufferSize(notificationParcel.ByteSize());
-		notificationParcel.SerializeToArray(payload->getPayloadData(), payload->getHeader().payloadSize);
+		potato::PayloadHeader header;
+		header.set_contract_id({{ contract_id }});
+		header.set_rpc_id({{ rpc_id }});
+		header.set_meta(potato::Meta::NOTIFICATION);
+		header.set_payload_size(notificationParcel.ByteSize());
+
+		std::shared_ptr<potato::net::protocol::Payload> payload = std::make_shared<potato::net::protocol::Payload>(header);
+		notificationParcel.SerializeToArray(payload->getPayloadData(), payload->getHeader().payload_size());
 		notificationParcel.release_notification();
         return payload;
 	}
@@ -91,14 +96,14 @@ namespace {{ namespace }}::{{ contract }}::{{ name }}
 	void Rpc::deserialize(const potato::net::protocol::Payload& payload, {{ namespace }}::{{ contract }}::{{ name }}::RequestParcel& outRequest)
 	{
 		outRequest.Clear();
-		outRequest.ParseFromArray(payload.getPayloadData(), payload.getHeader().payloadSize);
+		outRequest.ParseFromArray(payload.getPayloadData(), payload.getHeader().payload_size());
 	}
 {% endif %}
 
 {# {%- if "request" in rpc %} #}
 	bool Rpc::receievePayload(const potato::net::protocol::Payload& payload)
 	{
-		switch (payload.getHeader().rpc_id)
+		switch (payload.getHeader().rpc_id())
 		{
 {%- if "request" in rpc %}
 		case {{ rpc_id }}:

@@ -8,6 +8,7 @@
 #include <fmt/core.h>
 
 #include "rpc/payload.h"
+#include "payload_header.pb.h"
 
 namespace potato::net
 {
@@ -35,33 +36,90 @@ namespace potato::net
 		}
 
 		auto self(shared_from_this());
-		_socket.async_write_some(boost::asio::buffer(payload->getBuffer()),
-			[this, self, payload](boost::system::error_code /*ec*/, std::size_t /*length*/) {
-				//fmt::print("async_write_some result: ec:{}, sent length:{} payload size:{}\n", ec.value() , length, payload->getBuffer().size());
+		uint16_t payloadHeaderSize = payload->getHeader().ByteSizeLong();
+		_socket.async_write_some(boost::asio::buffer(static_cast<void*>(&payloadHeaderSize), 2),
+			[this, self, payload](boost::system::error_code ec, std::size_t length) {
+				fmt::print("ec:{}, length:{}\n", ec.value(), length);
+				std::vector<std::byte> buf(payload->getHeader().ByteSize());
+				payload->getHeader().SerializeToArray(buf.data(), buf.size());
+				_socket.async_write_some(boost::asio::buffer(buf),
+					[this, self, payload](boost::system::error_code ec, std::size_t length) {
+						fmt::print("async_write_some result: ec:{}, sent header length:{} payload header size:{}\n", ec.value() , length, payload->getBuffer().size());
+						_socket.async_write_some(boost::asio::buffer(payload->getBuffer()),
+							[this, self, payload](boost::system::error_code ec, std::size_t length) {
+										fmt::print("async_write_some result: ec:{}, sent length:{} payload size:{}\n", ec.value(), length, payload->getBuffer().size());
+							});
+					});
 			});
 	}
 
-	void Session::readHeader()
+	void Session::readPayloadHeaderSize(uint16_t payloadHeaderSize)
 	{
 		auto self(shared_from_this());
 
-		const protocol::PayloadHeader header = *boost::asio::buffer_cast<const protocol::PayloadHeader*>(_receive_buffer.data());
-		auto headerSize = sizeof(protocol::PayloadHeader);
-		_receive_buffer.consume(headerSize);
+		auto needsHeaderSize = std::max(0, payloadHeaderSize - static_cast<int32_t>(_receive_buffer.size()));
+		fmt::print("wait read needsHeaderSize: {}/{}\n", needsHeaderSize, payloadHeaderSize);
+		if (needsHeaderSize > 0)
+		{
+			boost::asio::async_read(
+				_socket,
+				_receive_buffer,
+				boost::asio::transfer_at_least(needsHeaderSize),
+				[this, self, payloadHeaderSize](boost::system::error_code ec, std::size_t /*length*/)
+				{
+					if (!ec)
+					{
+						readHeader(payloadHeaderSize);
+					}
+					else
+					{
+						// disconnect
+						_disconnectDelegate(_sessionId);
+					}
+				});
+		}
+		else
+		{
+			readHeader(payloadHeaderSize);
+		}
+	}
 
-		const auto percelSize = header.payloadSize;
-		auto needsPercelSize = std::max(0, percelSize - static_cast<int32_t>(_receive_buffer.size()));
+	void Session::readHeader(int32_t payloadHeaderSize)
+	{
+		potato::PayloadHeader header;
+		header.ParseFromArray(_receive_buffer.data().data(), payloadHeaderSize);
+		_receive_buffer.consume(payloadHeaderSize);
+
+		fmt::print("payload header size: {}\n", payloadHeaderSize);
+
+		readParcel(std::move(header));
+	}
+
+	void Session::readParcel(potato::PayloadHeader&& header)
+	{
+		auto self(shared_from_this());
+
+		auto needsPercelSize = std::max(0, header.payload_size() - static_cast<int32_t>(_receive_buffer.size()));
+		fmt::print("wait read needsPercelSize: {}/{}\n", needsPercelSize, header.payload_size());
 		if (needsPercelSize > 0)
 		{
 			boost::asio::async_read(
 				_socket,
 				_receive_buffer,
 				boost::asio::transfer_at_least(needsPercelSize),
-				[this, self, header](boost::system::error_code ec, std::size_t /*length*/)
+				[this, self, header = std::move(header)](boost::system::error_code ec, std::size_t /*length*/)
 				{
 					if (!ec)
 					{
-						readParcel(header);
+						const auto percelSize = header.payload_size();
+						protocol::Payload payload(header);
+						boost::asio::buffer_copy(boost::asio::buffer(payload.getBuffer()), boost::asio::buffer(_receive_buffer.data()));
+						_receive_buffer.consume(percelSize);
+
+						fmt::print("percelSize: {}\n", percelSize);
+
+						_receivePayloadDelegate(payload);
+
 						doRead();
 					}
 					else
@@ -73,40 +131,42 @@ namespace potato::net
 		}
 		else
 		{
-			readParcel(header);
+			const auto percelSize = header.payload_size();
+			protocol::Payload payload(header);
+			boost::asio::buffer_copy(boost::asio::buffer(payload.getBuffer()), boost::asio::buffer(_receive_buffer.data()));
+			_receive_buffer.consume(percelSize);
+
+			fmt::print("percelSize: {}\n", percelSize);
+
+			_receivePayloadDelegate(payload);
+
 			doRead();
 		}
-	}
-
-	void Session::readParcel(const protocol::PayloadHeader& header)
-	{
-		const auto percelSize = header.payloadSize;
-		protocol::Payload payload;
-		payload.setBufferSize(header.payloadSize);
-		payload.getHeader() = header;
-		boost::asio::buffer_copy(boost::asio::buffer(payload.getBuffer()) + sizeof(protocol::PayloadHeader), boost::asio::buffer(_receive_buffer.data()));
-		_receive_buffer.consume(percelSize);
-
-		_receivePayloadDelegate(payload);
 	}
 
 	void Session::doRead()
 	{
 		auto self(shared_from_this());
 
-		auto needHeaderSize = std::max(0, static_cast<int32_t>(sizeof(protocol::PayloadHeader)) - static_cast<int32_t>(_receive_buffer.size()));
-		if (needHeaderSize > 0)
+		auto needFixHeaderSize = std::max(0, static_cast<int32_t>(sizeof(uint16_t)) - static_cast<int32_t>(_receive_buffer.size()));
+		fmt::print("wait read needFixHeaderSize: {}/{}\n", needFixHeaderSize, sizeof(uint16_t));
+		if (needFixHeaderSize > 0)
 		{
 			boost::asio::async_read(
 				_socket,
 				_receive_buffer,
-				boost::asio::transfer_at_least(needHeaderSize),
+				boost::asio::transfer_at_least(needFixHeaderSize),
 				[this, self](boost::system::error_code ec, std::size_t /*length*/)
 				{
 					if (!ec)
 					{
+						const uint16_t payloadHeaderSize = *static_cast<const uint16_t*>(_receive_buffer.data().data());
+						_receive_buffer.consume(sizeof(uint16_t));
+
+						fmt::print("fixed size: {}\n", 2);
+
 						_lastReceivedTick = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-						readHeader();
+						readPayloadHeaderSize(payloadHeaderSize);
 					}
 					else
 					{
@@ -117,7 +177,12 @@ namespace potato::net
 		}
 		else
 		{
-			readHeader();
+			const uint16_t payloadHeaderSize = *static_cast<const uint16_t*>(_receive_buffer.data().data());
+			_receive_buffer.consume(sizeof(uint16_t));
+
+			fmt::print("fixed size: {}\n", 2);
+
+			readPayloadHeaderSize(payloadHeaderSize);
 		}
 	}
 }
