@@ -36,21 +36,14 @@ namespace potato::net
 		}
 
 		auto self(shared_from_this());
-		uint16_t payloadHeaderSize = payload->getHeader().ByteSizeLong();
-		_socket.async_write_some(boost::asio::buffer(static_cast<void*>(&payloadHeaderSize), 2),
-			[this, self, payload](boost::system::error_code ec, std::size_t length) {
-				fmt::print("ec:{}, length:{}\n", ec.value(), length);
-				std::vector<std::byte> buf(payload->getHeader().ByteSize());
-				payload->getHeader().SerializeToArray(buf.data(), buf.size());
-				_socket.async_write_some(boost::asio::buffer(buf),
-					[this, self, payload](boost::system::error_code ec, std::size_t length) {
-						fmt::print("async_write_some result: ec:{}, sent header length:{} payload header size:{}\n", ec.value() , length, payload->getBuffer().size());
-						_socket.async_write_some(boost::asio::buffer(payload->getBuffer()),
-							[this, self, payload](boost::system::error_code ec, std::size_t length) {
-										fmt::print("async_write_some result: ec:{}, sent length:{} payload size:{}\n", ec.value(), length, payload->getBuffer().size());
-							});
-					});
-			});
+		uint16_t payloadHeaderSize = payload->getHeader().ByteSize();
+		std::vector<std::byte> singleBuffer(sizeof(uint16_t) + payloadHeaderSize + payload->getBuffer().size());
+		*reinterpret_cast<uint16_t*>(singleBuffer.data()) = payloadHeaderSize;
+		payload->getHeader().SerializeToArray(&singleBuffer.data()[sizeof(uint16_t)], payloadHeaderSize);
+		std::memcpy(&singleBuffer.data()[sizeof(uint16_t) + payloadHeaderSize], payload->getBuffer().data(), payload->getBuffer().size());
+		
+		_socket.async_write_some(boost::asio::buffer(singleBuffer),
+			[this, self, payload](boost::system::error_code /*ec*/, std::size_t /*length*/) { });
 	}
 
 	void Session::readPayloadHeaderSize(uint16_t payloadHeaderSize)
