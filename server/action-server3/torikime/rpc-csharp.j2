@@ -71,6 +71,8 @@ namespace {{ namespace | camelize }}
                     using (Google.Protobuf.CodedOutputStream output = new Google.Protobuf.CodedOutputStream(ms))
                     {
                         PayloadHeader header = new PayloadHeader {
+                            ContractId = ContractId,
+                            RpcId = RpcId,
                             Meta = Meta.Request,
                             PayloadSize = parcel.CalculateSize(),
                         };
