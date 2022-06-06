@@ -40,7 +40,6 @@ namespace Potato
             {
                 // Debug.Log("sent: " + payload.GetBuffer().Length + " bytes");
                 client.GetStream().Write(BitConverter.GetBytes((ushort)payload.Header.CalculateSize()), 0, 2);
-                Debug.Log($"payload header size: {payload.Header.CalculateSize()}");
                 var buffer = new byte[payload.Header.CalculateSize()];
                 var buf = new Google.Protobuf.CodedOutputStream(buffer);
                 payload.Header.WriteTo(buf);
