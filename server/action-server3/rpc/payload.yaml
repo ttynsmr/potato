@@ -1,0 +1,15 @@
+defines:
+  meta:
+    enum:
+      - REQUEST
+      - RESPONSE
+      - NOTIFICATION
+  payload_header:
+    imports:
+      - "meta"
+    params:
+      payload_size: int32
+      version: uint32
+      meta: potato.Meta
+      contract_id: uint32
+      rpc_id: uint32

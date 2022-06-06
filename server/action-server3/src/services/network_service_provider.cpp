@@ -181,8 +181,8 @@ void NetworkServiceProvider::doAccept()
 				std::shared_ptr<potato::net::Session> session = weakSession.lock();
 				auto rpc = std::find_if(_rpcs.begin(), _rpcs.end(), [session, &payload](auto& rpc) {
 					return rpc->getSession()->getSessionId() == session->getSessionId()
-						&& rpc->getContractId() == payload.getHeader().contract_id
-						&& rpc->getRpcId() == payload.getHeader().rpc_id;
+						&& rpc->getContractId() == payload.getHeader().contract_id()
+						&& rpc->getRpcId() == payload.getHeader().rpc_id();
 					});
 				if (rpc != _rpcs.end())
 				{
