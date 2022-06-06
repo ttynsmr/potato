@@ -58,7 +58,6 @@ namespace potato::net
 		auto self(shared_from_this());
 
 		auto needsHeaderSize = std::max(0, payloadHeaderSize - static_cast<int32_t>(_receive_buffer.size()));
-		fmt::print("wait read needsHeaderSize: {}/{}\n", needsHeaderSize, payloadHeaderSize);
 		if (needsHeaderSize > 0)
 		{
 			boost::asio::async_read(
@@ -90,8 +89,6 @@ namespace potato::net
 		header.ParseFromArray(_receive_buffer.data().data(), payloadHeaderSize);
 		_receive_buffer.consume(payloadHeaderSize);
 
-		fmt::print("payload header size: {}\n", payloadHeaderSize);
-
 		readParcel(std::move(header));
 	}
 
@@ -100,7 +97,6 @@ namespace potato::net
 		auto self(shared_from_this());
 
 		auto needsPercelSize = std::max(0, header.payload_size() - static_cast<int32_t>(_receive_buffer.size()));
-		fmt::print("wait read needsPercelSize: {}/{}\n", needsPercelSize, header.payload_size());
 		if (needsPercelSize > 0)
 		{
 			boost::asio::async_read(
@@ -115,8 +111,6 @@ namespace potato::net
 						protocol::Payload payload(header);
 						boost::asio::buffer_copy(boost::asio::buffer(payload.getBuffer()), boost::asio::buffer(_receive_buffer.data()));
 						_receive_buffer.consume(percelSize);
-
-						fmt::print("percelSize: {}\n", percelSize);
 
 						_receivePayloadDelegate(payload);
 
@@ -136,8 +130,6 @@ namespace potato::net
 			boost::asio::buffer_copy(boost::asio::buffer(payload.getBuffer()), boost::asio::buffer(_receive_buffer.data()));
 			_receive_buffer.consume(percelSize);
 
-			fmt::print("percelSize: {}\n", percelSize);
-
 			_receivePayloadDelegate(payload);
 
 			doRead();
@@ -149,7 +141,6 @@ namespace potato::net
 		auto self(shared_from_this());
 
 		auto needFixHeaderSize = std::max(0, static_cast<int32_t>(sizeof(uint16_t)) - static_cast<int32_t>(_receive_buffer.size()));
-		fmt::print("wait read needFixHeaderSize: {}/{}\n", needFixHeaderSize, sizeof(uint16_t));
 		if (needFixHeaderSize > 0)
 		{
 			boost::asio::async_read(
@@ -162,8 +153,6 @@ namespace potato::net
 					{
 						const uint16_t payloadHeaderSize = *static_cast<const uint16_t*>(_receive_buffer.data().data());
 						_receive_buffer.consume(sizeof(uint16_t));
-
-						fmt::print("fixed size: {}\n", 2);
 
 						_lastReceivedTick = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 						readPayloadHeaderSize(payloadHeaderSize);
@@ -179,8 +168,6 @@ namespace potato::net
 		{
 			const uint16_t payloadHeaderSize = *static_cast<const uint16_t*>(_receive_buffer.data().data());
 			_receive_buffer.consume(sizeof(uint16_t));
-
-			fmt::print("fixed size: {}\n", 2);
 
 			readPayloadHeaderSize(payloadHeaderSize);
 		}
