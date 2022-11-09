@@ -31,7 +31,7 @@ jobs:
         if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
         with:
           credentials_json: "${{ secrets.GCP_CREDENTIALS }}"
-      - uses: google-github-actions/setup-gcloud@v0
+      - uses: google-github-actions/setup-gcloud@v1
         if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
       - name: ⚙️Configure docker for artifact registry
         if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
