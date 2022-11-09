@@ -27,7 +27,7 @@ jobs:
       # build for push image
       - name: 🔒Auth
         id: "auth"
-        uses: "google-github-actions/auth@v0"
+        uses: "google-github-actions/auth@v1"
         if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
         with:
           credentials_json: "${{ secrets.GCP_CREDENTIALS }}"
