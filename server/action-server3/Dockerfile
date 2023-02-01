@@ -1,4 +1,4 @@
-FROM ubuntu:20.04 AS builder
+FROM ubuntu:23.04 AS builder
 
 ENV TZ=Asia/Tokyo
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
@@ -26,7 +26,7 @@ RUN cd /opt/app/action-server3 \
     && cmake -H. -Bbuild.docker -GNinja \
     && cmake --build build.docker/ --target action-server3 --config Release
 
-FROM ubuntu:20.04 AS action_server3_application
+FROM ubuntu:23.04 AS action_server3_application
 COPY --from=action_server3_build /opt/app/action-server3/build.docker/action-server3 ./
 RUN apt-get update && apt-get install -yq \
     libprotobuf17 \
